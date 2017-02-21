@@ -1,0 +1,62 @@
+@charset "UTF-8";
+
+* {margin:0; padding:0;}
+html {font:10px/1.5 'Noto Sans', 'Malgun Gothic', helvetica, 'Apple Gothic', Tahoma, sans-serif;}
+body {min-width:960px;background:#fff; color:#666;}
+a {color:#0075e5; text-decoration:none;}
+a:focus, a:hover, a:active {text-decoration:underline;}
+em {color:#c82026; margin:0 2px;}
+
+header, #container {padding:10px; font-size:1.4rem;}
+header{margin-bottom:1.5em;}
+header h1 {padding:0.15em 0.5em 0.5em; color:#333; font-size:3rem;}
+header .nav {display:inline-flex; justify-content:flex-end; box-sizing:border-box; width:100%; list-style:none; background:#969696; padding:0.5em 2em 0.4em; color:#f9f9f9; font-weight:bold; font-size:1.1em;}
+header .nav li {display:inline; margin-left:1em;}
+header .nav li a {color:#f9f9f9;}
+header .nav li.on a {color:#fff; border-bottom:2px solid #fff; text-shadow:#555 2px 1px 2px; text-decoration:none;}
+header .nav li.on::before {content:'→'; display:inline-block; padding-right:.4em;}
+.publishing-rule {font-size:1.2rem;}
+.publishing-rule dl{padding:0.5em 0.8em; margin-top:1em; background:#f7f7f7;}
+.publishing-rule dt {margin-bottom:.6em; font-size:1.4rem; font-weight:bold;}
+.publishing-rule dd {padding-left:1.5em;}
+.publishing-rule dd ul {list-style-type: square;}
+.publishing-rule dd li {margin-top:.2em;}
+.publishing-rule dd li:first-child {margin-top:0;}
+#container{padding-bottom:5em;}
+.total{font-weight:bold; font-style:italic;}
+.total+section{margin-top:1em;}
+section{margin-top:3em;}
+.section-title{padding:0.3em 1em; color:#fff; background:#03427e; cursor:pointer;}
+.section-comment{padding:0.3em; margin:0; border:1px solid #03427e;}
+.section-comment div, .section-comment p {padding:1em .5em;}
+.section-comment dl {display:table; table-layout:fixed; width:100%; padding:.5em 0; border-top:1px dotted #ccc; border-bottom:1px dotted #ccc;}
+.section-comment dl + dl {margin-top:-1px;}
+.section-comment dl:hover {background:#f6f6f6;}
+.section-comment dt, .section-comment dd {display:table-cell; padding:0 0.5em; vertical-align:middle;}
+.section-comment dt {width:30%; font-weight:bold;}
+.section-comment dd {border-left:1px dotted #ccc;}
+.section-comment dd ul{margin:0; list-style:none;}
+.section-comment dd li::before {content:'- ';}
+.section-comment em {font-weight:bold;}
+
+table {width:100%; border-spacing:0; border:0; border-collapse:collapse;}
+caption {position:absolute; left:-9999em;}
+table thead th {border-top:none; border-bottom:none;}
+table th, table td {padding:0.4em; word-break:break-all; border:1px solid #ccc;}
+table th {padding:.6em 0; color:#333; background-color:#eee; font-size:1.3rem; text-align:center;}
+table td {text-align:left;}
+table td.stat, table td.date {text-align:center;}
+table .date {width:7em;}
+table .date del {display:block;}
+table .stat {width:3em;}
+table .overcoloring {background:#f6f6f6 !important;}
+table tr.none, table tr.none th, table tr.none td {display:none;}
+table .note dl {font-style:normal; box-sizing:border-box; padding:1em; background-color:#eee; color:#222; font-size:0.95em; line-height:1.2;}
+table .overcoloring .note dl {background-color:#fff;}
+table .note dt {margin-top:.8em; font-weight:bold;}
+table .note dt:first-child {margin-top:0;}
+table .note dd {padding-left:1.5em; text-indent:-0.9em; margin-top:.5em;}
+table .note dd::before {content:'- '; opacity:0.7;}
+table ul {list-style:none; margin:0; padding:0 20px; font-style:italic;}
+table tbody.remove td {background-color:#ccc;}
+table .line-through {text-decoration:line-through}
