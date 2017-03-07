@@ -1,10 +1,11 @@
 *
   padding: 0
   box-sizing: border-box
-  
+
 html
-  background-image: linear-gradient(to right, #f83600 0%, #f9d423 100%)
   font-size: 16px
+  padding: 0
+
 li
   list-style: none
 
@@ -19,15 +20,14 @@ h1
 .page-body
   background-color: #f4a35b
 
+
 .header
   background-image: url("../images/beach.jpg")
   // background-image: linear-gradient(to top, #00c6fb 0%, #005bea 100%)
   height: 100vh
   background-size: cover
-  width: 100%
-  // height: 100%
-  // height: 0
-  width: 100%
+  background-position: center center
+
 
 .page-header
   // background: blue
@@ -46,7 +46,7 @@ h1
   font-style:
 
 .index-hello
-  background-color: rgba(1, 1, 1, 0.5)
+  background-color: rgba(1, 1, 1, 0.4)
   height: 100px
 
 
@@ -64,11 +64,23 @@ h1
 
 
 .index-title
-  padding: 10px, auto
+  color: rgb(36, 43, 186)
+  font-size: 1.6rem
+  text-align: center
+
+  // &::after
+  //   content: ''
+  //   display: block
+
+
 
 .component
   padding: 20px
+  // margin: 20px 0
   border: 2px solid black
+
+
+
 .section
 
 
@@ -83,7 +95,7 @@ h1
   border: 1px solid blue
 
 footer
-  background-color: orange
+  background-color: rgb(245, 11, 137)
 
   & .container
     margin: 0 20px
@@ -92,7 +104,15 @@ footer
     text-align: center
 
 .social-icon
-  background: lime
+  // background: lime
   text-align: center
   & a
     margin: 0 10px
+
+
+
+@media screen and (min-width:760px)
+  .component
+    margin: 0 auto
+    // transform: translate(-50%, 0)
+    width: 760px
