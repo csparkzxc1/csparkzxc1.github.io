@@ -1,6 +1,7 @@
 *
   padding: 0
   box-sizing: border-box
+  
 html
   background-image: linear-gradient(to right, #f83600 0%, #f9d423 100%)
   font-size: 16px
@@ -10,18 +11,26 @@ li
 img
   width: 30px
   height: 30px
+h1
+  text-align: center
+  color: #fff
 
 
 .page-body
   background-color: #f4a35b
 
 .header
-  background-image: url("./images/sea.jpg")
-  background-image: linear-gradient(to top, #00c6fb 0%, #005bea 100%)
+  background-image: url("../images/beach.jpg")
+  // background-image: linear-gradient(to top, #00c6fb 0%, #005bea 100%)
   height: 100vh
+  background-size: cover
+  width: 100%
+  // height: 100%
+  // height: 0
+  width: 100%
 
 .page-header
-  background: blue
+  // background: blue
 
   &::after
     content: ''
@@ -34,12 +43,25 @@ img
   display: inline-block
   font-size: 2rem
   padding: 10px 10px 0
-
-
-
+  font-style:
 
 .index-hello
-  background-image: linear-gradient(to top, #00c6fb 0%, #005bea 100%)
+  background-color: rgba(1, 1, 1, 0.5)
+  height: 100px
+
+
+.social-icons
+  position: absolute
+  text-align: center
+  padding: 20px 0
+  bottom: 50px
+  left: 50%
+  transform: translate(-50%, 0)
+  & a
+    margin: 0 10px
+    &:hover
+      text-shadow: 2, 2
+
 
 .index-title
   padding: 10px, auto
@@ -72,3 +94,5 @@ footer
 .social-icon
   background: lime
   text-align: center
+  & a
+    margin: 0 10px
