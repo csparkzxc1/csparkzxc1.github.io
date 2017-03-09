@@ -8,6 +8,23 @@ html
 
 li
   list-style: none
+  position: relative
+  &::after
+    content: ''
+    position: absolute
+    transition: all 1s ease-in-out
+    z-index: 1
+
+  &::after
+    top: 0
+    bottom: 0
+    left: 0%
+    right: 100%
+    background-color: rgb(103, 177, 154)
+
+
+  &:hover::after
+    right: 0
 
 img
   width: 30px
