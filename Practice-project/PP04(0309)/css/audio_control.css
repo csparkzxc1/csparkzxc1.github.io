@@ -1,0 +1,65 @@
+.container {
+
+}
+
+.audio-controls {
+  margin-top: 3rem;
+  text-align: center;
+}
+
+.seekbar {
+  position: relative;
+  left: 50%;
+  width: 173px;
+  height: 1px;
+  background: #e4e4e4;
+  margin-bottom: 10px;
+  transform: translateX(-50%);
+}
+
+.seekbar-progress {
+  position: absolute;
+  height: inherit;
+  /*width: 10%;*/
+  background: #34c0ff;
+}
+
+.audio-cover {
+  margin-bottom: 5px;
+  padding: 5px;
+  background: #fff;
+  border: 1px solid #afd2df;
+}
+
+.audio-time {
+  margin-top: 5px;
+  color: #888;
+}
+
+.audio-time-divider {
+  color: #52c88c;
+}
+
+img {
+  /*float: left;
+  width: 20vw;
+  height: auto;*/
+  transition: all 1s ;
+  transition-timing-function: ease;
+
+}
+@keyframes coverlist-ani {
+  0% {
+    transform: rotate(0);
+  }
+  100% {
+    transform: rotate(100000deg);
+  }
+
+}
+
+/*img:hover {
+  border-radius: 350px;
+  transform: rotate(180deg);
+  animation: coverlist-ani 1000s infinite;
+}*/

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko-KR">
+<head>
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+  <meta charset="UTF-8">
+  <title>JavaScript 오디오 컨트롤</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.3.2/css/bulma.css">
+  <link rel="stylesheet" href="./css/audio_control.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="./js/dom.js"></script>
+
+</head>
+<body>
+
+  <div class="container">
+    <div class="columns">
+      <div class="audio-controls column is-4 is-offset-4">
+        <img src="media/images/001.Ed Sheeran - Shape Of You.jpg" alt="shape of you" width="125" height="125">
+        <div class="seekbar">
+          <div class="seekbar-progress"></div>
+        </div>
+        <button type="button" class="audio-control__play button is-primary">play</button>
+        <button type="button" class="audio-control__pause button">pause</button>
+        <button type="button" class="audio-control__stop button is-danger">stop</button>
+
+        <div class="audio-time">
+          <span class="audio-time-current">00:00</span>
+          <span class="audio-time-divider">|</span>
+          <span class="audio-time-total">00:00</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="coverlist"></div>
+
+<script>
+// Model 생성자 함수 활용하여 Model {} 인스턴스 생성
+var music_playlist = new Model();
+// console.log('music_playlist.constructor:', music_playlist.constructor);
+var data = [
+  {
+   "cover"  : "cover/001.EdSheeran-ShapeOfYou.jpg",
+   "source" : "source/001.EdSheeran-ShapeOfYou.mp3"
+ },
+ {
+   "cover"  : "cover/002.TheChainsmokers&Halsey-Closer.jpg",
+   "source" : "source/002.TheChainsmokers&Halsey-Closer.mp3"
+ },
+ {
+   "cover"  : "cover/003.Zayn&TaylorSwift-IDon'tWannaLiveForever(FiftyShadesDarker).jpg",
+   "source" : "source/003.Zayn&TaylorSwift-IDon'tWannaLiveForever(FiftyShadesDarker).mp3"
+ },
+ {
+   "cover"  : "cover/004.KatyPerry&SkipMarley-ChainedToTheRhythm.jpg",
+   "source" : "source/004.KatyPerry&SkipMarley-ChainedToTheRhythm.mp3"
+ },
+ {
+   "cover"  : "cover/005.Migos&LilUziVert-BadAndBoujee.jpg",
+   "source" : "source/005.Migos&LilUziVert-BadAndBoujee.mp3"
+ },
+ {
+   "cover"  : "cover/006.TheChainsmokers-Paris.jpg",
+   "source" : "source/006.TheChainsmokers-Paris.mp3"
+ },
+ {
+   "cover"  : "cover/007.Rihanna-LoveOnTheBrain.jpg",
+   "source" : "source/007.Rihanna-LoveOnTheBrain.mp3"
+ },
+ {
+   "cover"  : "cover/008.BrunoMars-That'sWhatILike.jpg",
+   "source" : "source/008.BrunoMars-That'sWhatILike.mp3"
+ },
+ {
+   "cover"  : "cover/009.BigSean-BounceBack.jpg",
+   "source" : "source/009.BigSean-BounceBack.mp3"
+ },
+ {
+   "cover"  : "cover/010.MachineGunKelly&CamilaCabello-BadThings.jpg",
+   "source" : "source/010.MachineGunKelly&CamilaCabello-BadThings.mp3"
+ }
+];
+
+// View 구현
+
+var coverlist = document.querySelector('.coverlist');
+// console.log('coverlist:', coverlist);
+
+// data(JSON String -> Object) 순환처리
+
+for ( var i=0, l=data.length; i<l; ++i ) {
+  var cover, alt;
+  cover = data[i].cover;
+  alt = cover.split('/')[1].replace('.jpg', '');
+
+  var img = document.createElement('img');
+  img.setAttribute('src', 'media/' + cover);
+  img.setAttribute('alt', alt);
+
+  coverlist.insertAdjacentElement('beforeend', img);
+
+}
+console.timeEnd('insertAdjacentElement');
+</script>
+<script src="./js/audio_control.js"></script>
+
+</body>
+</html>
