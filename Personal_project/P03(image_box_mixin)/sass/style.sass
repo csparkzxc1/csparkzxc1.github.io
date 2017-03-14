@@ -1,0 +1,47 @@
+//환경 설정 로드
+@import "config"
+//라이브러리(유틸리티) 로드
+@import "lib/functions"
+@import "lib/mixin"
+
+
+//base
+body
+  margin: 0
+  & ::before,
+  & ::after
+   box-sizing: border-box
+
+//BEM 개발 방법론 사용
+.icon-set
+  //$font-size: 14px
+  display: flex
+  flex-flow: wrap
+  +element('item')
+    @each $key, $value in $color-map
+      &:nth-child(#{$key})
+        background-color: $value
+    height: rem(170px)
+    flex: 0 0 (100%/$item-colums)
+    display: flex
+    justify-content: center
+    align-items: center
+    // +modifier('avocado')
+    > *
+      +size(120px)
+      display: block
+      background-size: contain
+    @for $i from 1 through length($icon-list)
+      // @debug nth($icon-list, $i)//
+      $icon-name: nth($icon-list, $i)
+      +modifier( $icon-name)
+        // +size(80px)
+        // display: block
+        background: url('../images/icon-#{$icon-name}.png') no-repeat center
+        // background-size: contain
+// .icon-set
+//   content: ''
+//   &__item
+//     content: ''
+//     &--avocado
+//       content: ''

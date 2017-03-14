@@ -1,0 +1,26 @@
+.button-big {
+  font-size: 22px; }
+
+.button {
+  top: 0.86em;
+  left: 1.57em;
+  text-align: center;
+  letter-spacing: -0.034em;
+  font-size: 14px;
+  color: #323232; }
+  .button.button-default {
+    color: #323232;
+    background: #fff; }
+  .button.button-success {
+    background: #4b96d0;
+    color: #fff; }
+  .button:not(.button-default) {
+    color: #fff; }
+  .button.button-primary {
+    background: #4b96d0; }
+  .button.button-info {
+    background: #66c7e2; }
+  .button.button-warn {
+    background: #f2b658; }
+  .button.button-danger {
+    background: #de5e59; }

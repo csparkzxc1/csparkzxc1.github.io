@@ -1,0 +1,45 @@
+/// font-face 선언
+/// @access public
+/// @author cspark
+/// @param {string} $font-path - 설명
+/// @content 믹스인 설명
+/// @example 예제
+/// @ link [http://sassdoc.com]
+=font($font-path, $font-name, $font-options: normal normal)
+  @font-face
+    font-family: $font-name
+    font-weight: nth($font-options, 1)
+    font-style: nth($font-options, 2)
+    src: url('#{$font-path}.eot')
+    src: url('#{$font-path}.eot?#iefix') format('embedded-opentype'),
+         url('#{$font-path}.woff') format('woff')
+
+
+=size($width, $height: $width)
+  width: $width
+  height: $height
+
+//
+
+// e(), el(), elem(), element()
+=element($element)
+  &__#{$element}
+    @content
+
+// m(), mod(), modifier()
+=modifier($modifier)
+  &--#{$modifier}
+    @content
+
+//  * ------------------------------------------------
+//  * 웹폰트 믹스인
+//  * ------------------------------------------------
+//
+// //
+//  * ------------------------------------------------
+//  * 레이아웃 믹스인
+//  * ------------------------------------------------
+//
+//  * ------------------------------------------------
+//  * BEM Mixins
+//  * ------------------------------------------------
