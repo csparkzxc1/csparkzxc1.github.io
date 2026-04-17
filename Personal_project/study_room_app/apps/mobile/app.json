@@ -1,0 +1,19 @@
+{
+  "expo": {
+    "name": "공부방 출결정산",
+    "slug": "study-room-teacher",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "bundleIdentifier": "com.studyroom.teacher",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.studyroom.teacher"
+    },
+    "locales": {
+      "ko": "./locales/ko.json"
+    }
+  }
+}

@@ -1,0 +1,217 @@
+// Prisma schema for study_room_app
+// Source of truth: ../../DATA_MODEL.md
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Academy {
+  id                String    @id @default(uuid()) @db.Uuid
+  name              String    @db.VarChar(100)
+  ownerTeacherId    String?   @db.Uuid
+  subscriptionTier  String    @default("free") @db.VarChar(20)
+  createdAt         DateTime  @default(now()) @db.Timestamptz()
+
+  teachers          Teacher[]
+  students          Student[]
+  classRooms        ClassRoom[]
+  billingRule       BillingRule?
+  notificationLogs  NotificationLog[]
+
+  @@map("academy")
+}
+
+model Teacher {
+  id          String    @id @default(uuid()) @db.Uuid
+  academyId   String    @db.Uuid
+  phone       String    @unique @db.VarChar(20)
+  name        String    @db.VarChar(50)
+  role        String    @default("owner") @db.VarChar(20)
+  createdAt   DateTime  @default(now()) @db.Timestamptz()
+
+  academy            Academy @relation(fields: [academyId], references: [id])
+  attendanceRecords  AttendanceRecord[]
+
+  @@map("teacher")
+}
+
+model Student {
+  id              String    @id @default(uuid()) @db.Uuid
+  academyId       String    @db.Uuid
+  name            String    @db.VarChar(50)
+  grade           Int?      @db.SmallInt
+  monthlyFee      Int
+  siblingGroupId  String?   @db.Uuid
+  status          String    @default("active") @db.VarChar(20)
+  enrolledAt      DateTime  @db.Date
+  withdrawnAt     DateTime? @db.Date
+  createdAt       DateTime  @default(now()) @db.Timestamptz()
+
+  academy            Academy @relation(fields: [academyId], references: [id])
+  guardians          Guardian[]
+  enrollments        Enrollment[]
+  attendanceRecords  AttendanceRecord[]
+  invoices           Invoice[]
+
+  @@index([academyId, status])
+  @@index([siblingGroupId])
+  @@map("student")
+}
+
+model Guardian {
+  id                  String   @id @default(uuid()) @db.Uuid
+  studentId           String   @db.Uuid
+  name                String?  @db.VarChar(50)
+  phone               String   @db.VarChar(20)
+  relation            String?  @db.VarChar(20)
+  isPrimary           Boolean  @default(true)
+  notificationOptin   Boolean  @default(true)
+
+  student          Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  notificationLogs NotificationLog[]
+
+  @@index([studentId, isPrimary])
+  @@index([phone])
+  @@map("guardian")
+}
+
+model ClassRoom {
+  id          String    @id @default(uuid()) @db.Uuid
+  academyId   String    @db.Uuid
+  name        String    @db.VarChar(50)
+  subject     String?   @db.VarChar(30)
+  createdAt   DateTime  @default(now()) @db.Timestamptz()
+
+  academy            Academy @relation(fields: [academyId], references: [id])
+  schedules          ClassSchedule[]
+  enrollments        Enrollment[]
+  attendanceRecords  AttendanceRecord[]
+
+  @@map("class_room")
+}
+
+model ClassSchedule {
+  id           String    @id @default(uuid()) @db.Uuid
+  classRoomId  String    @db.Uuid
+  dayOfWeek    Int       @db.SmallInt
+  startTime    DateTime  @db.Time()
+  endTime      DateTime  @db.Time()
+
+  classRoom ClassRoom @relation(fields: [classRoomId], references: [id], onDelete: Cascade)
+
+  @@unique([classRoomId, dayOfWeek, startTime])
+  @@map("class_schedule")
+}
+
+model Enrollment {
+  id           String    @id @default(uuid()) @db.Uuid
+  studentId    String    @db.Uuid
+  classRoomId  String    @db.Uuid
+  assignedAt   DateTime  @default(now()) @db.Timestamptz()
+  removedAt    DateTime? @db.Timestamptz()
+
+  student   Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  classRoom ClassRoom @relation(fields: [classRoomId], references: [id], onDelete: Cascade)
+
+  @@map("enrollment")
+}
+
+model AttendanceRecord {
+  id             String    @id @default(uuid()) @db.Uuid
+  studentId      String    @db.Uuid
+  classRoomId    String?   @db.Uuid
+  date           DateTime  @db.Date
+  status         String    @db.VarChar(20)
+  checkInAt      DateTime? @db.Timestamptz()
+  checkOutAt     DateTime? @db.Timestamptz()
+  absenceReason  String?   @db.VarChar(30)
+  absenceNote    String?
+  recordedBy     String    @db.Uuid
+  createdAt      DateTime  @default(now()) @db.Timestamptz()
+  updatedAt      DateTime  @updatedAt @db.Timestamptz()
+
+  student   Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  classRoom ClassRoom? @relation(fields: [classRoomId], references: [id])
+  teacher   Teacher    @relation(fields: [recordedBy], references: [id])
+
+  @@unique([studentId, date])
+  @@index([date, classRoomId])
+  @@index([studentId, date(sort: Desc)])
+  @@map("attendance_record")
+}
+
+model BillingRule {
+  id                         String   @id @default(uuid()) @db.Uuid
+  academyId                  String   @unique @db.Uuid
+  absenceFreeCount           Int      @default(0) @db.SmallInt
+  absenceDeductionPerClass   Int      @default(0)
+  siblingDiscountRate        Decimal  @default(0.000) @db.Decimal(4, 3)
+  updatedAt                  DateTime @updatedAt @db.Timestamptz()
+
+  academy Academy @relation(fields: [academyId], references: [id])
+
+  @@map("billing_rule")
+}
+
+model Invoice {
+  id                 String    @id @default(uuid()) @db.Uuid
+  studentId          String    @db.Uuid
+  periodYear         Int       @db.SmallInt
+  periodMonth        Int       @db.SmallInt
+  baseFee            Int
+  absenceDeduction   Int       @default(0)
+  siblingDiscount    Int       @default(0)
+  totalAmount        Int
+  status             String    @default("issued") @db.VarChar(20)
+  issuedAt           DateTime  @db.Timestamptz()
+  paidAt             DateTime? @db.Timestamptz()
+  paymentMethod      String?   @db.VarChar(20)
+  note               String?
+
+  student   Student           @relation(fields: [studentId], references: [id])
+  lineItems InvoiceLineItem[]
+
+  @@unique([studentId, periodYear, periodMonth])
+  @@index([periodYear, periodMonth, status])
+  @@map("invoice")
+}
+
+model InvoiceLineItem {
+  id          String @id @default(uuid()) @db.Uuid
+  invoiceId   String @db.Uuid
+  lineType    String @db.VarChar(30)
+  description String @db.VarChar(200)
+  amount      Int
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@map("invoice_line_item")
+}
+
+model NotificationLog {
+  id               String    @id @default(uuid()) @db.Uuid
+  academyId        String    @db.Uuid
+  guardianId       String    @db.Uuid
+  templateCode     String    @db.VarChar(50)
+  relatedEntityId  String    @db.Uuid
+  phone            String    @db.VarChar(20)
+  payload          Json
+  provider         String    @db.VarChar(20)
+  providerMsgId    String?   @db.VarChar(100)
+  status           String    @db.VarChar(20)
+  errorCode        String?   @db.VarChar(50)
+  sentAt           DateTime? @db.Timestamptz()
+  createdAt        DateTime  @default(now()) @db.Timestamptz()
+
+  academy  Academy  @relation(fields: [academyId], references: [id])
+  guardian Guardian @relation(fields: [guardianId], references: [id])
+
+  @@index([academyId, createdAt(sort: Desc)])
+  @@index([status, createdAt])
+  @@map("notification_log")
+}
