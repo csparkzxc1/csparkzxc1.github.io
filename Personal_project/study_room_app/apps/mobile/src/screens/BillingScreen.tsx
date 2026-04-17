@@ -1,33 +1,106 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
-
-const MOCK_INVOICES = [
-  { id: "1", name: "김민서", amount: 180000, status: "paid" },
-  { id: "2", name: "박지훈", amount: 220000, status: "paid" },
-  { id: "3", name: "이수빈", amount: 175000, status: "unpaid" },
-  { id: "4", name: "최도윤", amount: 145000, status: "unpaid" },
-];
+import { useMemo, useState } from "react";
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { api } from "../api/client";
+import { Screen } from "../components/Screen";
+import { useQuery } from "../hooks/useQuery";
+import { session } from "../session";
 
 export function BillingScreen() {
-  const total = MOCK_INVOICES.reduce((sum, i) => sum + i.amount, 0);
-  const unpaid = MOCK_INVOICES.filter((i) => i.status === "unpaid");
-  const unpaidTotal = unpaid.reduce((sum, i) => sum + i.amount, 0);
+  const now = useMemo(() => new Date(), []);
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+  const [busy, setBusy] = useState<string | "generate" | null>(null);
+
+  const { status, data, error, refetch } = useQuery(
+    () => api.listInvoices(session.academyId, year, month),
+    [year, month]
+  );
+
+  if (status !== "success") {
+    return <Screen loading={status === "loading"} error={error} onRetry={refetch}>{null}</Screen>;
+  }
+
+  const invoices = data.invoices;
+  const total = invoices.reduce((s, i) => s + i.totalAmount, 0);
+  const unpaid = invoices.filter((i) => i.status !== "paid");
+  const unpaidTotal = unpaid.reduce((s, i) => s + i.totalAmount, 0);
+
+  const handleGenerate = async () => {
+    setBusy("generate");
+    try {
+      await api.generateInvoices(session.academyId, year, month);
+      await refetch();
+    } catch (err) {
+      Alert.alert("정산서 생성 실패", (err as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const handleMarkPaid = async (id: string) => {
+    setBusy(id);
+    try {
+      await api.markInvoicePaid(id, "bank_transfer");
+      await refetch();
+    } catch (err) {
+      Alert.alert("수납 처리 실패", (err as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.summary}>
-        <Text style={styles.summaryTitle}>2026년 4월 요약</Text>
-        <Row label="청구" value={`${total.toLocaleString()}원`} />
-        <Row label="수납" value={`${(total - unpaidTotal).toLocaleString()}원`} />
-        <Row label="미수금" value={`${unpaidTotal.toLocaleString()}원 (${unpaid.length}건)`} />
+        <Text style={styles.summaryTitle}>
+          {year}년 {month}월 요약
+        </Text>
+        <Row label="청구" value={`${total.toLocaleString("ko-KR")}원`} />
+        <Row
+          label="수납"
+          value={`${(total - unpaidTotal).toLocaleString("ko-KR")}원`}
+        />
+        <Row
+          label="미수금"
+          value={`${unpaidTotal.toLocaleString("ko-KR")}원 (${unpaid.length}건)`}
+        />
       </View>
 
-      {MOCK_INVOICES.map((i) => (
+      <Pressable
+        style={styles.generateBtn}
+        onPress={handleGenerate}
+        disabled={busy === "generate"}
+      >
+        <Text style={styles.generateText}>
+          {busy === "generate" ? "생성 중..." : "이번 달 정산서 생성·재계산"}
+        </Text>
+      </Pressable>
+
+      {invoices.length === 0 ? (
+        <Text style={styles.empty}>정산서가 없습니다. 위 버튼으로 생성하세요.</Text>
+      ) : null}
+
+      {invoices.map((i) => (
         <View key={i.id} style={styles.row}>
-          <Text style={styles.name}>{i.name}</Text>
-          <Text style={styles.amount}>{i.amount.toLocaleString()}원</Text>
-          <Text style={[styles.status, i.status === "unpaid" && styles.unpaid]}>
-            {i.status === "paid" ? "수납 완료" : "미수"}
-          </Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.name}>{i.student?.name ?? "학생"}</Text>
+            <Text style={styles.amount}>
+              {i.totalAmount.toLocaleString("ko-KR")}원
+            </Text>
+          </View>
+          {i.status === "paid" ? (
+            <Text style={styles.status}>수납 완료</Text>
+          ) : (
+            <Pressable
+              style={styles.markBtn}
+              onPress={() => handleMarkPaid(i.id)}
+              disabled={busy === i.id}
+            >
+              <Text style={styles.markBtnText}>
+                {busy === i.id ? "처리중" : "수납 처리"}
+              </Text>
+            </Pressable>
+          )}
         </View>
       ))}
     </ScrollView>
@@ -55,6 +128,15 @@ const styles = StyleSheet.create({
   summaryTitle: { fontSize: 16, fontWeight: "600", marginBottom: 4 },
   summaryRow: { flexDirection: "row", justifyContent: "space-between" },
   summaryValue: { fontWeight: "500" },
+  generateBtn: {
+    backgroundColor: "#1976d2",
+    padding: 14,
+    borderRadius: 10,
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  generateText: { color: "#fff", fontWeight: "600" },
+  empty: { color: "#999", textAlign: "center", padding: 24 },
   row: {
     flexDirection: "row",
     alignItems: "center",
@@ -65,8 +147,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#eee",
   },
-  name: { fontSize: 16, flex: 1 },
-  amount: { marginRight: 12 },
-  status: { fontSize: 13, color: "#2e7d32" },
-  unpaid: { color: "#c62828" },
+  name: { fontSize: 16 },
+  amount: { color: "#555", marginTop: 4 },
+  status: { color: "#2e7d32", fontWeight: "500" },
+  markBtn: {
+    backgroundColor: "#fff3cd",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  markBtnText: { color: "#8a6d3b", fontWeight: "500" },
 });

@@ -1,33 +1,54 @@
 import { FlatList, StyleSheet, Text, View } from "react-native";
-
-const MOCK = [
-  { id: "1", name: "김민서", grade: 3, monthlyFee: 180000, attendance: "96%" },
-  { id: "2", name: "박지훈", grade: 5, monthlyFee: 220000, attendance: "88%" },
-  { id: "3", name: "이수빈", grade: 3, monthlyFee: 175000, attendance: "92%" },
-];
+import { api } from "../api/client";
+import { Screen } from "../components/Screen";
+import { useQuery } from "../hooks/useQuery";
+import { session } from "../session";
 
 export function StudentsScreen() {
+  const { status, data, error, refetch } = useQuery(
+    () => api.listStudents(session.academyId),
+    []
+  );
+
+  if (status !== "success") {
+    return <Screen loading={status === "loading"} error={error} onRetry={refetch}>{null}</Screen>;
+  }
+
+  const students = data.students;
+
   return (
     <FlatList
       contentContainerStyle={styles.list}
-      data={MOCK}
+      data={students}
       keyExtractor={(item) => item.id}
-      renderItem={({ item }) => (
-        <View style={styles.row}>
-          <Text style={styles.name}>
-            {item.name} ({item.grade}학년)
-          </Text>
-          <Text style={styles.meta}>
-            월 {item.monthlyFee.toLocaleString()}원 · 출석 {item.attendance}
-          </Text>
-        </View>
-      )}
+      ListHeaderComponent={
+        <Text style={styles.count}>학생 {students.length}명</Text>
+      }
+      ListEmptyComponent={
+        <Text style={styles.empty}>등록된 학생이 없습니다. 학생을 추가하세요.</Text>
+      }
+      renderItem={({ item }) => {
+        const className = item.enrollments[0]?.classRoom.name ?? "미배정";
+        return (
+          <View style={styles.row}>
+            <Text style={styles.name}>
+              {item.name}
+              {item.grade ? ` (${item.grade}학년)` : ""}
+            </Text>
+            <Text style={styles.meta}>
+              월 {item.monthlyFee.toLocaleString("ko-KR")}원 · {className}
+            </Text>
+          </View>
+        );
+      }}
     />
   );
 }
 
 const styles = StyleSheet.create({
   list: { padding: 16, gap: 10 },
+  count: { fontSize: 14, color: "#666", marginBottom: 4 },
+  empty: { color: "#999", textAlign: "center", padding: 32 },
   row: {
     backgroundColor: "#fff",
     borderRadius: 10,

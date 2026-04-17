@@ -1,3 +1,11 @@
+import type {
+  AttendanceRecord,
+  ClassRoom,
+  Invoice,
+  Student,
+  TodayDashboard,
+} from "./types";
+
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:4000";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -10,26 +18,70 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
+  // Dashboard
+  today: (academyId: string) =>
+    request<TodayDashboard>(`/api/dashboard/today?academyId=${academyId}`),
+
+  // Students
   listStudents: (academyId: string) =>
-    request<{ students: Array<{ id: string; name: string; monthlyFee: number }> }>(
-      `/api/students?academyId=${academyId}`
-    ),
-  listAttendance: (date: string, classRoomId?: string) =>
-    request<{ records: Array<any> }>(
-      `/api/attendance?date=${date}${classRoomId ? `&classRoomId=${classRoomId}` : ""}`
-    ),
-  checkIn: (body: { studentId: string; classRoomId?: string; recordedBy: string }) =>
-    request<{ record: any }>("/api/attendance/check-in", {
+    request<{ students: Student[] }>(`/api/students?academyId=${academyId}`),
+  createStudent: (body: {
+    academyId: string;
+    name: string;
+    grade?: number;
+    monthlyFee: number;
+    enrolledAt: string;
+    guardians: Array<{ phone: string; relation?: string; isPrimary?: boolean }>;
+  }) =>
+    request<{ student: Student }>("/api/students", {
       method: "POST",
       body: JSON.stringify(body),
     }),
+
+  // Classes
+  listClasses: (academyId: string) =>
+    request<{ classes: ClassRoom[] }>(`/api/classes?academyId=${academyId}`),
+
+  // Attendance
+  listAttendance: (date: string, classRoomId?: string) =>
+    request<{ records: AttendanceRecord[] }>(
+      `/api/attendance?date=${date}${classRoomId ? `&classRoomId=${classRoomId}` : ""}`
+    ),
+  checkIn: (body: { studentId: string; classRoomId?: string; recordedBy: string }) =>
+    request<{ record: AttendanceRecord }>("/api/attendance/check-in", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  checkOut: (attendanceId: string) =>
+    request<{ record: AttendanceRecord }>("/api/attendance/check-out", {
+      method: "POST",
+      body: JSON.stringify({ attendanceId }),
+    }),
+  markAbsent: (body: {
+    studentId: string;
+    date: string;
+    recordedBy: string;
+    absenceReason: "personal" | "sick" | "no_contact" | "other";
+    absenceNote?: string;
+  }) =>
+    request<{ record: AttendanceRecord }>("/api/attendance/absence", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+
+  // Invoices
   listInvoices: (academyId: string, year: number, month: number) =>
-    request<{ invoices: Array<any> }>(
+    request<{ invoices: Invoice[] }>(
       `/api/invoices?academyId=${academyId}&year=${year}&month=${month}`
     ),
   generateInvoices: (academyId: string, year: number, month: number) =>
     request<{ count: number }>("/api/invoices/generate", {
       method: "POST",
       body: JSON.stringify({ academyId, year, month }),
+    }),
+  markInvoicePaid: (id: string, paymentMethod: "cash" | "bank_transfer") =>
+    request<{ invoice: Invoice }>(`/api/invoices/${id}/mark-paid`, {
+      method: "POST",
+      body: JSON.stringify({ paymentMethod }),
     }),
 };

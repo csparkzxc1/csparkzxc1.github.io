@@ -4,6 +4,7 @@ import { classesRouter } from "./routes/classes";
 import { attendanceRouter } from "./routes/attendance";
 import { invoicesRouter } from "./routes/invoices";
 import { notificationsRouter } from "./routes/notifications";
+import { dashboardRouter } from "./routes/dashboard";
 import { NotificationWorker } from "./workers/notificationWorker";
 
 const app = express();
@@ -16,6 +17,7 @@ app.use("/api/classes", classesRouter);
 app.use("/api/attendance", attendanceRouter);
 app.use("/api/invoices", invoicesRouter);
 app.use("/api/notifications", notificationsRouter);
+app.use("/api/dashboard", dashboardRouter);
 
 const port = Number(process.env.PORT ?? 4000);
 const worker = new NotificationWorker();
