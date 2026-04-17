@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { prisma } from "../db";
 import { generateMonthlyInvoices, markPaid } from "../services/billing";
+import { enqueueNotification } from "../services/notifications";
 
 export const invoicesRouter = Router();
 
@@ -21,12 +22,18 @@ invoicesRouter.get("/", async (req, res) => {
 });
 
 invoicesRouter.post("/generate", async (req, res) => {
-  const { academyId, year, month } = req.body as {
+  const { academyId, year, month, sendNotification = true } = req.body as {
     academyId: string;
     year: number;
     month: number;
+    sendNotification?: boolean;
   };
   const result = await generateMonthlyInvoices(academyId, year, month);
+  if (sendNotification) {
+    for (const inv of result.invoices) {
+      await enqueueNotification("invoice_issued", inv.id);
+    }
+  }
   res.status(201).json(result);
 });
 
