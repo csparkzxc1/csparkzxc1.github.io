@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>냠냠쿨쿨(NyamNyam CoolCool) · 인터랙티브 프로토타입</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+
+<style>
+/* ==============================================
+   DESIGN TOKENS — "Soft Dawn"
+   ============================================== */
+:root {
+  /* Light mode — 미색 베이스, 따뜻한 세피아 */
+  --bg-page: #F4EBDC;
+  --bg-app: #FAF4EC;
+  --bg-surface: #FFFFFF;
+  --bg-muted: #EFE4D0;
+
+  --ink-primary: #2A1D12;
+  --ink-secondary: #5C4A37;
+  --ink-tertiary: #8A7A63;
+  --ink-on-accent: #FFF8EF;
+
+  --accent-amber: #D68E2F;
+  --accent-sienna: #B85428;
+  --accent-rose: #C66E7E;
+  --accent-sage: #6E8565;
+  --accent-plum: #6B4975;
+
+  --gradient-hero: linear-gradient(135deg, #E8A660 0%, #C66E7E 60%, #8B5A84 100%);
+  --gradient-hero-dawn: linear-gradient(135deg, #F2D094 0%, #E8A660 50%, #C66E7E 100%);
+  --gradient-hero-night: linear-gradient(135deg, #4A3A5C 0%, #6B4975 50%, #8B5A84 100%);
+  --gradient-hero-warn: linear-gradient(135deg, #E8A660 0%, #B85428 100%);
+
+  --border-subtle: rgba(42, 29, 18, 0.08);
+  --border-strong: rgba(42, 29, 18, 0.16);
+
+  --shadow-soft: 0 1px 2px rgba(42, 29, 18, 0.04), 0 8px 24px rgba(42, 29, 18, 0.06);
+  --shadow-card: 0 2px 6px rgba(42, 29, 18, 0.05), 0 16px 40px rgba(42, 29, 18, 0.08);
+  --shadow-phone: 0 10px 30px rgba(42, 29, 18, 0.15), 0 40px 80px rgba(42, 29, 18, 0.2);
+
+  --font-display: 'Fraunces', 'Pretendard Variable', serif;
+  --font-body: 'Pretendard Variable', 'Fraunces', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-phone: 44px;
+}
+
+[data-theme="dark"] {
+  --bg-page: #1A1410;
+  --bg-app: #231B15;
+  --bg-surface: #2E2419;
+  --bg-muted: #3A2E22;
+
+  --ink-primary: #F4EBDC;
+  --ink-secondary: #C9B89A;
+  --ink-tertiary: #8A7A63;
+
+  --border-subtle: rgba(244, 235, 220, 0.08);
+  --border-strong: rgba(244, 235, 220, 0.16);
+
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.4);
+  --shadow-card: 0 2px 6px rgba(0, 0, 0, 0.3), 0 16px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* ==============================================
+   GLOBAL
+   ============================================== */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--bg-page);
+  color: var(--ink-primary);
+  font-family: var(--font-body);
+  font-feature-settings: 'ss01', 'ss02';
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+body {
+  background:
+    radial-gradient(ellipse at top left, rgba(214, 142, 47, 0.12), transparent 60%),
+    radial-gradient(ellipse at bottom right, rgba(198, 110, 126, 0.10), transparent 60%),
+    var(--bg-page);
+}
+
+[data-theme="dark"] body {
+  background:
+    radial-gradient(ellipse at top left, rgba(139, 90, 132, 0.15), transparent 60%),
+    radial-gradient(ellipse at bottom right, rgba(184, 84, 40, 0.10), transparent 60%),
+    var(--bg-page);
+}
+
+/* Grain texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.4;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* ==============================================
+   STAGE LAYOUT — phone + debug panel
+   ============================================== */
+.stage {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px 32px 60px;
+  position: relative;
+  z-index: 2;
+}
+
+.masthead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 48px;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.brand-block h1 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(36px, 5vw, 56px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--ink-primary);
+}
+.brand-block h1 em {
+  font-style: italic;
+  font-weight: 500;
+  color: var(--accent-sienna);
+}
+.brand-block p {
+  margin-top: 12px;
+  color: var(--ink-secondary);
+  font-size: 15px;
+  max-width: 540px;
+  line-height: 1.6;
+}
+
+.masthead-meta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.pill {
+  padding: 8px 14px;
+  border-radius: 100px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--ink-secondary);
+  letter-spacing: 0.02em;
+  box-shadow: var(--shadow-soft);
+}
+
+.theme-toggle {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  padding: 10px 18px;
+  border-radius: 100px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--ink-primary);
+  cursor: pointer;
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-soft);
+}
+.theme-toggle:hover { transform: translateY(-1px); border-color: var(--border-strong); }
+
+.grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 56px;
+  align-items: start;
+}
+@media (max-width: 1024px) {
+  .grid { grid-template-columns: 1fr; gap: 40px; justify-items: center; }
+}
+
+/* ==============================================
+   PHONE FRAME
+   ============================================== */
+.phone-wrap {
+  position: sticky;
+  top: 40px;
+}
+
+.phone {
+  width: 380px;
+  height: 780px;
+  background: #0A0806;
+  border-radius: var(--radius-phone);
+  padding: 14px;
+  box-shadow: var(--shadow-phone);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.phone::before {
+  content: '';
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 110px;
+  height: 30px;
+  background: #0A0806;
+  border-radius: 18px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.screen {
+  width: 100%;
+  height: 100%;
+  background: var(--bg-app);
+  border-radius: calc(var(--radius-phone) - 14px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Status bar */
+.status-bar {
+  height: 54px;
+  padding: 20px 28px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-primary);
+  font-family: var(--font-body);
+}
+.status-bar .right-icons { display: flex; gap: 6px; font-size: 11px; opacity: 0.8; }
+
+/* App content */
+.app-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  padding-bottom: 96px;
+}
+.app-content::-webkit-scrollbar { width: 0; }
+
+/* Profile header */
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 4px;
+  margin-bottom: 20px;
+}
+.avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--gradient-hero-dawn);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 18px;
+  color: var(--ink-on-accent);
+  letter-spacing: -0.02em;
+}
+.profile-info { flex: 1; }
+.profile-name {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ink-primary);
+}
+.profile-age {
+  font-size: 12px;
+  color: var(--ink-tertiary);
+  margin-top: 2px;
+  letter-spacing: 0.01em;
+}
+.share-badge {
+  padding: 6px 10px;
+  border-radius: 20px;
+  background: var(--bg-muted);
+  font-size: 11px;
+  color: var(--ink-secondary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Hero card - Next Action */
+.hero-card {
+  position: relative;
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  min-height: 180px;
+  background: var(--gradient-hero-dawn);
+  color: var(--ink-on-accent);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  display: flex;
+  flex-direction: column;
+}
+.hero-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.15'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+.hero-card:active { transform: scale(0.98); }
+
+.hero-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.hero-icon { font-size: 30px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15)); }
+.status-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 11px;
+  border-radius: 100px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  letter-spacing: 0.02em;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.status-badge::before {
+  content: '';
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #5FCE77;
+}
+.status-badge.warning::before { background: #FFD449; }
+.status-badge.alert::before { background: #FF6B5E; }
+
+.hero-label {
+  font-size: 13px;
+  opacity: 0.85;
+  letter-spacing: 0.01em;
+  margin-bottom: 4px;
+}
+.hero-primary {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.hero-primary em {
+  font-style: italic;
+  font-weight: 400;
+  font-size: 18px;
+  opacity: 0.9;
+}
+.hero-secondary {
+  margin-top: auto;
+  padding-top: 14px;
+  font-size: 12.5px;
+  opacity: 0.92;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+}
+.hero-explainer {
+  font-size: 10.5px;
+  opacity: 0.7;
+  margin-top: 6px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+}
+
+/* Quick log buttons */
+.quick-log-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 18px;
+}
+.log-btn {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 18px 16px;
+  min-height: 88px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+  overflow: hidden;
+  font-family: var(--font-body);
+  color: var(--ink-primary);
+  text-align: left;
+}
+.log-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-soft); border-color: var(--border-strong); }
+.log-btn:active { transform: translateY(0) scale(0.98); }
+
+.log-btn-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+}
+.log-btn-icon {
+  font-size: 22px;
+  width: 40px;
+  height: 40px;
+  background: var(--bg-muted);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.log-btn-time {
+  font-size: 10px;
+  color: var(--ink-tertiary);
+  font-family: var(--font-mono);
+  margin-top: 2px;
+  letter-spacing: 0.02em;
+}
+.log-btn-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-primary);
+  letter-spacing: -0.01em;
+}
+.log-btn-sub {
+  font-size: 11px;
+  color: var(--ink-tertiary);
+  margin-top: 2px;
+}
+
+.log-btn[data-kind="feed"] .log-btn-icon { background: rgba(74, 144, 226, 0.12); }
+.log-btn[data-kind="sleep"] .log-btn-icon { background: rgba(139, 111, 216, 0.12); }
+.log-btn[data-kind="diaper"] .log-btn-icon { background: rgba(245, 184, 65, 0.15); }
+.log-btn[data-kind="bath"] .log-btn-icon { background: rgba(78, 197, 181, 0.12); }
+
+.log-btn.active {
+  background: var(--gradient-hero-dawn);
+  color: var(--ink-on-accent);
+  border-color: transparent;
+}
+.log-btn.active .log-btn-icon { background: rgba(255,255,255,0.25); }
+.log-btn.active .log-btn-label,
+.log-btn.active .log-btn-sub,
+.log-btn.active .log-btn-time { color: var(--ink-on-accent); opacity: 0.95; }
+
+/* Timeline section */
+.timeline-section {
+  margin-top: 22px;
+  padding-top: 22px;
+  border-top: 1px solid var(--border-subtle);
+}
+.section-title {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--ink-secondary);
+  text-transform: uppercase;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.section-title em { font-style: italic; text-transform: none; color: var(--ink-tertiary); font-size: 11px; letter-spacing: 0; }
+
+.timeline {
+  position: relative;
+  height: 60px;
+  background: var(--bg-muted);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+}
+.timeline-track {
+  position: relative;
+  width: 100%;
+  height: 4px;
+  background: var(--border-subtle);
+  border-radius: 100px;
+}
+.timeline-event {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.timeline-event:hover { transform: translate(-50%, -50%) scale(1.4); }
+.timeline-event.feed { background: #4A90E2; }
+.timeline-event.sleep { background: #8B6FD8; }
+.timeline-event.diaper { background: #F5B841; }
+
+.timeline-now {
+  position: absolute;
+  top: -8px;
+  bottom: -8px;
+  width: 2px;
+  background: var(--accent-sienna);
+  z-index: 2;
+}
+.timeline-now::before {
+  content: 'NOW';
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 600;
+  color: var(--accent-sienna);
+  letter-spacing: 0.1em;
+}
+.timeline-labels {
+  position: absolute;
+  bottom: 4px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--ink-tertiary);
+  letter-spacing: 0.03em;
+}
+
+/* Tip card */
+.tip-card {
+  margin-top: 16px;
+  padding: 14px 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--accent-sage);
+  border-radius: var(--radius-md);
+  font-size: 12.5px;
+  color: var(--ink-secondary);
+  line-height: 1.55;
+}
+.tip-card strong { color: var(--accent-sage); font-weight: 600; }
+
+/* Bottom tab bar */
+.tab-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 76px;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 12px 20px;
+  backdrop-filter: blur(12px);
+}
+.tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  color: var(--ink-tertiary);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.tab .tab-icon { font-size: 18px; }
+.tab.active { color: var(--accent-sienna); }
+
+/* ==============================================
+   DEBUG PANEL (right side)
+   ============================================== */
+.debug-panel {
+  max-width: 640px;
+}
+.debug-header {
+  margin-bottom: 24px;
+}
+.debug-header h2 {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  color: var(--ink-primary);
+  margin-bottom: 6px;
+}
+.debug-header h2 em { font-style: italic; color: var(--accent-sienna); }
+.debug-header p { font-size: 13px; color: var(--ink-secondary); line-height: 1.6; }
+
+.debug-section {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 22px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-soft);
+}
+
+.debug-section-title {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-tertiary);
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.debug-section-title .count {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  background: var(--bg-muted);
+  padding: 3px 8px;
+  border-radius: 100px;
+  color: var(--ink-secondary);
+}
+
+.kv-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 24px;
+}
+.kv-item .kv-label {
+  font-size: 11px;
+  color: var(--ink-tertiary);
+  letter-spacing: 0.01em;
+  margin-bottom: 3px;
+}
+.kv-item .kv-value {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--ink-primary);
+  font-weight: 500;
+}
+.kv-item .kv-value.emphasize { color: var(--accent-sienna); font-size: 15px; }
+
+.formula {
+  background: var(--bg-muted);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-secondary);
+  line-height: 1.7;
+  margin-top: 10px;
+  overflow-x: auto;
+}
+.formula .token-k { color: var(--accent-sienna); font-weight: 500; }
+.formula .token-v { color: var(--accent-plum); }
+.formula .token-c { color: var(--ink-tertiary); font-style: italic; }
+
+.event-log {
+  max-height: 280px;
+  overflow-y: auto;
+  margin-top: 4px;
+}
+.event-log::-webkit-scrollbar { width: 4px; }
+.event-log::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 2px; }
+
+.event-row {
+  display: grid;
+  grid-template-columns: 78px 20px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 12.5px;
+  color: var(--ink-secondary);
+}
+.event-row:last-child { border-bottom: none; }
+.event-row .ev-time {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-tertiary);
+}
+.event-row .ev-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.event-row.new-event {
+  animation: slideIn 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.event-row .ev-label { color: var(--ink-primary); font-weight: 500; }
+.event-row .ev-meta { font-family: var(--font-mono); font-size: 10px; color: var(--ink-tertiary); }
+
+.scenario-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.scenario-btn {
+  padding: 8px 14px;
+  background: var(--bg-muted);
+  border: 1px solid var(--border-subtle);
+  border-radius: 100px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--ink-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.scenario-btn:hover {
+  background: var(--accent-sienna);
+  color: var(--ink-on-accent);
+  border-color: transparent;
+}
+.scenario-btn.active {
+  background: var(--ink-primary);
+  color: var(--ink-on-accent);
+  border-color: transparent;
+}
+
+.standards-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.standards-table th {
+  text-align: left;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--ink-tertiary);
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border-strong);
+}
+.standards-table td {
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--ink-primary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+.standards-table td:first-child { font-family: var(--font-body); color: var(--ink-secondary); font-size: 12px; }
+.standards-table tr.highlight td { background: rgba(214, 142, 47, 0.08); }
+.standards-table tr.highlight td:first-child { color: var(--accent-sienna); font-weight: 600; }
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--ink-primary);
+  color: var(--ink-on-accent);
+  padding: 12px 22px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: var(--shadow-card);
+  z-index: 100;
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* Footer */
+.footer {
+  margin-top: 60px;
+  padding-top: 32px;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: var(--ink-tertiary);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.footer em { font-family: var(--font-display); font-style: italic; color: var(--ink-secondary); }
+
+/* Pulse animation for active state */
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(214, 142, 47, 0.4); }
+  50% { box-shadow: 0 0 0 12px rgba(214, 142, 47, 0); }
+}
+.log-btn.active .log-btn-icon { animation: pulse 2s infinite; }
+</style>
+</head>
+
+<body>
+<div class="stage">
+
+  <!-- ============ MASTHEAD ============ -->
+  <header class="masthead">
+    <div class="brand-block">
+      <h1>냠냠쿨쿨 <em>NyamNyam&nbsp;CoolCool</em></h1>
+      <p><strong>냠냠(먹기) + 쿨쿨(자기)</strong> — 앱의 두 핵심 기능을 이름 그 자체로 설명합니다. 초보엄마를 위한 수면·수유 예측 알림 앱의 인터랙티브 프로토타입. 좌측 폰 화면에서 버튼을 직접 탭해보시면, 우측 디버그 패널에서 예측 엔진이 어떻게 반응하는지 투명하게 확인할 수 있습니다.</p>
+    </div>
+    <div class="masthead-meta">
+      <span class="pill">v1.0 · prototype</span>
+      <button class="theme-toggle" onclick="toggleTheme()">
+        <span id="themeIcon">🌙</span>
+        <span id="themeLabel">Dark</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ============ MAIN GRID ============ -->
+  <div class="grid">
+
+    <!-- ======= PHONE MOCKUP ======= -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="screen">
+
+          <!-- Status bar -->
+          <div class="status-bar">
+            <span id="statusTime">3:05</span>
+            <span class="right-icons">
+              <span>●●●</span><span>📶</span><span>🔋</span>
+            </span>
+          </div>
+
+          <!-- App content -->
+          <div class="app-content">
+
+            <!-- Profile header -->
+            <div class="profile-header">
+              <div class="avatar">유</div>
+              <div class="profile-info">
+                <div class="profile-name">유찬이</div>
+                <div class="profile-age" id="profileAge">생후 47일 · 1개월 16일</div>
+              </div>
+              <div class="share-badge">
+                <span>👨‍👩</span>
+                <span>2명</span>
+              </div>
+            </div>
+
+            <!-- HERO CARD: Next Action Prediction -->
+            <div class="hero-card" id="heroCard">
+              <div class="hero-top">
+                <span class="hero-icon" id="heroIcon">🍼</span>
+                <span class="status-badge" id="statusBadge">정상</span>
+              </div>
+              <div class="hero-label" id="heroLabel">다음 수유 예상</div>
+              <div class="hero-primary">
+                <span id="heroPrimary">오후 3:20</span>
+                <em id="heroEm">(약 35분 후)</em>
+              </div>
+              <div class="hero-secondary" id="heroSecondary">
+                마지막 수유 2시간 25분 전 · 120ml
+              </div>
+              <div class="hero-explainer" id="heroExplainer">
+                standard × 0.7 + personal × 0.3
+              </div>
+            </div>
+
+            <!-- Quick log grid -->
+            <div class="quick-log-grid">
+              <button class="log-btn" data-kind="feed" onclick="toggleLog('feed')">
+                <div class="log-btn-top">
+                  <div class="log-btn-icon">🍼</div>
+                  <div class="log-btn-time" id="feedLastTime">2h 25m 전</div>
+                </div>
+                <div>
+                  <div class="log-btn-label" id="feedLabel">수유</div>
+                  <div class="log-btn-sub" id="feedSub">120ml · 분유</div>
+                </div>
+              </button>
+
+              <button class="log-btn" data-kind="sleep" onclick="toggleLog('sleep')">
+                <div class="log-btn-top">
+                  <div class="log-btn-icon">😴</div>
+                  <div class="log-btn-time" id="sleepLastTime">1h 15m 전</div>
+                </div>
+                <div>
+                  <div class="log-btn-label" id="sleepLabel">수면</div>
+                  <div class="log-btn-sub" id="sleepSub">낮잠 · 50분</div>
+                </div>
+              </button>
+
+              <button class="log-btn" data-kind="diaper" onclick="toggleLog('diaper')">
+                <div class="log-btn-top">
+                  <div class="log-btn-icon">💩</div>
+                  <div class="log-btn-time" id="diaperLastTime">45m 전</div>
+                </div>
+                <div>
+                  <div class="log-btn-label">기저귀</div>
+                  <div class="log-btn-sub" id="diaperSub">오늘 4회</div>
+                </div>
+              </button>
+
+              <button class="log-btn" data-kind="bath" onclick="toggleLog('bath')">
+                <div class="log-btn-top">
+                  <div class="log-btn-icon">🛁</div>
+                  <div class="log-btn-time" id="bathLastTime">어제</div>
+                </div>
+                <div>
+                  <div class="log-btn-label">목욕</div>
+                  <div class="log-btn-sub">다음: 오늘 저녁</div>
+                </div>
+              </button>
+            </div>
+
+            <!-- Timeline -->
+            <div class="timeline-section">
+              <div class="section-title">
+                오늘의 타임라인 <em>today · 24h</em>
+              </div>
+              <div class="timeline">
+                <div class="timeline-track" id="timelineTrack"></div>
+                <div class="timeline-labels">
+                  <span>06</span><span>09</span><span>12</span><span>15</span><span>18</span><span>21</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tip card -->
+            <div class="tip-card">
+              <strong>오늘의 응원 ·</strong> 유찬이가 지난주보다 낮잠 리듬이 좋아지고 있어요. 엄마도 그 시간에 짧게라도 쉬어가세요.
+            </div>
+
+          </div>
+
+          <!-- Tab bar -->
+          <div class="tab-bar">
+            <div class="tab active">
+              <span class="tab-icon">🏠</span>
+              <span>홈</span>
+            </div>
+            <div class="tab">
+              <span class="tab-icon">📊</span>
+              <span>기록</span>
+            </div>
+            <div class="tab">
+              <span class="tab-icon">📚</span>
+              <span>가이드</span>
+            </div>
+            <div class="tab">
+              <span class="tab-icon">👨‍👩‍👧</span>
+              <span>공유</span>
+            </div>
+            <div class="tab">
+              <span class="tab-icon">⚙️</span>
+              <span>설정</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ======= DEBUG PANEL ======= -->
+    <div class="debug-panel">
+      <div class="debug-header">
+        <h2>예측 엔진 <em>내부 동작</em></h2>
+        <p>이 패널은 실제 앱에는 노출되지 않습니다. 이해관계자 시연용으로, 예측 카드가 왜 그 값을 내는지 투명하게 보여줍니다.</p>
+      </div>
+
+      <!-- 시나리오 스위처 -->
+      <div class="debug-section">
+        <div class="debug-section-title">시나리오 전환 <span class="count">DEMO</span></div>
+        <div class="scenario-buttons">
+          <button class="scenario-btn active" onclick="loadScenario('normal')">정상 (2h 25m 경과)</button>
+          <button class="scenario-btn" onclick="loadScenario('warning')">주의 (3h 40m 경과)</button>
+          <button class="scenario-btn" onclick="loadScenario('alert')">경고 (4h 10m 경과)</button>
+          <button class="scenario-btn" onclick="loadScenario('sleeping')">수면 중</button>
+        </div>
+      </div>
+
+      <!-- 현재 입력값 -->
+      <div class="debug-section">
+        <div class="debug-section-title">현재 입력값 <span class="count">INPUT</span></div>
+        <div class="kv-grid">
+          <div class="kv-item">
+            <div class="kv-label">월령 (개월)</div>
+            <div class="kv-value emphasize" id="dbgMonth">1</div>
+          </div>
+          <div class="kv-item">
+            <div class="kv-label">가중치 α</div>
+            <div class="kv-value emphasize" id="dbgAlpha">0.7</div>
+          </div>
+          <div class="kv-item">
+            <div class="kv-label">표준 수유 간격</div>
+            <div class="kv-value" id="dbgStdInt">3.0h (180min)</div>
+          </div>
+          <div class="kv-item">
+            <div class="kv-label">개인 평균 (7일)</div>
+            <div class="kv-value" id="dbgPersonalInt">2.8h (168min)</div>
+          </div>
+          <div class="kv-item">
+            <div class="kv-label">마지막 수유 종료</div>
+            <div class="kv-value" id="dbgLastFeed">12:40</div>
+          </div>
+          <div class="kv-item">
+            <div class="kv-label">경과 시간</div>
+            <div class="kv-value" id="dbgElapsed">2h 25m</div>
+          </div>
+        </div>
+
+        <div class="formula">
+          <span class="token-c">// 가중평균으로 예측 간격 산출</span><br>
+          <span class="token-k">predicted_interval</span> = α × std + (1 − α) × personal<br>
+          &nbsp;&nbsp;= <span class="token-v">0.7</span> × 180 + <span class="token-v">0.3</span> × 168<br>
+          &nbsp;&nbsp;= <span class="token-v">176.4 min</span> ≈ <span class="token-v">2h 56m</span><br>
+          <br>
+          <span class="token-k">next_feeding</span> = last_end + predicted_interval<br>
+          &nbsp;&nbsp;= 12:40 + 2h 56m = <span class="token-v">15:36</span>
+        </div>
+      </div>
+
+      <!-- 경고 트리거 -->
+      <div class="debug-section">
+        <div class="debug-section-title">경고 트리거 상태 <span class="count">RULES</span></div>
+        <div class="kv-grid" id="dbgRules">
+          <div class="kv-item">
+            <div class="kv-label">0~1개월 · 4h 룰</div>
+            <div class="kv-value" style="color: var(--accent-sage);">정상 범위 ✓</div>
+          </div>
+          <div class="kv-item">
+            <div class="kv-label">1일 총량 1,000ml 상한</div>
+            <div class="kv-value" style="color: var(--accent-sage);">640ml / 1000ml ✓</div>
+          </div>
+          <div class="kv-item">
+            <div class="kv-label">소변 기저귀 6장/24h</div>
+            <div class="kv-value" style="color: var(--accent-sage);">8장 ✓</div>
+          </div>
+          <div class="kv-item">
+            <div class="kv-label">3일 연속 수면 부족</div>
+            <div class="kv-value" style="color: var(--accent-sage);">해당 없음 ✓</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 이벤트 로그 -->
+      <div class="debug-section">
+        <div class="debug-section-title">이벤트 로그 <span class="count" id="eventCount">5</span></div>
+        <div class="event-log" id="eventLog">
+          <div class="event-row">
+            <span class="ev-time">14:20</span>
+            <span class="ev-dot" style="background: #F5B841"></span>
+            <span class="ev-label">기저귀 교체 <span class="ev-meta">소변</span></span>
+            <span class="ev-meta">45m 전</span>
+          </div>
+          <div class="event-row">
+            <span class="ev-time">13:50</span>
+            <span class="ev-dot" style="background: #8B6FD8"></span>
+            <span class="ev-label">낮잠 종료 <span class="ev-meta">50분</span></span>
+            <span class="ev-meta">1h 15m 전</span>
+          </div>
+          <div class="event-row">
+            <span class="ev-time">13:00</span>
+            <span class="ev-dot" style="background: #8B6FD8"></span>
+            <span class="ev-label">낮잠 시작</span>
+            <span class="ev-meta">2h 5m 전</span>
+          </div>
+          <div class="event-row">
+            <span class="ev-time">12:40</span>
+            <span class="ev-dot" style="background: #4A90E2"></span>
+            <span class="ev-label">수유 종료 <span class="ev-meta">분유 120ml · 15분</span></span>
+            <span class="ev-meta">2h 25m 전</span>
+          </div>
+          <div class="event-row">
+            <span class="ev-time">12:25</span>
+            <span class="ev-dot" style="background: #4A90E2"></span>
+            <span class="ev-label">수유 시작</span>
+            <span class="ev-meta">2h 40m 전</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 표준 테이블 (월령별) -->
+      <div class="debug-section">
+        <div class="debug-section-title">월령별 표준 데이터 <span class="count">REFERENCE</span></div>
+        <table class="standards-table">
+          <thead>
+            <tr>
+              <th>월령</th>
+              <th>수유 간격</th>
+              <th>1회 분유량</th>
+              <th>1일 총 수면</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="highlight">
+              <td>0~1개월</td>
+              <td>2~3h</td>
+              <td>60~120ml</td>
+              <td>14~18h</td>
+            </tr>
+            <tr>
+              <td>1~3개월</td>
+              <td>3~4h</td>
+              <td>120~150ml</td>
+              <td>14~17h</td>
+            </tr>
+            <tr>
+              <td>4~6개월</td>
+              <td>4h</td>
+              <td>150~210ml</td>
+              <td>12~16h</td>
+            </tr>
+            <tr>
+              <td>7~9개월</td>
+              <td>4h</td>
+              <td>180~210ml</td>
+              <td>12~15h</td>
+            </tr>
+            <tr>
+              <td>10~12개월</td>
+              <td>4~5h</td>
+              <td>180~240ml</td>
+              <td>12~14h</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ FOOTER ============ -->
+  <div class="footer">
+    <div>
+      <em>냠냠쿨쿨 · NyamNyam CoolCool</em> — 초보엄마를 위한 수면·수유 예측 알림 앱
+    </div>
+    <div>
+      데이터 출처: 보건복지부 아이사랑 · AAP · AASM 2016
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast notification -->
+<div class="toast" id="toast">기록됨</div>
+
+<script>
+/* ==========================================
+   상태 관리 — 데모용 단순 상태
+   ========================================== */
+let currentScenario = 'normal';
+let activeTimer = null;
+
+const scenarios = {
+  normal: {
+    heroIcon: '🍼',
+    heroLabel: '다음 수유 예상',
+    heroPrimary: '오후 3:36',
+    heroEm: '(약 31분 후)',
+    heroSecondary: '마지막 수유 2시간 25분 전 · 120ml',
+    heroExplainer: 'α=0.7 · predicted 176min',
+    gradient: 'var(--gradient-hero-dawn)',
+    badge: '정상',
+    badgeClass: '',
+    feedTime: '2h 25m 전',
+    dbgElapsed: '2h 25m',
+    dbgLastFeed: '12:40',
+    rulesHtml: `
+      <div class="kv-item"><div class="kv-label">0~1개월 · 4h 룰</div><div class="kv-value" style="color: var(--accent-sage);">정상 범위 ✓</div></div>
+      <div class="kv-item"><div class="kv-label">1일 총량 1,000ml 상한</div><div class="kv-value" style="color: var(--accent-sage);">640ml / 1000ml ✓</div></div>
+      <div class="kv-item"><div class="kv-label">소변 기저귀 6장/24h</div><div class="kv-value" style="color: var(--accent-sage);">8장 ✓</div></div>
+      <div class="kv-item"><div class="kv-label">3일 연속 수면 부족</div><div class="kv-value" style="color: var(--accent-sage);">해당 없음 ✓</div></div>
+    `,
+  },
+  warning: {
+    heroIcon: '🍼',
+    heroLabel: '수유 시간이 가까워지고 있어요',
+    heroPrimary: '지금',
+    heroEm: '(예상 시각 도달)',
+    heroSecondary: '마지막 수유 3시간 40분 전 · 90ml',
+    heroExplainer: 'α=0.7 · 예상 간격 초과 시작',
+    gradient: 'linear-gradient(135deg, #E8A660 0%, #D68E2F 100%)',
+    badge: '주의',
+    badgeClass: 'warning',
+    feedTime: '3h 40m 전',
+    dbgElapsed: '3h 40m',
+    dbgLastFeed: '11:25',
+    rulesHtml: `
+      <div class="kv-item"><div class="kv-label">0~1개월 · 4h 룰</div><div class="kv-value" style="color: var(--accent-amber);">임계 근접 (3h 40m) ⚠</div></div>
+      <div class="kv-item"><div class="kv-label">1일 총량 1,000ml 상한</div><div class="kv-value" style="color: var(--accent-sage);">580ml / 1000ml ✓</div></div>
+      <div class="kv-item"><div class="kv-label">소변 기저귀 6장/24h</div><div class="kv-value" style="color: var(--accent-sage);">7장 ✓</div></div>
+      <div class="kv-item"><div class="kv-label">예상 vs 실제 편차</div><div class="kv-value" style="color: var(--accent-amber);">+25분 지연</div></div>
+    `,
+  },
+  alert: {
+    heroIcon: '⚠️',
+    heroLabel: '⚠ 깨워서 수유해 주세요',
+    heroPrimary: '4시간 경과',
+    heroEm: '(탈수 위험)',
+    heroSecondary: '마지막 수유 4시간 10분 전 · 신생아는 4h 초과 시 탈수 위험',
+    heroExplainer: 'RULE: month≤1 AND gap>4h → RED',
+    gradient: 'var(--gradient-hero-warn)',
+    badge: '경고',
+    badgeClass: 'alert',
+    feedTime: '4h 10m 전',
+    dbgElapsed: '4h 10m',
+    dbgLastFeed: '10:55',
+    rulesHtml: `
+      <div class="kv-item"><div class="kv-label">0~1개월 · 4h 룰</div><div class="kv-value" style="color: var(--accent-sienna);">초과 (4h 10m) 🔴</div></div>
+      <div class="kv-item"><div class="kv-label">1일 총량 1,000ml 상한</div><div class="kv-value" style="color: var(--accent-sage);">520ml / 1000ml ✓</div></div>
+      <div class="kv-item"><div class="kv-label">소변 기저귀 6장/24h</div><div class="kv-value" style="color: var(--accent-amber);">5장 ⚠</div></div>
+      <div class="kv-item"><div class="kv-label">알림 발송</div><div class="kv-value" style="color: var(--accent-sienna);">푸시 전송됨 (5분 전)</div></div>
+    `,
+  },
+  sleeping: {
+    heroIcon: '😴',
+    heroLabel: '지금 자는 중',
+    heroPrimary: '1시간 20분째',
+    heroEm: '자는 중',
+    heroSecondary: '평균 낮잠은 1~2시간 · 편안히 둬도 됩니다',
+    heroExplainer: 'sleep_cycle ≈ 50~60min (0~1개월)',
+    gradient: 'var(--gradient-hero-night)',
+    badge: '수면 중',
+    badgeClass: '',
+    feedTime: '3h 5m 전',
+    dbgElapsed: '3h 5m',
+    dbgLastFeed: '11:55',
+    rulesHtml: `
+      <div class="kv-item"><div class="kv-label">낮잠 2h 30m 상한</div><div class="kv-value" style="color: var(--accent-sage);">1h 20m ✓</div></div>
+      <div class="kv-item"><div class="kv-label">깨어있는 시간 윈도우</div><div class="kv-value" style="color: var(--accent-sage);">1h (정상)</div></div>
+      <div class="kv-item"><div class="kv-label">1일 총량 1,000ml 상한</div><div class="kv-value" style="color: var(--accent-sage);">480ml / 1000ml ✓</div></div>
+      <div class="kv-item"><div class="kv-label">수유 다음 예상</div><div class="kv-value">기상 직후 (≈30분 뒤)</div></div>
+    `,
+  },
+};
+
+function loadScenario(key) {
+  currentScenario = key;
+  const s = scenarios[key];
+
+  document.getElementById('heroIcon').textContent = s.heroIcon;
+  document.getElementById('heroLabel').textContent = s.heroLabel;
+  document.getElementById('heroPrimary').textContent = s.heroPrimary;
+  document.getElementById('heroEm').textContent = s.heroEm;
+  document.getElementById('heroSecondary').textContent = s.heroSecondary;
+  document.getElementById('heroExplainer').textContent = s.heroExplainer;
+  document.getElementById('heroCard').style.background = s.gradient;
+
+  const badge = document.getElementById('statusBadge');
+  badge.textContent = s.badge;
+  badge.className = 'status-badge ' + s.badgeClass;
+
+  document.getElementById('feedLastTime').textContent = s.feedTime;
+  document.getElementById('dbgElapsed').textContent = s.dbgElapsed;
+  document.getElementById('dbgLastFeed').textContent = s.dbgLastFeed;
+  document.getElementById('dbgRules').innerHTML = s.rulesHtml;
+
+  document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+  event && event.target && event.target.classList.add('active');
+}
+
+/* ==========================================
+   원탭 기록 토글
+   ========================================== */
+function toggleLog(kind) {
+  const btn = document.querySelector(`.log-btn[data-kind="${kind}"]`);
+  const labelEl = document.getElementById(kind + 'Label');
+
+  if (btn.classList.contains('active')) {
+    // 종료
+    btn.classList.remove('active');
+    if (labelEl) labelEl.textContent = {feed:'수유', sleep:'수면', diaper:'기저귀', bath:'목욕'}[kind];
+    clearInterval(activeTimer);
+    showToast(`${labelEl ? labelEl.textContent : kind} 기록 완료`);
+    addEventLogEntry(kind, '종료');
+  } else {
+    // 시작
+    document.querySelectorAll('.log-btn.active').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    let sec = 0;
+    if (labelEl) labelEl.textContent = '● 진행 중 · 00:00';
+    clearInterval(activeTimer);
+    activeTimer = setInterval(() => {
+      sec++;
+      const m = String(Math.floor(sec / 60)).padStart(2, '0');
+      const s = String(sec % 60).padStart(2, '0');
+      if (labelEl) labelEl.textContent = `● 진행 중 · ${m}:${s}`;
+    }, 1000);
+    showToast(`${kind === 'feed' ? '수유' : kind === 'sleep' ? '수면' : kind === 'diaper' ? '기저귀' : '목욕'} 시작됨`);
+    addEventLogEntry(kind, '시작');
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._h);
+  t._h = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function addEventLogEntry(kind, state) {
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2, '0');
+  const mm = String(now.getMinutes()).padStart(2, '0');
+  const color = {feed:'#4A90E2', sleep:'#8B6FD8', diaper:'#F5B841', bath:'#4EC5B5'}[kind] || '#999';
+  const label = {feed:'수유', sleep:'수면', diaper:'기저귀', bath:'목욕'}[kind];
+
+  const row = document.createElement('div');
+  row.className = 'event-row new-event';
+  row.innerHTML = `
+    <span class="ev-time">${hh}:${mm}</span>
+    <span class="ev-dot" style="background: ${color}"></span>
+    <span class="ev-label">${label} ${state}</span>
+    <span class="ev-meta">방금</span>
+  `;
+
+  const log = document.getElementById('eventLog');
+  log.insertBefore(row, log.firstChild);
+
+  const cnt = document.getElementById('eventCount');
+  cnt.textContent = parseInt(cnt.textContent) + 1;
+}
+
+/* ==========================================
+   시계 업데이트
+   ========================================== */
+function updateClock() {
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2, '0');
+  const mm = String(now.getMinutes()).padStart(2, '0');
+  document.getElementById('statusTime').textContent = `${hh}:${mm}`;
+}
+updateClock();
+setInterval(updateClock, 30000);
+
+/* ==========================================
+   타임라인 이벤트 포인트 렌더
+   ========================================== */
+function renderTimeline() {
+  const track = document.getElementById('timelineTrack');
+  // 06:00 ~ 22:00 = 16시간 범위
+  const events = [
+    { time: 6.5, kind: 'feed' },
+    { time: 8.0, kind: 'sleep' },
+    { time: 9.5, kind: 'diaper' },
+    { time: 10.25, kind: 'feed' },
+    { time: 12.4, kind: 'feed' },
+    { time: 13.0, kind: 'sleep' },
+    { time: 14.3, kind: 'diaper' },
+  ];
+  const now = new Date();
+  const nowHour = now.getHours() + now.getMinutes() / 60;
+
+  events.forEach(ev => {
+    const pct = ((ev.time - 6) / 16) * 100;
+    const dot = document.createElement('div');
+    dot.className = 'timeline-event ' + ev.kind;
+    dot.style.left = pct + '%';
+    track.appendChild(dot);
+  });
+
+  // now marker
+  const nowPct = Math.min(100, Math.max(0, ((nowHour - 6) / 16) * 100));
+  const nowMark = document.createElement('div');
+  nowMark.className = 'timeline-now';
+  nowMark.style.left = nowPct + '%';
+  track.appendChild(nowMark);
+}
+renderTimeline();
+
+/* ==========================================
+   테마 토글
+   ========================================== */
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme');
+  const next = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  document.getElementById('themeIcon').textContent = next === 'dark' ? '☀️' : '🌙';
+  document.getElementById('themeLabel').textContent = next === 'dark' ? 'Light' : 'Dark';
+}
+</script>
+
+</body>
+</html>
