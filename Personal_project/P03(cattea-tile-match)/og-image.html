@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cattea — OG Image 1200×630</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 1200px; height: 630px;
+      font-family: -apple-system, "Segoe UI", "Noto Sans KR", Roboto, sans-serif;
+      overflow: hidden;
+    }
+
+    .og {
+      width: 1200px; height: 630px;
+      position: relative;
+      background: linear-gradient(135deg, #ffe3f1 0%, #ffd6e6 40%, #c2e6ff 100%);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 60px;
+      color: #4a2c1a;
+    }
+
+    /* Floating emoji tiles as background decoration */
+    .deco {
+      position: absolute;
+      font-size: 96px;
+      opacity: 0.35;
+      filter: drop-shadow(0 8px 16px rgba(120, 70, 30, 0.25));
+    }
+    .deco.t1 { top: 40px;  left: 60px;   transform: rotate(-12deg); }
+    .deco.t2 { top: 80px;  right: 90px;  transform: rotate(18deg);  }
+    .deco.t3 { bottom: 60px; left: 110px; transform: rotate(8deg);  }
+    .deco.t4 { bottom: 40px; right: 70px; transform: rotate(-14deg);}
+    .deco.t5 { top: 260px; left: -20px;  transform: rotate(22deg);  font-size: 80px; }
+    .deco.t6 { top: 300px; right: -10px; transform: rotate(-18deg); font-size: 80px; }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 10px;
+    }
+
+    .brand .logo {
+      font-size: 88px;
+      line-height: 1;
+      filter: drop-shadow(0 6px 10px rgba(214, 51, 132, 0.3));
+    }
+
+    .brand h1 {
+      font-size: 120px;
+      font-weight: 900;
+      letter-spacing: -2px;
+      color: #d63384;
+      text-shadow: 0 4px 0 #ffffff, 0 6px 14px rgba(214, 51, 132, 0.2);
+    }
+
+    .subtitle {
+      font-size: 34px;
+      font-weight: 700;
+      letter-spacing: 8px;
+      color: #8a4a6a;
+      margin-bottom: 24px;
+      text-transform: uppercase;
+    }
+
+    .hook {
+      font-size: 52px;
+      font-weight: 800;
+      color: #4a2c1a;
+      background: rgba(255, 255, 255, 0.85);
+      padding: 18px 48px;
+      border-radius: 24px;
+      box-shadow: 0 8px 0 rgba(120, 70, 30, 0.15),
+                  0 10px 30px rgba(0, 0, 0, 0.08);
+      margin-bottom: 28px;
+    }
+
+    .hook b { color: #d63384; }
+
+    .tiles {
+      display: flex;
+      gap: 14px;
+    }
+
+    .tile {
+      width: 72px; height: 72px;
+      background: #fff;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 42px;
+      box-shadow: 0 4px 0 rgba(120, 70, 30, 0.25),
+                  0 6px 14px rgba(0, 0, 0, 0.1);
+    }
+
+    .footer {
+      position: absolute;
+      bottom: 26px;
+      left: 0; right: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 60px;
+      font-size: 20px;
+      font-weight: 700;
+      color: #8a4a6a;
+    }
+
+    .footer .url { color: #d63384; }
+    .footer .dot { opacity: 0.45; }
+  </style>
+</head>
+<body>
+  <div class="og">
+    <span class="deco t1">🐱</span>
+    <span class="deco t2">🐟</span>
+    <span class="deco t3">🧶</span>
+    <span class="deco t4">🐾</span>
+    <span class="deco t5">🔔</span>
+    <span class="deco t6">⭐</span>
+
+    <div class="brand">
+      <span class="logo">🐱</span>
+      <h1>Cattea</h1>
+    </div>
+
+    <div class="subtitle">Triple Tile Match</div>
+
+    <div class="hook">Can you clear <b>all 30 stages?</b></div>
+
+    <div class="tiles">
+      <div class="tile">🐱</div>
+      <div class="tile">🐟</div>
+      <div class="tile">🍩</div>
+      <div class="tile">🥛</div>
+      <div class="tile">🧶</div>
+      <div class="tile">🐾</div>
+      <div class="tile">🔔</div>
+      <div class="tile">⭐</div>
+      <div class="tile">💖</div>
+      <div class="tile">👑</div>
+    </div>
+
+    <div class="footer">
+      <span>Free · No install · Web browser</span>
+      <span class="dot">·</span>
+      <span class="url">csparkzxc1.github.io</span>
+    </div>
+  </div>
+
+  <!--
+    📸 How to export as og-image.png (1200×630):
+    1. Open this file in Chrome at 100% zoom (Cmd+0 / Ctrl+0).
+    2. Open DevTools (F12) → Cmd+Shift+P → type "Capture full size screenshot".
+    3. Save the result as og-image.png in this same folder.
+    4. Verify size is 1200×630. If not, toggle DevTools device toolbar off.
+
+    Alternatively (macOS Safari): File → Export as PDF → convert to PNG.
+    Alternatively (CLI): npx puppeteer-cli screenshot og-image.html og-image.png --viewport 1200,630
+  -->
+</body>
+</html>

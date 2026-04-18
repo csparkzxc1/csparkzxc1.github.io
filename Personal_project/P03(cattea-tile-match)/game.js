@@ -73,6 +73,8 @@
   const countUndo = document.getElementById('count-undo');
   const countMagnet = document.getElementById('count-magnet');
   const countShuffle = document.getElementById('count-shuffle');
+  const btnShare = document.getElementById('overlay-share');
+  const shareToast = document.getElementById('share-toast');
 
   // ---------- Utilities ----------
   const rand = (n) => Math.floor(Math.random() * n);
@@ -506,10 +508,16 @@
     overlaySecondary.textContent = 'Stage Select';
     overlayPrimary.onclick = () => {
       overlay.classList.add('hidden');
+      btnShare.classList.add('hidden');
       if (isLast) showStageSelect();
       else startStage(state.stageId + 1);
     };
-    overlaySecondary.onclick = () => { overlay.classList.add('hidden'); showStageSelect(); };
+    overlaySecondary.onclick = () => {
+      overlay.classList.add('hidden');
+      btnShare.classList.add('hidden');
+      showStageSelect();
+    };
+    showShareButton({ stageId: state.stageId, stars, timeSec, score: state.score, isLast });
     overlay.classList.remove('hidden');
   }
 
@@ -527,9 +535,62 @@
       : 'No 3-match available. Try again!';
     overlayPrimary.textContent = 'Retry';
     overlaySecondary.textContent = 'Stage Select';
-    overlayPrimary.onclick = () => { overlay.classList.add('hidden'); startStage(state.stageId); };
-    overlaySecondary.onclick = () => { overlay.classList.add('hidden'); showStageSelect(); };
+    overlayPrimary.onclick = () => {
+      overlay.classList.add('hidden');
+      btnShare.classList.add('hidden');
+      startStage(state.stageId);
+    };
+    overlaySecondary.onclick = () => {
+      overlay.classList.add('hidden');
+      btnShare.classList.add('hidden');
+      showStageSelect();
+    };
+    btnShare.classList.add('hidden');
     overlay.classList.remove('hidden');
+  }
+
+  // ---------- Share ----------
+  function showShareButton(result) {
+    btnShare.classList.remove('hidden');
+    btnShare.onclick = () => shareResult(result);
+  }
+
+  function buildShareText(r) {
+    const stars = '⭐'.repeat(r.stars);
+    const head = r.isLast ? '🏆 All 30 stages cleared!' : `Stage ${r.stageId} cleared!`;
+    return `${head} ${stars} ${r.timeSec}s · ${r.score}pt — Cattea Triple Tile Match`;
+  }
+
+  async function shareResult(r) {
+    const text = buildShareText(r);
+    const url = location.href;
+    const payload = { title: 'Cattea — Triple Tile Match', text, url };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(payload);
+        Analytics._emit('share', { stage_id: r.stageId, method: 'web_share' });
+        return;
+      }
+    } catch (err) {
+      // User cancelled or share failed; fall through to clipboard.
+      if (err && err.name === 'AbortError') return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(`${text}\n${url}`);
+      toastShare('Link copied to clipboard ✓');
+      Analytics._emit('share', { stage_id: r.stageId, method: 'clipboard' });
+    } catch {
+      toastShare('Copy this: ' + url);
+    }
+  }
+
+  function toastShare(msg) {
+    shareToast.textContent = msg;
+    shareToast.classList.remove('hidden');
+    clearTimeout(toastShare._t);
+    toastShare._t = setTimeout(() => shareToast.classList.add('hidden'), 2400);
   }
 
   // ---------- Boosters ----------
