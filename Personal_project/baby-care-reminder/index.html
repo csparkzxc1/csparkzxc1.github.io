@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#fdf6f0" />
+  <title>토닥 — 초보엄마를 위한 수면·수유 알림</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            cream: '#fdf6f0',
+            milk:  '#fff9f3',
+            warm:  '#f6c7a8',
+            coral: '#ff8a7a',
+            sage:  '#a3c4a8',
+            lilac: '#b9aedc',
+            night: '#1a1320',
+            inkdim:'#3b2f33'
+          },
+          fontFamily: {
+            sans: ['Pretendard', '-apple-system', 'BlinkMacSystemFont', 'Apple SD Gothic Neo', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+  <style>
+    html, body { -webkit-tap-highlight-color: transparent; }
+    .tap-btn:active { transform: scale(0.97); }
+    .pulse-dot::before {
+      content: ''; position:absolute; inset:-4px; border-radius:9999px;
+      background: currentColor; opacity:.35; animation: pulse 1.6s ease-out infinite;
+    }
+    @keyframes pulse {
+      0%   { transform: scale(0.6); opacity:.45; }
+      80%  { transform: scale(1.4); opacity:0;    }
+      100% { transform: scale(1.4); opacity:0;    }
+    }
+    .timeline-bar { background: repeating-linear-gradient(
+      to right, transparent 0 calc(100%/24 - 1px),
+      rgba(0,0,0,0.08) calc(100%/24 - 1px) calc(100%/24)); }
+    .dark .timeline-bar { background: repeating-linear-gradient(
+      to right, transparent 0 calc(100%/24 - 1px),
+      rgba(255,255,255,0.08) calc(100%/24 - 1px) calc(100%/24)); }
+  </style>
+</head>
+<body class="font-sans bg-cream dark:bg-night text-inkdim dark:text-cream transition-colors min-h-screen">
+
+  <main class="max-w-md mx-auto px-5 pt-6 pb-28">
+
+    <!-- Top: profile + theme toggle -->
+    <header class="flex items-center justify-between mb-5">
+      <button id="profileBtn" class="flex items-center gap-3 tap-btn">
+        <div class="w-11 h-11 rounded-full bg-warm/60 dark:bg-warm/30 flex items-center justify-center text-2xl">👶</div>
+        <div class="text-left leading-tight">
+          <div class="font-bold text-base" id="babyName">유찬이</div>
+          <div class="text-xs opacity-70" id="babyAge">생후 47일 · 1개월 16일</div>
+        </div>
+      </button>
+      <button id="themeBtn" aria-label="다크모드" class="w-10 h-10 rounded-full bg-white/70 dark:bg-white/10 flex items-center justify-center tap-btn">
+        <span id="themeIcon">🌙</span>
+      </button>
+    </header>
+
+    <!-- Prediction Card -->
+    <section aria-label="다음 행동 예측" class="rounded-3xl bg-gradient-to-br from-warm/70 to-coral/50 dark:from-coral/30 dark:to-lilac/30 p-6 shadow-lg shadow-coral/10 mb-5">
+      <div class="flex items-center gap-2 text-sm font-semibold opacity-80">
+        <span class="relative inline-block w-2.5 h-2.5 rounded-full text-coral pulse-dot bg-coral"></span>
+        다음 수유 예상
+      </div>
+      <div class="mt-2 text-4xl font-extrabold tracking-tight" id="nextFeedingTime">오후 3:20</div>
+      <div class="mt-1 text-sm opacity-80" id="nextFeedingDelta">약 35분 후</div>
+
+      <div class="mt-5 grid grid-cols-2 gap-3 text-xs">
+        <div class="bg-white/70 dark:bg-white/10 rounded-2xl p-3">
+          <div class="opacity-70">마지막 수유</div>
+          <div class="font-bold text-sm mt-0.5" id="lastFeedingAgo">2시간 25분 전</div>
+        </div>
+        <div class="bg-white/70 dark:bg-white/10 rounded-2xl p-3">
+          <div class="opacity-70">먹은 양</div>
+          <div class="font-bold text-sm mt-0.5" id="lastFeedingAmount">120 ml</div>
+        </div>
+      </div>
+
+      <p class="mt-4 text-xs opacity-70 leading-relaxed" id="advice">
+        🍼 곧 배고파할 시간이에요. 분유는 미리 준비해 두면 좋아요.
+      </p>
+    </section>
+
+    <!-- Quick Log: 4 big buttons -->
+    <section aria-label="빠른 기록" class="grid grid-cols-2 gap-3 mb-6">
+      <button data-log="feeding" class="tap-btn relative h-28 rounded-3xl bg-white dark:bg-white/10 shadow-sm flex flex-col items-center justify-center gap-1">
+        <span class="text-3xl">🍼</span>
+        <span class="text-sm font-bold">수유</span>
+        <span class="text-[10px] opacity-60" data-state="feeding">탭하여 시작</span>
+      </button>
+      <button data-log="sleep" class="tap-btn relative h-28 rounded-3xl bg-white dark:bg-white/10 shadow-sm flex flex-col items-center justify-center gap-1">
+        <span class="text-3xl">😴</span>
+        <span class="text-sm font-bold">수면</span>
+        <span class="text-[10px] opacity-60" data-state="sleep">탭하여 시작</span>
+      </button>
+      <button data-log="diaper" class="tap-btn relative h-28 rounded-3xl bg-white dark:bg-white/10 shadow-sm flex flex-col items-center justify-center gap-1">
+        <span class="text-3xl">💩</span>
+        <span class="text-sm font-bold">기저귀</span>
+        <span class="text-[10px] opacity-60" data-state="diaper">바로 기록</span>
+      </button>
+      <button data-log="bath" class="tap-btn relative h-28 rounded-3xl bg-white dark:bg-white/10 shadow-sm flex flex-col items-center justify-center gap-1">
+        <span class="text-3xl">🛁</span>
+        <span class="text-sm font-bold">목욕</span>
+        <span class="text-[10px] opacity-60" data-state="bath">바로 기록</span>
+      </button>
+    </section>
+
+    <!-- Today timeline -->
+    <section aria-label="오늘의 타임라인" class="mb-6">
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="text-sm font-bold opacity-80">오늘의 타임라인</h2>
+        <span class="text-xs opacity-60" id="todayDate">04/18 (금)</span>
+      </div>
+      <div class="relative h-16 rounded-2xl bg-white/70 dark:bg-white/10 timeline-bar overflow-hidden" id="timelineBar">
+        <!-- markers injected by JS -->
+      </div>
+      <div class="flex justify-between text-[10px] opacity-60 mt-1 px-0.5">
+        <span>00</span><span>06</span><span>12</span><span>18</span><span>24</span>
+      </div>
+      <div class="flex gap-3 text-[11px] mt-2 opacity-80">
+        <span class="flex items-center gap-1"><i class="w-2 h-2 rounded-full bg-coral inline-block"></i>수유</span>
+        <span class="flex items-center gap-1"><i class="w-2 h-2 rounded-full bg-lilac inline-block"></i>수면</span>
+        <span class="flex items-center gap-1"><i class="w-2 h-2 rounded-full bg-sage inline-block"></i>기저귀</span>
+        <span class="flex items-center gap-1"><i class="w-2 h-2 rounded-full bg-warm inline-block"></i>목욕</span>
+      </div>
+    </section>
+
+    <!-- Recent records -->
+    <section aria-label="최근 기록" class="mb-6">
+      <h2 class="text-sm font-bold opacity-80 mb-2">최근 기록</h2>
+      <ul id="recentList" class="space-y-2">
+        <!-- injected -->
+      </ul>
+    </section>
+
+    <p class="text-[10px] opacity-50 text-center leading-relaxed mt-8 px-4">
+      본 앱은 참고용이며 의학적 진단을 대체하지 않습니다.<br/>
+      이상 신호가 의심되면 즉시 소아과 진료를 받아 주세요.
+    </p>
+  </main>
+
+  <!-- Bottom nav -->
+  <nav class="fixed bottom-0 inset-x-0 max-w-md mx-auto bg-white/90 dark:bg-night/90 backdrop-blur border-t border-black/5 dark:border-white/5">
+    <div class="grid grid-cols-5 text-[11px]">
+      <button class="py-3 flex flex-col items-center gap-0.5 text-coral font-semibold"><span>🏠</span>홈</button>
+      <button class="py-3 flex flex-col items-center gap-0.5 opacity-60"><span>📊</span>기록</button>
+      <button class="py-3 flex flex-col items-center gap-0.5 opacity-60"><span>📚</span>가이드</button>
+      <button class="py-3 flex flex-col items-center gap-0.5 opacity-60"><span>👨‍👩‍👧</span>공유</button>
+      <button class="py-3 flex flex-col items-center gap-0.5 opacity-60"><span>⚙️</span>설정</button>
+    </div>
+  </nav>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed left-1/2 -translate-x-1/2 bottom-24 px-4 py-2 rounded-full bg-inkdim text-cream text-sm shadow-lg opacity-0 transition pointer-events-none">기록되었어요</div>
+
+  <script>
+    // ---------- minimal state (localStorage) ----------
+    const KEY = 'todak.records.v1';
+    const THEME_KEY = 'todak.theme';
+
+    /** record: {id, type, startAt, endAt|null, amount|null} */
+    function load() {
+      try { return JSON.parse(localStorage.getItem(KEY)) || []; }
+      catch { return []; }
+    }
+    function save(records) { localStorage.setItem(KEY, JSON.stringify(records)); }
+
+    let records = load();
+
+    // Seed example data on first load so the prototype "feels alive"
+    if (records.length === 0) {
+      const now = Date.now();
+      const h = 3600_000;
+      records = [
+        { id: 'r1', type: 'feeding', startAt: now - 5.5*h, endAt: now - 5.3*h, amount: 110 },
+        { id: 'r2', type: 'sleep',   startAt: now - 5.2*h, endAt: now - 3.6*h },
+        { id: 'r3', type: 'diaper',  startAt: now - 4.0*h, endAt: now - 4.0*h },
+        { id: 'r4', type: 'feeding', startAt: now - 2.5*h, endAt: now - 2.4*h, amount: 120 },
+        { id: 'r5', type: 'sleep',   startAt: now - 2.3*h, endAt: now - 1.0*h },
+      ];
+      save(records);
+    }
+
+    // ---------- theme ----------
+    const themeBtn = document.getElementById('themeBtn');
+    const themeIcon = document.getElementById('themeIcon');
+    function applyTheme(t) {
+      document.documentElement.classList.toggle('dark', t === 'dark');
+      themeIcon.textContent = t === 'dark' ? '☀️' : '🌙';
+    }
+    applyTheme(localStorage.getItem(THEME_KEY) || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+    themeBtn.addEventListener('click', () => {
+      const next = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+      localStorage.setItem(THEME_KEY, next);
+      applyTheme(next);
+    });
+
+    // ---------- helpers ----------
+    const fmtTime = ts => new Date(ts).toLocaleTimeString('ko-KR', { hour:'numeric', minute:'2-digit' });
+    const fmtAgo = ms => {
+      const m = Math.max(0, Math.round(ms / 60000));
+      if (m < 60) return `${m}분 전`;
+      const h = Math.floor(m / 60), mm = m % 60;
+      return mm === 0 ? `${h}시간 전` : `${h}시간 ${mm}분 전`;
+    };
+    const fmtDelta = ms => {
+      const m = Math.round(ms / 60000);
+      if (m <= 0) return '지금';
+      if (m < 60) return `약 ${m}분 후`;
+      const h = Math.floor(m/60), mm = m%60;
+      return mm === 0 ? `약 ${h}시간 후` : `약 ${h}시간 ${mm}분 후`;
+    };
+
+    // ---------- prediction ----------
+    // Standard intervals (minutes) by month, simplified from PRD §4.2 / §5
+    function feedingIntervalMin(monthAge) {
+      if (monthAge < 1) return 150;     // 2.5h
+      if (monthAge < 2) return 180;     // 3h
+      if (monthAge < 4) return 210;     // 3.5h
+      if (monthAge < 7) return 240;     // 4h
+      return 270;                       // 4.5h
+    }
+    function awakeWindowMin(monthAge) {
+      if (monthAge < 1) return 50;
+      if (monthAge < 2) return 75;
+      if (monthAge < 4) return 105;
+      if (monthAge < 6) return 135;
+      if (monthAge < 9) return 165;
+      if (monthAge < 12) return 210;
+      return 270;
+    }
+    function predict(now, records, monthAge) {
+      const feedings = records.filter(r => r.type === 'feeding' && r.endAt).sort((a,b)=>a.endAt-b.endAt);
+      const last = feedings[feedings.length - 1];
+      const std = feedingIntervalMin(monthAge);
+
+      // alpha by age (PRD §5.1)
+      const alpha = monthAge < 2 ? 0.7 : monthAge < 5 ? 0.5 : 0.3;
+
+      let personal = std;
+      if (feedings.length >= 3) {
+        const recent = feedings.slice(-7);
+        let gaps = [];
+        for (let i=1; i<recent.length; i++) {
+          gaps.push((recent[i].startAt - recent[i-1].endAt) / 60000);
+        }
+        const avg = gaps.reduce((s,v)=>s+v,0) / gaps.length;
+        if (avg > 30 && avg < 600) personal = avg;
+      }
+      const interval = alpha * std + (1 - alpha) * personal;
+      const next = last ? last.endAt + interval * 60000 : now + std * 60000;
+      return { next, last, interval };
+    }
+
+    // ---------- render ----------
+    const BIRTH = new Date(); BIRTH.setDate(BIRTH.getDate() - 47); // demo: 47 days
+    function monthAge() { return (Date.now() - BIRTH.getTime()) / (1000*60*60*24*30.44); }
+
+    function render() {
+      const now = Date.now();
+      const ma = monthAge();
+
+      // baby age
+      const days = Math.floor((now - BIRTH.getTime()) / 86400000);
+      const months = Math.floor(days / 30.44);
+      const restDays = days - Math.floor(months * 30.44);
+      document.getElementById('babyAge').textContent = `생후 ${days}일 · ${months}개월 ${restDays}일`;
+
+      // prediction
+      const { next, last } = predict(now, records, ma);
+      document.getElementById('nextFeedingTime').textContent = fmtTime(next);
+      document.getElementById('nextFeedingDelta').textContent = next > now ? fmtDelta(next - now) : '지금이 적정 시각이에요';
+      if (last) {
+        document.getElementById('lastFeedingAgo').textContent = fmtAgo(now - last.endAt);
+        document.getElementById('lastFeedingAmount').textContent = last.amount ? `${last.amount} ml` : '기록 없음';
+      }
+
+      // advice
+      const advice = document.getElementById('advice');
+      const minsSince = last ? (now - last.endAt) / 60000 : 0;
+      if (ma < 1 && minsSince > 240) {
+        advice.textContent = '⚠️ 마지막 수유 후 4시간이 지났어요. 깨워서 수유해 주세요.';
+        advice.className = 'mt-4 text-xs leading-relaxed text-red-700 dark:text-red-300 font-semibold';
+      } else if (next - now < 15*60000) {
+        advice.textContent = '🍼 곧 배고파할 시간이에요. 분유는 미리 준비해 두면 좋아요.';
+        advice.className = 'mt-4 text-xs opacity-70 leading-relaxed';
+      } else {
+        advice.textContent = '오늘도 잘 하고 계세요. 한숨 돌려도 괜찮아요 💛';
+        advice.className = 'mt-4 text-xs opacity-70 leading-relaxed';
+      }
+
+      // quick-log button states
+      document.querySelectorAll('[data-log]').forEach(btn => {
+        const type = btn.dataset.log;
+        const open = records.find(r => r.type === type && !r.endAt);
+        const label = btn.querySelector(`[data-state="${type}"]`);
+        if (open) {
+          btn.classList.add('ring-2', 'ring-coral');
+          const dur = fmtAgo(now - open.startAt).replace(' 전','');
+          label.textContent = `진행 중 · ${dur}`;
+        } else {
+          btn.classList.remove('ring-2', 'ring-coral');
+          label.textContent = (type === 'diaper' || type === 'bath') ? '바로 기록' : '탭하여 시작';
+        }
+      });
+
+      // timeline
+      renderTimeline();
+
+      // recent
+      renderRecent();
+    }
+
+    function renderTimeline() {
+      const bar = document.getElementById('timelineBar');
+      bar.innerHTML = '';
+      const startOfDay = new Date(); startOfDay.setHours(0,0,0,0);
+      const sod = startOfDay.getTime();
+      const dayMs = 86400000;
+      const colorByType = { feeding:'bg-coral', sleep:'bg-lilac', diaper:'bg-sage', bath:'bg-warm' };
+      records.forEach(r => {
+        if (r.endAt && r.endAt < sod) return;
+        const start = Math.max(r.startAt, sod);
+        const end = r.endAt ? Math.min(r.endAt, sod + dayMs) : Math.min(Date.now(), sod + dayMs);
+        const left = ((start - sod) / dayMs) * 100;
+        const width = Math.max(1.2, ((end - start) / dayMs) * 100);
+        const top = r.type === 'sleep' ? '38%' : r.type === 'feeding' ? '14%' : r.type === 'diaper' ? '62%' : '8%';
+        const h = (r.type === 'diaper' || r.type === 'bath') ? '14%' : '24%';
+        const div = document.createElement('div');
+        div.className = `absolute rounded-md ${colorByType[r.type]} opacity-90`;
+        div.style.cssText = `left:${left}%; width:${width}%; top:${top}; height:${h};`;
+        bar.appendChild(div);
+      });
+      // now-line
+      const nowPct = ((Date.now() - sod) / dayMs) * 100;
+      const nowLine = document.createElement('div');
+      nowLine.className = 'absolute top-0 bottom-0 w-px bg-coral/80';
+      nowLine.style.left = `${nowPct}%`;
+      bar.appendChild(nowLine);
+    }
+
+    function renderRecent() {
+      const list = document.getElementById('recentList');
+      const labels = { feeding:'🍼 수유', sleep:'😴 수면', diaper:'💩 기저귀', bath:'🛁 목욕' };
+      const recent = [...records].sort((a,b)=>b.startAt-a.startAt).slice(0,5);
+      list.innerHTML = recent.map(r => {
+        const dur = r.endAt ? fmtAgo(r.endAt - r.startAt).replace(' 전','') : '진행 중';
+        const meta = r.type === 'feeding' && r.amount ? ` · ${r.amount}ml` : '';
+        return `<li class="flex items-center justify-between bg-white/70 dark:bg-white/10 rounded-2xl px-4 py-3 text-sm">
+          <span>${labels[r.type] || r.type}</span>
+          <span class="opacity-60 text-xs">${fmtTime(r.startAt)} · ${dur}${meta}</span>
+        </li>`;
+      }).join('') || '<li class="text-xs opacity-60 text-center py-4">아직 기록이 없어요</li>';
+    }
+
+    // ---------- log actions ----------
+    function toast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.style.opacity = '1';
+      setTimeout(() => { t.style.opacity = '0'; }, 1500);
+    }
+
+    document.querySelectorAll('[data-log]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const type = btn.dataset.log;
+        const now = Date.now();
+
+        if (type === 'diaper' || type === 'bath') {
+          records.push({ id: crypto.randomUUID(), type, startAt: now, endAt: now });
+          save(records);
+          toast(type === 'diaper' ? '💩 기저귀 기록' : '🛁 목욕 기록');
+          render();
+          return;
+        }
+
+        const open = records.find(r => r.type === type && !r.endAt);
+        if (open) {
+          open.endAt = now;
+          if (type === 'feeding') {
+            // simple amount prompt — in the real app this would be a polished sheet
+            const v = prompt('먹은 양을 입력해 주세요 (ml). 모유면 빈 칸으로 두세요.', '120');
+            open.amount = v && !isNaN(+v) ? +v : null;
+          }
+          save(records);
+          toast('완료되었어요 ✓');
+        } else {
+          records.push({ id: crypto.randomUUID(), type, startAt: now, endAt: null });
+          save(records);
+          toast(type === 'feeding' ? '🍼 수유 시작' : '😴 수면 시작');
+        }
+        render();
+      });
+    });
+
+    // long-press to reset (prototype escape hatch)
+    let pressTimer;
+    document.getElementById('profileBtn').addEventListener('pointerdown', () => {
+      pressTimer = setTimeout(() => {
+        if (confirm('데모 데이터를 초기화할까요?')) {
+          localStorage.removeItem(KEY);
+          location.reload();
+        }
+      }, 1200);
+    });
+    document.getElementById('profileBtn').addEventListener('pointerup',   () => clearTimeout(pressTimer));
+    document.getElementById('profileBtn').addEventListener('pointerleave',() => clearTimeout(pressTimer));
+
+    // re-render every 30s so the "X분 전" stays fresh
+    render();
+    setInterval(render, 30000);
+  </script>
+</body>
+</html>
