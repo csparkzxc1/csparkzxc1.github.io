@@ -5,12 +5,38 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Cattea — Triple Tile Match</title>
   <link rel="stylesheet" href="style.css">
+
+  <!-- Google Analytics 4 — replace G-XXXXXXXXXX with your Measurement ID -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXXXXX', { debug_mode: true });
+  </script>
 </head>
 <body>
-  <div id="app">
+  <!-- ================== Stage Select Screen ================== -->
+  <section id="stage-select" class="stage-select">
+    <header class="ss-header">
+      <a class="ss-home" href="../../index.html" aria-label="Home">←</a>
+      <h1>Stage Select</h1>
+      <button class="ss-reset" id="btn-reset" aria-label="Reset progress">↺</button>
+    </header>
+    <div class="ss-stats">
+      <span>★ <b id="ss-cleared">0</b>/<span id="ss-total">30</span></span>
+      <span>Score <b id="ss-score">0</b></span>
+      <span>🧲 <b id="ss-undo">3</b> · <b id="ss-magnet">2</b> · <b id="ss-shuffle">2</b></span>
+    </div>
+    <div id="stage-grid" class="ss-grid" role="list"></div>
+  </section>
+
+  <!-- ================== Game Screen ================== -->
+  <div id="app" class="hidden">
     <header class="hud">
+      <button class="hud-back" id="btn-back" aria-label="Back to stage select">←</button>
       <div class="hud-item">
-        <span class="label">LEVEL</span>
+        <span class="label">STAGE</span>
         <span id="level" class="value">1</span>
       </div>
       <div class="hud-item">
@@ -18,7 +44,7 @@
         <span id="score" class="value">0</span>
       </div>
       <div class="hud-item">
-        <span class="label">TILES</span>
+        <span class="label" id="rem-label">TILES</span>
         <span id="remaining" class="value">0</span>
       </div>
     </header>
@@ -66,10 +92,11 @@
 
     <footer class="credit">
       <a href="../../index.html" aria-label="Home">← Home</a>
-      <span>Cattea Clone Prototype · 3-Tile Match</span>
+      <span>Cattea Clone Prototype · 30 Stages</span>
     </footer>
   </div>
 
+  <script src="game-integration.js"></script>
   <script src="game.js"></script>
 </body>
 </html>

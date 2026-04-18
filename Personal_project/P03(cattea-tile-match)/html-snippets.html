@@ -1,0 +1,170 @@
+<!--
+  Week 1 HTML / CSS Snippet Reference
+  ====================================
+  이 파일은 문서 용도입니다. 실제 코드는 이미 index.html / style.css / game.js 에
+  통합되어 있습니다. 다른 프로젝트로 이식할 때 참고하세요.
+
+  ⚠️ 배포 전 체크리스트:
+    1. 아래 GA4 스니펫의 G-XXXXXXXXXX 두 군데를 실제 Measurement ID로 교체
+       (index.html 상단 <script async> 태그 1개 + config 호출 1개 = 총 2개)
+    2. stages.json 파일이 index.html 과 같은 폴더에 있는지 확인
+    3. game-integration.js 가 game.js 보다 먼저 로드되는지 확인
+    4. 최초 배포 후 브라우저 콘솔에서:
+         Cattea.ProgressManager.reset()
+       를 실행해서 로컬 저장소 찌꺼기 초기화
+-->
+
+<!-- ============================================================ -->
+<!-- 1. GA4 스니펫 (index.html <head> 안)                          -->
+<!-- ============================================================ -->
+
+<!-- Google Analytics 4 — replace G-XXXXXXXXXX with your Measurement ID -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+  gtag('js', new Date());
+  gtag('config', 'G-XXXXXXXXXX', { debug_mode: true });
+</script>
+
+<!-- 심어지는 커스텀 이벤트 3종:
+     - stage_start  { stage_id, mode }
+     - stage_clear  { stage_id, score, time_sec, stars }
+     - stage_fail   { stage_id, reason, time_sec }
+     - booster_use  { stage_id, booster }   (보너스 이벤트)
+-->
+
+
+<!-- ============================================================ -->
+<!-- 2. Stage Select 화면 마크업 (index.html <body> 최상단)        -->
+<!-- ============================================================ -->
+
+<section id="stage-select" class="stage-select">
+  <header class="ss-header">
+    <a class="ss-home" href="../../index.html" aria-label="Home">←</a>
+    <h1>Stage Select</h1>
+    <button class="ss-reset" id="btn-reset" aria-label="Reset progress">↺</button>
+  </header>
+  <div class="ss-stats">
+    <span>★ <b id="ss-cleared">0</b>/<span id="ss-total">30</span></span>
+    <span>Score <b id="ss-score">0</b></span>
+    <span>🧲 <b id="ss-undo">3</b> · <b id="ss-magnet">2</b> · <b id="ss-shuffle">2</b></span>
+  </div>
+  <div id="stage-grid" class="ss-grid" role="list"></div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- 3. 게임 HUD 뒤로가기 버튼 (index.html #app 의 header 안)      -->
+<!-- ============================================================ -->
+
+<button class="hud-back" id="btn-back" aria-label="Back to stage select">←</button>
+
+
+<!-- ============================================================ -->
+<!-- 4. 스크립트 로드 순서 (index.html 최하단)                     -->
+<!-- ============================================================ -->
+
+<script src="game-integration.js"></script>
+<script src="game.js"></script>
+
+
+<!-- ============================================================ -->
+<!-- 5. Stage Select CSS (style.css 에 추가)                      -->
+<!-- ============================================================ -->
+
+<style>
+#app.hidden { display: none; }
+
+.stage-select {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 12px;
+  gap: 12px;
+}
+.stage-select.hidden { display: none; }
+
+.ss-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 10px 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+.ss-header h1 { font-size: 18px; color: var(--accent-dark); letter-spacing: 1px; }
+
+.ss-home, .ss-reset {
+  background: transparent; border: none; font-size: 22px;
+  color: var(--accent-dark); cursor: pointer; text-decoration: none;
+  width: 32px; height: 32px; display: flex; align-items: center;
+  justify-content: center; border-radius: 10px;
+}
+
+.ss-stats {
+  display: flex; justify-content: space-around;
+  background: rgba(255, 255, 255, 0.6); border-radius: 12px;
+  padding: 8px 12px; font-size: 13px;
+}
+.ss-stats b { color: var(--accent-dark); font-weight: 800; }
+
+.ss-grid {
+  flex: 1; overflow-y: auto;
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 10px; padding: 4px; align-content: start;
+}
+
+.stage-card {
+  position: relative; aspect-ratio: 1;
+  background: #fff; border: 2px solid var(--board-border);
+  border-radius: 14px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  cursor: pointer; padding: 6px; gap: 2px;
+  box-shadow: 0 3px 0 var(--tile-shadow);
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+
+.stage-card .num   { font-size: 22px; font-weight: 900; color: var(--accent-dark); }
+.stage-card .tag   { font-size: 9px; letter-spacing: 0.5px; font-weight: 700; text-transform: uppercase; }
+.stage-card .stars { font-size: 11px; color: #f0b400; letter-spacing: 1px; }
+
+.stage-card.locked      { background: #e8dccc; color: #a79883; cursor: not-allowed; opacity: 0.7; }
+.stage-card.cleared     { background: linear-gradient(180deg, #fff9e6 0%, #ffe9b0 100%); border-color: #f0c060; }
+.stage-card.spike       { border-color: #ff8a8a; }
+.stage-card.relief      { border-color: #8ad59a; }
+.stage-card.milestone   { border-color: #f7b500; }
+.stage-card.timeattack  { border-color: #6aa9e0; }
+.stage-card.current     { outline: 3px solid var(--accent); outline-offset: 2px; }
+</style>
+
+
+<!-- ============================================================ -->
+<!-- 6. 통합 포인트 (game.js 기존 코드에 한 줄씩)                   -->
+<!-- ============================================================ -->
+
+<!--
+부팅:
+  boot() → Analytics.init() + ProgressManager.load() + StageLoader.load()
+
+스테이지 시작 (startStage(id)):
+  Analytics.stageStart(id, mode);
+
+클리어 (win()):
+  ProgressManager.recordClear(stageId, score, stars);
+  ProgressManager.addBoosters(stage.reward);      // 마일스톤 보상
+  Analytics.stageClear(stageId, score, timeSec, stars);
+
+실패 (lose(reason)):
+  Analytics.stageFail(stageId, reason, timeSec);
+  // reason 은 'timeout' | 'tray_full' | 'quit' | 'unknown'
+
+부스터 사용:
+  Analytics.boosterUse(stageId, 'undo'|'magnet'|'shuffle');
+  ProgressManager.setBoosters(currentBoosters);
+-->
