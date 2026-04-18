@@ -13,7 +13,9 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "seed": "tsx --env-file=.env prisma/seed.ts",
-    "test": "node --test --import tsx \"tests/**/*.test.ts\"",
+    "seed:demo": "tsx --env-file=.env prisma/seed-demo.ts",
+    "test": "node --test --import tsx \"tests/templates.test.ts\"",
+    "test:smoke": "node --test --import tsx --env-file=.env \"tests/e2e.smoke.test.ts\"",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
