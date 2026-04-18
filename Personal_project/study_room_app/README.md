@@ -23,16 +23,35 @@ study_room_app/
 
 ## 빠른 시작
 
-```bash
-# 루트에서 의존성 설치 (workspaces)
-npm install
+### 옵션 A: Docker Compose (권장)
 
-# API 개발 서버
+```bash
+docker compose up --build
+# API: http://localhost:4000
+# Postgres: localhost:5432 (study/study/study_room)
+```
+
+### 옵션 B: 로컬 개발
+
+```bash
+npm install                              # 워크스페이스 의존성
+
+# DB 준비 (Postgres 16 필요, .env 설정)
+cp apps/api/.env.example apps/api/.env
+npm run prisma:migrate --workspace apps/api
+npm run seed --workspace apps/api
+
+# API
 npm run dev --workspace apps/api
 
-# 모바일 앱 (Expo)
+# 모바일 앱 (별도 터미널)
 npm run start --workspace apps/mobile
 ```
+
+### 학부모 웹뷰
+
+API가 뜨면 `http://localhost:4000/p/:token` 에서 접근 가능.
+토큰은 `guardian.accessToken` (학생 등록 시 자동 발급, 알림톡 버튼 URL에 포함됨).
 
 ## 개발 단계
 

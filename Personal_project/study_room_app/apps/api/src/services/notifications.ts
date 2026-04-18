@@ -2,6 +2,11 @@ import { prisma } from "../db";
 import type { AlimtalkTemplateCode } from "./templates";
 import { localizeAbsenceReason } from "./templates";
 
+function parentUrl(token: string): string {
+  const base = process.env.PARENT_BASE_URL ?? "http://localhost:4000";
+  return `${base}/p/${token}`;
+}
+
 function formatTime(date: Date): string {
   return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
 }
@@ -48,7 +53,7 @@ export async function enqueueNotification(
           templateCode,
           relatedEntityId: record.id,
           phone: guardian.phone,
-          payload: baseVars,
+          payload: { ...baseVars, parentUrl: parentUrl(guardian.accessToken) },
           provider: "aligo",
           status: "pending",
         },
@@ -86,7 +91,7 @@ export async function enqueueNotification(
           templateCode,
           relatedEntityId: invoice.id,
           phone: guardian.phone,
-          payload: vars,
+          payload: { ...vars, parentUrl: parentUrl(guardian.accessToken) },
           provider: "aligo",
           status: "pending",
         },

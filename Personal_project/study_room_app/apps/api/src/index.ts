@@ -5,6 +5,8 @@ import { attendanceRouter } from "./routes/attendance";
 import { invoicesRouter } from "./routes/invoices";
 import { notificationsRouter } from "./routes/notifications";
 import { dashboardRouter } from "./routes/dashboard";
+import { parentRouter } from "./routes/parent";
+import { onboardingRouter } from "./routes/onboarding";
 import { NotificationWorker } from "./workers/notificationWorker";
 
 const app = express();
@@ -18,6 +20,14 @@ app.use("/api/attendance", attendanceRouter);
 app.use("/api/invoices", invoicesRouter);
 app.use("/api/notifications", notificationsRouter);
 app.use("/api/dashboard", dashboardRouter);
+app.use("/p", parentRouter);
+app.use("/api/onboarding", onboardingRouter);
+
+app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error("unhandled route error:", err);
+  if (res.headersSent) return;
+  res.status(500).json({ error: "internal_error", message: err.message });
+});
 
 const port = Number(process.env.PORT ?? 4000);
 const worker = new NotificationWorker();
@@ -28,6 +38,10 @@ app.listen(port, () => {
     worker.start();
     console.log("notification worker started");
   }
+});
+
+process.on("unhandledRejection", (reason) => {
+  console.error("unhandledRejection:", reason);
 });
 
 process.on("SIGTERM", () => {

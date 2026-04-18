@@ -18,6 +18,19 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
+  // Onboarding
+  setup: (body: {
+    academyName: string;
+    teacherName: string;
+    teacherPhone: string;
+  }) =>
+    request<{
+      academyId: string;
+      teacherId: string;
+      academyName: string;
+      resumed: boolean;
+    }>("/api/onboarding/setup", { method: "POST", body: JSON.stringify(body) }),
+
   // Dashboard
   today: (academyId: string) =>
     request<TodayDashboard>(`/api/dashboard/today?academyId=${academyId}`),

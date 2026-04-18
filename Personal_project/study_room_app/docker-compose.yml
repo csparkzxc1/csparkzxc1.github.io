@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: study
+      POSTGRES_PASSWORD: study
+      POSTGRES_DB: study_room
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U study -d study_room"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://study:study@db:5432/study_room?schema=public
+      PORT: "4000"
+      PARENT_BASE_URL: ${PARENT_BASE_URL:-http://localhost:4000}
+      INVOICE_BANK_ACCOUNT: ${INVOICE_BANK_ACCOUNT:-}
+      ALIGO_API_KEY: ${ALIGO_API_KEY:-}
+      ALIGO_USER_ID: ${ALIGO_USER_ID:-}
+      ALIGO_SENDER: ${ALIGO_SENDER:-}
+      ALIGO_SENDER_KEY: ${ALIGO_SENDER_KEY:-}
+    ports:
+      - "4000:4000"
+
+volumes:
+  db-data:

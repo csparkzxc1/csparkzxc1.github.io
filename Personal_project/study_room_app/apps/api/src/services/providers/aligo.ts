@@ -43,6 +43,9 @@ export class AligoProvider implements AlimtalkProvider {
       subject_1: "공부방 알림",
       message_1: req.message,
     });
+    if (req.buttons && req.buttons.length > 0) {
+      form.set("button_1", JSON.stringify({ button: req.buttons }));
+    }
 
     try {
       const res = await fetch("https://kakaoapi.aligo.in/akv10/alimtalk/send/", {

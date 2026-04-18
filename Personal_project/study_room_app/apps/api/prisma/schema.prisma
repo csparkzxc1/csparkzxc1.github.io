@@ -71,6 +71,7 @@ model Guardian {
   relation            String?  @db.VarChar(20)
   isPrimary           Boolean  @default(true)
   notificationOptin   Boolean  @default(true)
+  accessToken         String   @unique @default(uuid()) @db.Uuid
 
   student          Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
   notificationLogs NotificationLog[]

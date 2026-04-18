@@ -5,10 +5,18 @@ export interface SendResult {
   errorMessage?: string;
 }
 
+export interface AlimtalkButton {
+  name: string;
+  type: "WL";
+  urlMobile: string;
+  urlPc: string;
+}
+
 export interface AlimtalkRequest {
   phone: string;
   templateId: string;
   message: string;
+  buttons?: AlimtalkButton[];
 }
 
 export interface SmsRequest {

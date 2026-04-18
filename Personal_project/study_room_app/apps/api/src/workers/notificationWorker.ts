@@ -89,10 +89,21 @@ export class NotificationWorker {
       return;
     }
 
+    const parentUrl = (payload.parentUrl ?? "") as string;
     const alimtalk = await this.provider.sendAlimtalk({
       phone: log.phone,
       templateId: template.templateId,
       message,
+      buttons: parentUrl
+        ? [
+            {
+              name: "출결·수강료 확인",
+              type: "WL",
+              urlMobile: parentUrl,
+              urlPc: parentUrl,
+            },
+          ]
+        : undefined,
     });
 
     if (alimtalk.success) {
