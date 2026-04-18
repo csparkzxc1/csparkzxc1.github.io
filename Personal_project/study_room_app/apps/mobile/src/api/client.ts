@@ -41,6 +41,16 @@ export const api = {
   // Classes
   listClasses: (academyId: string) =>
     request<{ classes: ClassRoom[] }>(`/api/classes?academyId=${academyId}`),
+  createClass: (body: {
+    academyId: string;
+    name: string;
+    subject?: string;
+    schedules: Array<{ dayOfWeek: number; startTime: string; endTime: string }>;
+  }) =>
+    request<{ classRoom: ClassRoom }>("/api/classes", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
 
   // Attendance
   listAttendance: (date: string, classRoomId?: string) =>

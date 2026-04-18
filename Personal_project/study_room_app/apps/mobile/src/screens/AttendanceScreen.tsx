@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { api } from "../api/client";
+import { AbsenceModal } from "../components/AbsenceModal";
 import { Screen } from "../components/Screen";
 import { useQuery } from "../hooks/useQuery";
 import { session } from "../session";
@@ -18,6 +19,10 @@ interface Row {
 
 export function AttendanceScreen() {
   const [busy, setBusy] = useState<Set<string>>(new Set());
+  const [absenceTarget, setAbsenceTarget] = useState<{
+    studentId: string;
+    studentName: string;
+  } | null>(null);
 
   const today = useMemo(() => {
     const d = new Date();
@@ -58,6 +63,7 @@ export function AttendanceScreen() {
 
   const handleTap = async (row: Row) => {
     if (busy.has(row.studentId)) return;
+    if (row.status === "absent" || row.status === "checked_out") return;
     setRowBusy(row.studentId, true);
     try {
       if (row.status === "pending") {
@@ -73,17 +79,25 @@ export function AttendanceScreen() {
     }
   };
 
+  const handleLongPress = (row: Row) => {
+    if (row.status === "checked_out") return;
+    setAbsenceTarget({ studentId: row.studentId, studentName: row.studentName });
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.header}>
         {today.getFullYear()}-{String(today.getMonth() + 1).padStart(2, "0")}-
         {String(today.getDate()).padStart(2, "0")} 출결
       </Text>
+      <Text style={styles.hint}>탭=등원/하원 · 길게 누르기=결석 처리</Text>
       <View style={styles.grid}>
         {rows.map((r) => (
           <Pressable
             key={r.studentId}
             onPress={() => handleTap(r)}
+            onLongPress={() => handleLongPress(r)}
+            delayLongPress={400}
             style={[styles.card, cardStyleByStatus[r.status]]}
           >
             <Text style={styles.cardName}>{r.studentName}</Text>
@@ -96,6 +110,14 @@ export function AttendanceScreen() {
           <Text style={styles.empty}>학생을 먼저 등록하세요.</Text>
         ) : null}
       </View>
+
+      <AbsenceModal
+        visible={absenceTarget !== null}
+        studentId={absenceTarget?.studentId ?? null}
+        studentName={absenceTarget?.studentName ?? null}
+        onClose={() => setAbsenceTarget(null)}
+        onSaved={() => attendanceQuery.refetch()}
+      />
     </ScrollView>
   );
 }
@@ -148,6 +170,7 @@ const cardStyleByStatus: Record<RowStatus, { backgroundColor: string }> = {
 const styles = StyleSheet.create({
   container: { padding: 16, gap: 12 },
   header: { fontSize: 16, fontWeight: "500" },
+  hint: { fontSize: 12, color: "#888" },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   card: {
     width: "48%",

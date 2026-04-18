@@ -1,5 +1,7 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { useState } from "react";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { api } from "../api/client";
+import { ClassFormModal } from "../components/ClassFormModal";
 import { Screen } from "../components/Screen";
 import { useQuery } from "../hooks/useQuery";
 import { session } from "../session";
@@ -7,6 +9,7 @@ import { session } from "../session";
 const DAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
 
 export function ClassesScreen() {
+  const [formOpen, setFormOpen] = useState(false);
   const { status, data, error, refetch } = useQuery(
     () => api.listClasses(session.academyId),
     []
@@ -17,32 +20,47 @@ export function ClassesScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {data.classes.length === 0 ? (
-        <Text style={styles.empty}>등록된 반이 없습니다.</Text>
-      ) : null}
-      {data.classes.map((c) => {
-        const days = [...new Set(c.schedules.map((s) => s.dayOfWeek))]
-          .sort()
-          .map((d) => DAY_LABELS[d])
-          .join("/");
-        const timeRange = c.schedules[0]
-          ? `${formatTime(c.schedules[0].startTime)}~${formatTime(c.schedules[0].endTime)}`
-          : "";
-        return (
-          <View key={c.id} style={styles.card}>
-            <Text style={styles.name}>
-              {c.name}
-              {c.subject ? ` (${c.subject})` : ""}
-            </Text>
-            <Text style={styles.meta}>
-              {days} {timeRange}
-            </Text>
-            <Text style={styles.meta}>학생 {c.enrollments.length}명</Text>
-          </View>
-        );
-      })}
-    </ScrollView>
+    <View style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.count}>반 {data.classes.length}개</Text>
+          <Pressable style={styles.addBtn} onPress={() => setFormOpen(true)}>
+            <Text style={styles.addBtnText}>+ 반</Text>
+          </Pressable>
+        </View>
+
+        {data.classes.length === 0 ? (
+          <Text style={styles.empty}>등록된 반이 없습니다.</Text>
+        ) : null}
+
+        {data.classes.map((c) => {
+          const days = [...new Set(c.schedules.map((s) => s.dayOfWeek))]
+            .sort()
+            .map((d) => DAY_LABELS[d])
+            .join("/");
+          const timeRange = c.schedules[0]
+            ? `${formatTime(c.schedules[0].startTime)}~${formatTime(c.schedules[0].endTime)}`
+            : "";
+          return (
+            <View key={c.id} style={styles.card}>
+              <Text style={styles.name}>
+                {c.name}
+                {c.subject ? ` (${c.subject})` : ""}
+              </Text>
+              <Text style={styles.meta}>
+                {days} {timeRange}
+              </Text>
+              <Text style={styles.meta}>학생 {c.enrollments.length}명</Text>
+            </View>
+          );
+        })}
+      </ScrollView>
+      <ClassFormModal
+        visible={formOpen}
+        onClose={() => setFormOpen(false)}
+        onCreated={refetch}
+      />
+    </View>
   );
 }
 
@@ -53,6 +71,20 @@ function formatTime(iso: string): string {
 
 const styles = StyleSheet.create({
   container: { padding: 16, gap: 10 },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 6,
+  },
+  count: { fontSize: 14, color: "#666" },
+  addBtn: {
+    backgroundColor: "#1976d2",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  addBtnText: { color: "#fff", fontWeight: "500" },
   empty: { color: "#999", textAlign: "center", padding: 32 },
   card: {
     backgroundColor: "#fff",
