@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { api } from "../api/client";
-import { ClassFormModal } from "../components/ClassFormModal";
+import { ClassFormModal, type ClassFormInitial } from "../components/ClassFormModal";
 import { Screen } from "../components/Screen";
 import { useQuery } from "../hooks/useQuery";
 import { session } from "../session";
@@ -9,7 +9,7 @@ import { session } from "../session";
 const DAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
 
 export function ClassesScreen() {
-  const [formOpen, setFormOpen] = useState(false);
+  const [editing, setEditing] = useState<ClassFormInitial | "new" | null>(null);
   const { status, data, error, refetch } = useQuery(
     () => api.listClasses(session.academyId),
     []
@@ -24,7 +24,7 @@ export function ClassesScreen() {
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.header}>
           <Text style={styles.count}>반 {data.classes.length}개</Text>
-          <Pressable style={styles.addBtn} onPress={() => setFormOpen(true)}>
+          <Pressable style={styles.addBtn} onPress={() => setEditing("new")}>
             <Text style={styles.addBtnText}>+ 반</Text>
           </Pressable>
         </View>
@@ -34,31 +34,44 @@ export function ClassesScreen() {
         ) : null}
 
         {data.classes.map((c) => {
-          const days = [...new Set(c.schedules.map((s) => s.dayOfWeek))]
-            .sort()
-            .map((d) => DAY_LABELS[d])
-            .join("/");
-          const timeRange = c.schedules[0]
-            ? `${formatTime(c.schedules[0].startTime)}~${formatTime(c.schedules[0].endTime)}`
-            : "";
+          const days = [...new Set(c.schedules.map((s) => s.dayOfWeek))].sort();
+          const daysLabel = days.map((d) => DAY_LABELS[d]).join("/");
+          const first = c.schedules[0];
+          const startTime = first ? formatTime(first.startTime) : "16:00";
+          const endTime = first ? formatTime(first.endTime) : "17:30";
+          const timeRange = `${startTime}~${endTime}`;
           return (
-            <View key={c.id} style={styles.card}>
+            <Pressable
+              key={c.id}
+              style={styles.card}
+              onPress={() =>
+                setEditing({
+                  id: c.id,
+                  name: c.name,
+                  subject: c.subject,
+                  days,
+                  startTime,
+                  endTime,
+                })
+              }
+            >
               <Text style={styles.name}>
                 {c.name}
                 {c.subject ? ` (${c.subject})` : ""}
               </Text>
               <Text style={styles.meta}>
-                {days} {timeRange}
+                {daysLabel} {timeRange}
               </Text>
               <Text style={styles.meta}>학생 {c.enrollments.length}명</Text>
-            </View>
+            </Pressable>
           );
         })}
       </ScrollView>
       <ClassFormModal
-        visible={formOpen}
-        onClose={() => setFormOpen(false)}
-        onCreated={refetch}
+        visible={editing !== null}
+        initial={editing && editing !== "new" ? editing : undefined}
+        onClose={() => setEditing(null)}
+        onSaved={refetch}
       />
     </View>
   );

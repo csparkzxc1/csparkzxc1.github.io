@@ -52,6 +52,53 @@ classesRouter.post("/", async (req, res) => {
   res.status(201).json({ classRoom: created });
 });
 
+classesRouter.patch("/:id", async (req, res) => {
+  const { id } = req.params;
+  const { name, subject, schedules } = req.body as {
+    name?: string;
+    subject?: string;
+    schedules?: Array<{ dayOfWeek: number; startTime: string; endTime: string }>;
+  };
+
+  const data: { name?: string; subject?: string | null } = {};
+  if (name !== undefined) data.name = name;
+  if (subject !== undefined) data.subject = subject || null;
+
+  const updated = await prisma.$transaction(async (tx) => {
+    const cls = await tx.classRoom.update({ where: { id }, data });
+    if (schedules) {
+      await tx.classSchedule.deleteMany({ where: { classRoomId: id } });
+      await tx.classSchedule.createMany({
+        data: schedules.map((s) => ({
+          classRoomId: id,
+          dayOfWeek: s.dayOfWeek,
+          startTime: parseTime(s.startTime),
+          endTime: parseTime(s.endTime),
+        })),
+      });
+    }
+    return cls;
+  });
+  res.json({ classRoom: updated });
+});
+
+classesRouter.delete("/:id", async (req, res) => {
+  const { id } = req.params;
+  const activeEnrollments = await prisma.enrollment.count({
+    where: { classRoomId: id, removedAt: null },
+  });
+  if (activeEnrollments > 0) {
+    return res.status(409).json({
+      error: "has_students",
+      message: `${activeEnrollments}명의 학생이 배정되어 있습니다. 먼저 이동시키세요.`,
+    });
+  }
+  await prisma.classSchedule.deleteMany({ where: { classRoomId: id } });
+  await prisma.enrollment.deleteMany({ where: { classRoomId: id } });
+  await prisma.classRoom.delete({ where: { id } });
+  res.status(204).end();
+});
+
 classesRouter.post("/:id/enroll", async (req, res) => {
   const { id } = req.params;
   const { studentId } = req.body as { studentId: string };

@@ -1,0 +1,70 @@
+name: study-room-app CI
+
+on:
+  push:
+    branches: [main]
+    paths: ['Personal_project/study_room_app/**', '.github/workflows/study-room-ci.yml']
+  pull_request:
+    paths: ['Personal_project/study_room_app/**', '.github/workflows/study-room-ci.yml']
+
+defaults:
+  run:
+    working-directory: Personal_project/study_room_app
+
+jobs:
+  check:
+    name: typecheck + unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: Personal_project/study_room_app/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Generate Prisma client
+        run: npx prisma generate
+        working-directory: Personal_project/study_room_app/apps/api
+      - name: API typecheck
+        run: npm run typecheck --workspace apps/api
+      - name: Mobile typecheck
+        run: npm run typecheck --workspace apps/mobile
+      - name: API unit tests
+        run: npm test --workspace apps/api
+
+  smoke:
+    name: smoke test (Postgres)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: study
+          POSTGRES_PASSWORD: study
+          POSTGRES_DB: study_room
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U study"
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://study:study@localhost:5432/study_room?schema=public
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: Personal_project/study_room_app/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Prisma migrate + generate
+        run: |
+          echo "DATABASE_URL=$DATABASE_URL" > apps/api/.env
+          npx --workspace apps/api prisma migrate deploy
+          npx --workspace apps/api prisma generate
+      - name: Run smoke test
+        run: npm run test:smoke --workspace apps/api

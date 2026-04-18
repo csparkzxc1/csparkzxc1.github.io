@@ -17,6 +17,16 @@ interface Row {
   checkInAt?: string;
 }
 
+function startOfDay(d: Date): Date {
+  const copy = new Date(d);
+  copy.setHours(0, 0, 0, 0);
+  return copy;
+}
+
+function daysBetween(a: Date, b: Date): number {
+  return Math.round((a.getTime() - b.getTime()) / 86_400_000);
+}
+
 export function AttendanceScreen() {
   const [busy, setBusy] = useState<Set<string>>(new Set());
   const [absenceTarget, setAbsenceTarget] = useState<{
@@ -24,15 +34,18 @@ export function AttendanceScreen() {
     studentName: string;
   } | null>(null);
 
-  const today = useMemo(() => {
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    return d;
-  }, []);
-  const isoDate = today.toISOString();
+  const [viewDate, setViewDate] = useState<Date>(() => startOfDay(new Date()));
+  const isoDate = viewDate.toISOString();
+  const todayStart = useMemo(() => startOfDay(new Date()), []);
+  const ageInDays = daysBetween(todayStart, viewDate);
+  const isToday = ageInDays === 0;
+  const readOnly = ageInDays > 30 || viewDate > todayStart;
 
   const studentsQuery = useQuery(() => api.listStudents(session.academyId), []);
-  const attendanceQuery = useQuery(() => api.listAttendance(isoDate), [isoDate]);
+  const attendanceQuery = useQuery(
+    () => api.listAttendance(isoDate),
+    [isoDate]
+  );
 
   if (studentsQuery.status !== "success" || attendanceQuery.status !== "success") {
     return (
@@ -61,9 +74,23 @@ export function AttendanceScreen() {
     });
   };
 
+  const shiftDay = (delta: number) => {
+    const next = new Date(viewDate);
+    next.setDate(next.getDate() + delta);
+    if (next > todayStart) return;
+    setViewDate(startOfDay(next));
+  };
+
   const handleTap = async (row: Row) => {
-    if (busy.has(row.studentId)) return;
+    if (readOnly || busy.has(row.studentId)) return;
     if (row.status === "absent" || row.status === "checked_out") return;
+    if (!isToday) {
+      Alert.alert(
+        "과거 일자 체크인",
+        "과거 일자에서는 새 체크인이 제한됩니다. 결석으로 처리하거나 기록을 수정하세요."
+      );
+      return;
+    }
     setRowBusy(row.studentId, true);
     try {
       if (row.status === "pending") {
@@ -80,17 +107,51 @@ export function AttendanceScreen() {
   };
 
   const handleLongPress = (row: Row) => {
-    if (row.status === "checked_out") return;
+    if (readOnly || row.status === "checked_out") return;
     setAbsenceTarget({ studentId: row.studentId, studentName: row.studentName });
   };
 
+  const dateLabel = formatDateHeader(viewDate);
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.header}>
-        {today.getFullYear()}-{String(today.getMonth() + 1).padStart(2, "0")}-
-        {String(today.getDate()).padStart(2, "0")} 출결
-      </Text>
-      <Text style={styles.hint}>탭=등원/하원 · 길게 누르기=결석 처리</Text>
+      <View style={styles.dateBar}>
+        <Pressable
+          hitSlop={8}
+          onPress={() => shiftDay(-1)}
+          disabled={ageInDays >= 30}
+          style={styles.navBtn}
+        >
+          <Text style={[styles.navText, ageInDays >= 30 && styles.disabled]}>◀</Text>
+        </Pressable>
+        <View style={styles.dateCenter}>
+          <Text style={styles.dateLabel}>{dateLabel}</Text>
+          {isToday ? null : (
+            <Pressable onPress={() => setViewDate(todayStart)}>
+              <Text style={styles.todayLink}>오늘로</Text>
+            </Pressable>
+          )}
+        </View>
+        <Pressable
+          hitSlop={8}
+          onPress={() => shiftDay(1)}
+          disabled={isToday}
+          style={styles.navBtn}
+        >
+          <Text style={[styles.navText, isToday && styles.disabled]}>▶</Text>
+        </Pressable>
+      </View>
+
+      {readOnly ? (
+        <View style={styles.readonlyBanner}>
+          <Text style={styles.readonlyText}>
+            31일 이전 기록은 조회만 가능합니다
+          </Text>
+        </View>
+      ) : (
+        <Text style={styles.hint}>탭=등원/하원 · 길게 누르기=결석 처리</Text>
+      )}
+
       <View style={styles.grid}>
         {rows.map((r) => (
           <Pressable
@@ -147,6 +208,11 @@ function mergeRows(students: Student[], records: AttendanceRecord[]): Row[] {
   });
 }
 
+function formatDateHeader(d: Date): string {
+  const days = ["일", "월", "화", "수", "목", "금", "토"];
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")} (${days[d.getDay()]})`;
+}
+
 function labelByStatus(r: Row): string {
   if (r.status === "pending") return "탭=등원";
   if (r.status === "checked_in") return `${formatTime(r.checkInAt)} 등원`;
@@ -169,8 +235,28 @@ const cardStyleByStatus: Record<RowStatus, { backgroundColor: string }> = {
 
 const styles = StyleSheet.create({
   container: { padding: 16, gap: 12 },
-  header: { fontSize: 16, fontWeight: "500" },
+  dateBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f5f5f7",
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 10,
+    justifyContent: "space-between",
+  },
+  navBtn: { paddingHorizontal: 14, paddingVertical: 4 },
+  navText: { fontSize: 18, color: "#1976d2" },
+  disabled: { color: "#bbb" },
+  dateCenter: { alignItems: "center", gap: 2 },
+  dateLabel: { fontSize: 16, fontWeight: "600" },
+  todayLink: { fontSize: 12, color: "#1976d2" },
   hint: { fontSize: 12, color: "#888" },
+  readonlyBanner: {
+    backgroundColor: "#fff3cd",
+    padding: 10,
+    borderRadius: 8,
+  },
+  readonlyText: { color: "#8a6d3b", fontSize: 13, textAlign: "center" },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   card: {
     width: "48%",

@@ -2,12 +2,15 @@ import { useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { api } from "../api/client";
 import { Screen } from "../components/Screen";
-import { StudentFormModal } from "../components/StudentFormModal";
+import {
+  StudentFormModal,
+  type StudentFormInitial,
+} from "../components/StudentFormModal";
 import { useQuery } from "../hooks/useQuery";
 import { session } from "../session";
 
 export function StudentsScreen() {
-  const [formOpen, setFormOpen] = useState(false);
+  const [editing, setEditing] = useState<StudentFormInitial | "new" | null>(null);
 
   const { status, data, error, refetch } = useQuery(
     () => api.listStudents(session.academyId),
@@ -29,7 +32,7 @@ export function StudentsScreen() {
         ListHeaderComponent={
           <View style={styles.header}>
             <Text style={styles.count}>학생 {students.length}명</Text>
-            <Pressable style={styles.addBtn} onPress={() => setFormOpen(true)}>
+            <Pressable style={styles.addBtn} onPress={() => setEditing("new")}>
               <Text style={styles.addBtnText}>+ 등록</Text>
             </Pressable>
           </View>
@@ -40,7 +43,17 @@ export function StudentsScreen() {
         renderItem={({ item }) => {
           const className = item.enrollments[0]?.classRoom.name ?? "미배정";
           return (
-            <View style={styles.row}>
+            <Pressable
+              style={styles.row}
+              onPress={() =>
+                setEditing({
+                  id: item.id,
+                  name: item.name,
+                  grade: item.grade,
+                  monthlyFee: item.monthlyFee,
+                })
+              }
+            >
               <Text style={styles.name}>
                 {item.name}
                 {item.grade ? ` (${item.grade}학년)` : ""}
@@ -48,14 +61,15 @@ export function StudentsScreen() {
               <Text style={styles.meta}>
                 월 {item.monthlyFee.toLocaleString("ko-KR")}원 · {className}
               </Text>
-            </View>
+            </Pressable>
           );
         }}
       />
       <StudentFormModal
-        visible={formOpen}
-        onClose={() => setFormOpen(false)}
-        onCreated={refetch}
+        visible={editing !== null}
+        initial={editing && editing !== "new" ? editing : undefined}
+        onClose={() => setEditing(null)}
+        onSaved={refetch}
       />
     </View>
   );

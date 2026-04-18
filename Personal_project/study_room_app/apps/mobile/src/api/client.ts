@@ -18,6 +18,33 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
+  // Settings
+  getBillingRule: (academyId: string) =>
+    request<{
+      rule: {
+        absenceFreeCount: number;
+        absenceDeductionPerClass: number;
+        siblingDiscountRate: number;
+      };
+    }>(`/api/settings/billing-rule?academyId=${academyId}`),
+  updateBillingRule: (
+    academyId: string,
+    body: {
+      absenceFreeCount: number;
+      absenceDeductionPerClass: number;
+      siblingDiscountRate: number;
+    }
+  ) =>
+    request<{ rule: unknown }>(
+      `/api/settings/billing-rule?academyId=${academyId}`,
+      { method: "PUT", body: JSON.stringify(body) }
+    ),
+  updateAcademyName: (academyId: string, name: string) =>
+    request<{ academy: { id: string; name: string } }>(
+      `/api/settings/academy?academyId=${academyId}`,
+      { method: "PATCH", body: JSON.stringify({ name }) }
+    ),
+
   // Onboarding
   setup: (body: {
     academyName: string;
@@ -50,6 +77,18 @@ export const api = {
       method: "POST",
       body: JSON.stringify(body),
     }),
+  updateStudent: (
+    id: string,
+    body: { name?: string; grade?: number | null; monthlyFee?: number }
+  ) =>
+    request<{ student: Student }>(`/api/students/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
+  deleteStudent: (id: string) =>
+    fetch(`${BASE_URL}/api/students/${id}`, { method: "DELETE" }).then((r) => {
+      if (!r.ok && r.status !== 204) throw new Error(`DELETE ${r.status}`);
+    }),
 
   // Classes
   listClasses: (academyId: string) =>
@@ -63,6 +102,25 @@ export const api = {
     request<{ classRoom: ClassRoom }>("/api/classes", {
       method: "POST",
       body: JSON.stringify(body),
+    }),
+  updateClass: (
+    id: string,
+    body: {
+      name?: string;
+      subject?: string;
+      schedules?: Array<{ dayOfWeek: number; startTime: string; endTime: string }>;
+    }
+  ) =>
+    request<{ classRoom: ClassRoom }>(`/api/classes/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
+  deleteClass: (id: string) =>
+    fetch(`${BASE_URL}/api/classes/${id}`, { method: "DELETE" }).then(async (r) => {
+      if (!r.ok && r.status !== 204) {
+        const body = (await r.json().catch(() => ({}))) as { message?: string };
+        throw new Error(body.message ?? `DELETE ${r.status}`);
+      }
     }),
 
   // Attendance

@@ -1,11 +1,14 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { Pressable, Text } from "react-native";
 import { TodayScreen } from "../screens/TodayScreen";
 import { StudentsScreen } from "../screens/StudentsScreen";
 import { ClassesScreen } from "../screens/ClassesScreen";
 import { AttendanceScreen } from "../screens/AttendanceScreen";
 import { BillingScreen } from "../screens/BillingScreen";
+import type { RootStackParamList } from "../App";
 
-export type RootTabParamList = {
+type RootTabParamList = {
   Today: undefined;
   Students: undefined;
   Classes: undefined;
@@ -15,9 +18,21 @@ export type RootTabParamList = {
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
 
-export function RootNavigator() {
+type Props = NativeStackScreenProps<RootStackParamList, "Tabs">;
+
+export function TabsWithHeader({ navigation }: Props) {
+  const headerRight = () => (
+    <Pressable
+      onPress={() => navigation.navigate("Settings")}
+      hitSlop={10}
+      style={{ paddingHorizontal: 12 }}
+    >
+      <Text style={{ fontSize: 18 }}>⚙</Text>
+    </Pressable>
+  );
+
   return (
-    <Tab.Navigator screenOptions={{ headerShown: true }}>
+    <Tab.Navigator screenOptions={{ headerRight }}>
       <Tab.Screen name="Today" component={TodayScreen} options={{ title: "오늘" }} />
       <Tab.Screen name="Students" component={StudentsScreen} options={{ title: "학생" }} />
       <Tab.Screen name="Classes" component={ClassesScreen} options={{ title: "반" }} />

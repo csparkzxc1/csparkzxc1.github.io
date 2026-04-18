@@ -7,6 +7,7 @@ import { notificationsRouter } from "./routes/notifications";
 import { dashboardRouter } from "./routes/dashboard";
 import { parentRouter } from "./routes/parent";
 import { onboardingRouter } from "./routes/onboarding";
+import { settingsRouter } from "./routes/settings";
 import { NotificationWorker } from "./workers/notificationWorker";
 
 const app = express();
@@ -22,6 +23,7 @@ app.use("/api/notifications", notificationsRouter);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/p", parentRouter);
 app.use("/api/onboarding", onboardingRouter);
+app.use("/api/settings", settingsRouter);
 
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error("unhandled route error:", err);
