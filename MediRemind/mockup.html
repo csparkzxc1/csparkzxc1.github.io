@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MediRemind 목업</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #E8EDF2;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    padding: 40px 20px;
+  }
+
+  h1 {
+    text-align: center;
+    color: #333;
+    font-size: 28px;
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    text-align: center;
+    color: #888;
+    font-size: 14px;
+    margin-bottom: 40px;
+  }
+
+  .screens-row {
+    display: flex;
+    gap: 32px;
+    justify-content: center;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .screen-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .screen-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #555;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  /* Phone Frame */
+  .phone {
+    width: 320px;
+    height: 640px;
+    background: #fff;
+    border-radius: 40px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2), inset 0 0 0 2px #ddd;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .phone::before {
+    content: '';
+    display: block;
+    width: 100px;
+    height: 24px;
+    background: #111;
+    border-radius: 0 0 16px 16px;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+  }
+
+  .screen {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background: #F8F9FA;
+    margin-top: 24px;
+  }
+
+  /* Header */
+  .header {
+    background: #4A90D9;
+    padding: 16px 20px 18px;
+    flex-shrink: 0;
+  }
+  .header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .header-date {
+    color: rgba(255,255,255,0.75);
+    font-size: 11px;
+    margin-bottom: 2px;
+  }
+  .header-title {
+    color: #fff;
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .header-add-btn {
+    background: #fff;
+    width: 36px;
+    height: 36px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: #4A90D9;
+    font-weight: 300;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+  }
+  .header-badge {
+    background: rgba(255,255,255,0.25);
+    border-radius: 12px;
+    padding: 4px 10px;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  /* Scroll content */
+  .scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    scrollbar-width: none;
+  }
+  .scroll::-webkit-scrollbar { display: none; }
+
+  /* Cards */
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  /* Progress */
+  .progress-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .progress-label { font-size: 13px; font-weight: 600; color: #333; }
+  .progress-count { font-size: 12px; color: #888; }
+  .progress-count span { font-weight: 700; font-size: 14px; color: #4A90D9; }
+  .progress-track {
+    height: 10px;
+    background: #E9ECEF;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 4px;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.6s;
+  }
+  .progress-pct { font-size: 11px; color: #aaa; text-align: right; }
+
+  /* Prescription Banner */
+  .presc-banner {
+    background: #FFF9EF;
+    border-radius: 12px;
+    padding: 12px 14px;
+    border-left: 4px solid #F0AD4E;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  }
+  .presc-header { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+  .presc-header-text { font-size: 12px; font-weight: 700; color: #7D5A00; }
+  .presc-badges { display: flex; gap: 8px; }
+  .presc-badge {
+    display: flex; align-items: center; gap: 5px;
+    background: #fff;
+    border: 1.5px solid #F0AD4E;
+    border-radius: 16px;
+    padding: 4px 10px;
+    font-size: 11px;
+  }
+  .presc-badge.urgent { border-color: #D9534F; }
+  .badge-dot { width: 7px; height: 7px; border-radius: 50%; }
+  .badge-name { font-weight: 600; color: #333; }
+  .badge-dday { font-weight: 700; color: #F0AD4E; }
+  .badge-dday.urgent { color: #D9534F; }
+
+  /* Dose Item */
+  .dose-item {
+    background: #fff;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    min-height: 64px;
+  }
+  .dose-color-bar { width: 5px; align-self: stretch; flex-shrink: 0; }
+  .dose-info { flex: 1; padding: 12px 12px; }
+  .dose-name { font-size: 14px; font-weight: 600; color: #222; margin-bottom: 3px; }
+  .dose-name.done { text-decoration: line-through; color: #aaa; }
+  .dose-meta { font-size: 11px; color: #888; display: flex; align-items: center; gap: 4px; }
+  .dose-check {
+    margin-right: 12px;
+    width: 56px;
+    height: 32px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .dose-check.done { background: #5CB85C; color: #fff; }
+  .dose-check.pending { background: #E9ECEF; color: #555; }
+
+  /* All done banner */
+  .all-done {
+    background: #5CB85C;
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  /* Medicine Card */
+  .med-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    gap: 12px;
+  }
+  .med-card.inactive { opacity: 0.55; }
+  .med-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .med-body { flex: 1; }
+  .med-name-row { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
+  .med-name { font-size: 14px; font-weight: 700; color: #222; }
+  .med-dday {
+    font-size: 10px; font-weight: 700; color: #fff;
+    padding: 2px 7px; border-radius: 8px;
+  }
+  .med-meta { font-size: 11px; color: #777; margin-top: 1px; }
+  .toggle {
+    width: 40px; height: 22px; border-radius: 11px;
+    flex-shrink: 0; position: relative;
+    transition: background 0.2s;
+  }
+  .toggle.on { background: #4A90D9; }
+  .toggle.off { background: #ccc; }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    width: 18px; height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    top: 2px;
+    transition: left 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .toggle.on::after { left: 20px; }
+  .toggle.off::after { left: 2px; }
+
+  /* Calendar Screen */
+  .cal-header-bar {
+    background: #4A90D9;
+    padding: 14px 16px 16px;
+  }
+  .cal-month-nav {
+    display: flex; align-items: center; justify-content: center; gap: 24px;
+    padding: 12px 0 4px;
+    background: #fff;
+  }
+  .cal-month { font-size: 15px; font-weight: 700; color: #222; }
+  .cal-arrow { color: #4A90D9; font-size: 18px; cursor: pointer; }
+  .cal-grid-header {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    background: #fff;
+    padding: 4px 8px 0;
+  }
+  .cal-day-header { text-align: center; font-size: 10px; font-weight: 700; color: #aaa; padding: 4px 0; }
+  .cal-day-header:first-child { color: #D9534F; }
+  .cal-day-header:last-child { color: #4A90D9; }
+  .cal-grid {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    background: #fff;
+    padding: 4px 8px 10px;
+    gap: 2px;
+  }
+  .cal-day {
+    text-align: center;
+    font-size: 12px;
+    color: #333;
+    padding: 4px 0;
+    border-radius: 50%;
+    aspect-ratio: 1;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 2px;
+    cursor: pointer;
+  }
+  .cal-day.selected { background: #4A90D9; color: #fff; border-radius: 50%; }
+  .cal-day.today-text { color: #4A90D9; font-weight: 700; }
+  .cal-day.empty { color: transparent; }
+  .dots-row { display: flex; gap: 2px; justify-content: center; }
+  .dot { width: 4px; height: 4px; border-radius: 50%; }
+
+  /* Calendar detail */
+  .cal-detail { padding: 12px; }
+  .cal-detail-title { font-size: 13px; font-weight: 700; color: #333; margin-bottom: 10px; }
+  .record-row {
+    display: flex; align-items: center;
+    background: #fff;
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    border-left-width: 4px;
+    border-left-style: solid;
+  }
+  .record-row.taken { border-left-color: #5CB85C; }
+  .record-row.missed { border-left-color: #D9534F; }
+  .record-status-dot { width: 8px; height: 8px; border-radius: 50%; margin-right: 10px; flex-shrink: 0; }
+  .record-info { flex: 1; }
+  .record-name { font-size: 12px; font-weight: 600; color: #222; margin-bottom: 1px; }
+  .record-time { font-size: 11px; color: #888; }
+  .record-badge { font-size: 11px; font-weight: 700; }
+
+  /* Settings */
+  .settings-section { padding: 0 14px; margin-top: 16px; }
+  .settings-section-label {
+    font-size: 10px; font-weight: 700; color: #999;
+    text-transform: uppercase; letter-spacing: 0.6px;
+    margin-bottom: 6px; margin-left: 2px;
+  }
+  .settings-card {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .settings-row {
+    display: flex; align-items: center;
+    padding: 12px 14px;
+    gap: 12px;
+    min-height: 50px;
+  }
+  .settings-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .settings-body { flex: 1; }
+  .settings-title { font-size: 13px; font-weight: 500; color: #222; }
+  .settings-sub { font-size: 11px; color: #999; margin-top: 1px; }
+  .settings-divider { height: 1px; background: #F3F4F6; margin-left: 58px; }
+  .s-switch {
+    width: 38px; height: 20px; border-radius: 10px;
+    position: relative; flex-shrink: 0;
+  }
+  .s-switch.on { background: #4A90D9; }
+  .s-switch.off { background: #ccc; }
+  .s-switch::after {
+    content: '';
+    position: absolute;
+    width: 16px; height: 16px;
+    background: #fff;
+    border-radius: 50%;
+    top: 2px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .s-switch.on::after { left: 20px; }
+  .s-switch.off::after { left: 2px; }
+  .danger-text { color: #D9534F !important; }
+
+  /* Form Screen */
+  .form-scroll { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; scrollbar-width: none; }
+  .form-scroll::-webkit-scrollbar { display: none; }
+  .form-card { background: #fff; border-radius: 12px; padding: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
+  .form-section-title { font-size: 13px; font-weight: 700; color: #4A90D9; margin-bottom: 12px; }
+  .form-label { font-size: 12px; font-weight: 600; color: #555; margin-bottom: 6px; }
+  .form-input {
+    background: #F8F9FA; border: 1px solid #E5E7EB; border-radius: 8px;
+    padding: 10px 12px; font-size: 13px; color: #222;
+    width: 100%; margin-bottom: 12px;
+  }
+  .seg-row { display: flex; gap: 6px; }
+  .seg {
+    flex: 1; text-align: center; padding: 8px 4px;
+    border: 1.5px solid #ddd; border-radius: 8px;
+    font-size: 12px; font-weight: 600; color: #888;
+  }
+  .seg.active { border-color: #4A90D9; background: #EEF5FB; color: #4A90D9; }
+  .time-btn {
+    display: flex; align-items: center; gap: 6px;
+    background: #F0F7FF; border: 1px solid #D0E8FF; border-radius: 8px;
+    padding: 10px 12px; margin-bottom: 8px;
+    font-size: 15px; font-weight: 700; color: #4A90D9;
+  }
+  .color-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .color-circle {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; color: #fff;
+  }
+  .color-circle.selected { box-shadow: 0 2px 8px rgba(0,0,0,0.25); transform: scale(1.15); }
+  .save-btn {
+    background: #4A90D9; border-radius: 12px;
+    padding: 14px; text-align: center;
+    color: #fff; font-size: 15px; font-weight: 700;
+    box-shadow: 0 4px 12px rgba(74,144,217,0.35);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+
+  /* Bottom Tab */
+  .bottom-tab {
+    display: flex;
+    background: #fff;
+    border-top: 1px solid #F0F0F0;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.06);
+    flex-shrink: 0;
+  }
+  .tab-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 0 12px;
+    gap: 3px;
+    cursor: pointer;
+  }
+  .tab-icon { font-size: 20px; }
+  .tab-label { font-size: 10px; font-weight: 600; }
+  .tab-item.active .tab-label { color: #4A90D9; }
+  .tab-item.inactive .tab-label { color: #AAA; }
+  .tab-item.active .tab-icon { filter: none; }
+  .tab-item.inactive { opacity: 0.5; }
+</style>
+</head>
+<body>
+
+<h1>💊 MediRemind</h1>
+<p class="subtitle">약 복용 알리미 앱 — 화면 목업</p>
+
+<div class="screens-row">
+
+  <!-- ── 홈 화면 ── -->
+  <div class="screen-wrap">
+    <div class="screen-label">🏠 홈</div>
+    <div class="phone">
+      <div class="screen">
+        <div class="header">
+          <div class="header-row">
+            <div>
+              <div class="header-date">2026년 5월 2일 (토요일)</div>
+              <div class="header-title">오늘의 복용 현황</div>
+            </div>
+            <div class="header-add-btn">+</div>
+          </div>
+        </div>
+
+        <div class="scroll">
+          <!-- Progress Card -->
+          <div class="card">
+            <div class="progress-label-row">
+              <span class="progress-label">오늘 복용 현황</span>
+              <span class="progress-count"><span>2</span> / 4 완료</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" style="width:50%; background:#F0AD4E;"></div>
+            </div>
+            <div class="progress-pct">50%</div>
+          </div>
+
+          <!-- Prescription Banner -->
+          <div class="presc-banner">
+            <div class="presc-header">
+              <span>⚠️</span>
+              <span class="presc-header-text">재처방 임박 알림</span>
+            </div>
+            <div class="presc-badges">
+              <div class="presc-badge urgent">
+                <div class="badge-dot" style="background:#D9534F;"></div>
+                <span class="badge-name">타이레놀</span>
+                <span class="badge-dday urgent">D-2</span>
+              </div>
+              <div class="presc-badge">
+                <div class="badge-dot" style="background:#9B59B6;"></div>
+                <span class="badge-name">오메가3</span>
+                <span class="badge-dday">D-6</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dose Items -->
+          <div class="dose-item">
+            <div class="dose-color-bar" style="background:#4A90D9;"></div>
+            <div class="dose-info">
+              <div class="dose-name done">타이레놀</div>
+              <div class="dose-meta">🕗 오전 8:00 · 1정</div>
+            </div>
+            <div class="dose-check done">✓</div>
+          </div>
+
+          <div class="dose-item">
+            <div class="dose-color-bar" style="background:#5CB85C;"></div>
+            <div class="dose-info">
+              <div class="dose-name done">종합비타민</div>
+              <div class="dose-meta">🕗 오전 8:00 · 1캡슐</div>
+            </div>
+            <div class="dose-check done">✓</div>
+          </div>
+
+          <div class="dose-item">
+            <div class="dose-color-bar" style="background:#9B59B6;"></div>
+            <div class="dose-info">
+              <div class="dose-name">오메가3</div>
+              <div class="dose-meta">🕐 오후 1:00 · 2정</div>
+            </div>
+            <div class="dose-check pending">복용</div>
+          </div>
+
+          <div class="dose-item">
+            <div class="dose-color-bar" style="background:#D9534F;"></div>
+            <div class="dose-info">
+              <div class="dose-name">혈압약</div>
+              <div class="dose-meta">🕘 오후 9:00 · 1정</div>
+            </div>
+            <div class="dose-check pending">복용</div>
+          </div>
+        </div>
+
+        <div class="bottom-tab">
+          <div class="tab-item active">
+            <span class="tab-icon">🏠</span>
+            <span class="tab-label" style="color:#4A90D9;">홈</span>
+          </div>
+          <div class="tab-item inactive">
+            <span class="tab-icon">💊</span>
+            <span class="tab-label">내 약</span>
+          </div>
+          <div class="tab-item inactive">
+            <span class="tab-icon">📅</span>
+            <span class="tab-label">달력</span>
+          </div>
+          <div class="tab-item inactive">
+            <span class="tab-icon">⚙️</span>
+            <span class="tab-label">설정</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 내 약 목록 ── -->
+  <div class="screen-wrap">
+    <div class="screen-label">💊 내 약 목록</div>
+    <div class="phone">
+      <div class="screen">
+        <div class="header">
+          <div class="header-row">
+            <div class="header-title">내 약 목록</div>
+            <div style="background:rgba(255,255,255,0.25);width:34px;height:34px;border-radius:17px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;">+</div>
+          </div>
+        </div>
+
+        <div class="scroll">
+          <div class="med-card">
+            <div class="med-dot" style="background:#4A90D9;"></div>
+            <div class="med-body">
+              <div class="med-name-row">
+                <span class="med-name">타이레놀</span>
+                <span class="med-dday" style="background:#D9534F;">D-2</span>
+              </div>
+              <div class="med-meta">⏱ 오전 8:00, 오후 9:00</div>
+              <div class="med-meta">📅 매일 · 1정</div>
+              <div style="font-size:11px;color:#D9534F;margin-top:4px;">⚠️ 재처방 임박</div>
+            </div>
+            <div class="toggle on"></div>
+          </div>
+
+          <div class="med-card">
+            <div class="med-dot" style="background:#5CB85C;"></div>
+            <div class="med-body">
+              <div class="med-name-row">
+                <span class="med-name">종합비타민</span>
+              </div>
+              <div class="med-meta">⏱ 오전 8:00</div>
+              <div class="med-meta">📅 매일 · 1캡슐</div>
+            </div>
+            <div class="toggle on"></div>
+          </div>
+
+          <div class="med-card">
+            <div class="med-dot" style="background:#9B59B6;"></div>
+            <div class="med-body">
+              <div class="med-name-row">
+                <span class="med-name">오메가3</span>
+                <span class="med-dday" style="background:#F0AD4E;">D-6</span>
+              </div>
+              <div class="med-meta">⏱ 오후 1:00</div>
+              <div class="med-meta">📅 평일 · 2정</div>
+            </div>
+            <div class="toggle on"></div>
+          </div>
+
+          <div class="med-card inactive">
+            <div class="med-dot" style="background:#D9534F;"></div>
+            <div class="med-body">
+              <div class="med-name-row">
+                <span class="med-name" style="color:#aaa;">혈압약</span>
+              </div>
+              <div class="med-meta">⏱ 오후 9:00</div>
+              <div class="med-meta">📅 매일 · 1정</div>
+            </div>
+            <div class="toggle off"></div>
+          </div>
+        </div>
+
+        <div class="bottom-tab">
+          <div class="tab-item inactive"><span class="tab-icon">🏠</span><span class="tab-label">홈</span></div>
+          <div class="tab-item active"><span class="tab-icon">💊</span><span class="tab-label" style="color:#4A90D9;">내 약</span></div>
+          <div class="tab-item inactive"><span class="tab-icon">📅</span><span class="tab-label">달력</span></div>
+          <div class="tab-item inactive"><span class="tab-icon">⚙️</span><span class="tab-label">설정</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 달력 ── -->
+  <div class="screen-wrap">
+    <div class="screen-label">📅 복용 달력</div>
+    <div class="phone">
+      <div class="screen">
+        <div class="header cal-header-bar">
+          <div class="header-row">
+            <div class="header-title">복용 기록</div>
+            <div class="header-badge">이번 달 78%</div>
+          </div>
+        </div>
+
+        <div style="background:#fff;box-shadow:0 2px 6px rgba(0,0,0,0.06);">
+          <div class="cal-month-nav">
+            <span class="cal-arrow">‹</span>
+            <span class="cal-month">2026년 5월</span>
+            <span class="cal-arrow">›</span>
+          </div>
+          <div class="cal-grid-header">
+            <div class="cal-day-header">일</div>
+            <div class="cal-day-header">월</div>
+            <div class="cal-day-header">화</div>
+            <div class="cal-day-header">수</div>
+            <div class="cal-day-header">목</div>
+            <div class="cal-day-header">금</div>
+            <div class="cal-day-header">토</div>
+          </div>
+          <div class="cal-grid">
+            <div class="cal-day empty"></div>
+            <div class="cal-day empty"></div>
+            <div class="cal-day empty"></div>
+            <div class="cal-day empty"></div>
+            <div class="cal-day">1<div class="dots-row"><div class="dot" style="background:#5CB85C;"></div></div></div>
+            <div class="cal-day">2<div class="dots-row"><div class="dot" style="background:#5CB85C;"></div><div class="dot" style="background:#D9534F;"></div></div></div>
+            <div class="cal-day selected">3</div>
+            <div class="cal-day">4<div class="dots-row"><div class="dot" style="background:#5CB85C;"></div></div></div>
+            <div class="cal-day">5<div class="dots-row"><div class="dot" style="background:#5CB85C;"></div></div></div>
+            <div class="cal-day">6<div class="dots-row"><div class="dot" style="background:#D9534F;"></div></div></div>
+            <div class="cal-day">7<div class="dots-row"><div class="dot" style="background:#5CB85C;"></div></div></div>
+            <div class="cal-day">8<div class="dots-row"><div class="dot" style="background:#5CB85C;"></div></div></div>
+            <div class="cal-day">9<div class="dots-row"><div class="dot" style="background:#5CB85C;"></div></div></div>
+            <div class="cal-day">10</div>
+            <div class="cal-day">11<div class="dots-row"><div class="dot" style="background:#5CB85C;"></div></div></div>
+            <div class="cal-day">12<div class="dots-row"><div class="dot" style="background:#5CB85C;"></div></div></div>
+            <div class="cal-day">13<div class="dots-row"><div class="dot" style="background:#5CB85C;"></div></div></div>
+            <div class="cal-day">14<div class="dots-row"><div class="dot" style="background:#5CB85C;"></div></div></div>
+          </div>
+        </div>
+
+        <div class="cal-detail" style="flex:1;overflow-y:auto;">
+          <div class="cal-detail-title">5월 3일</div>
+          <div class="record-row taken">
+            <div class="record-status-dot" style="background:#5CB85C;"></div>
+            <div class="record-info">
+              <div class="record-name">타이레놀</div>
+              <div class="record-time">오전 8:00 · 1정</div>
+            </div>
+            <span class="record-badge" style="color:#5CB85C;">복용</span>
+          </div>
+          <div class="record-row taken">
+            <div class="record-status-dot" style="background:#5CB85C;"></div>
+            <div class="record-info">
+              <div class="record-name">종합비타민</div>
+              <div class="record-time">오전 8:00 · 1캡슐</div>
+            </div>
+            <span class="record-badge" style="color:#5CB85C;">복용</span>
+          </div>
+          <div class="record-row missed">
+            <div class="record-status-dot" style="background:#D9534F;"></div>
+            <div class="record-info">
+              <div class="record-name">오메가3</div>
+              <div class="record-time">오후 1:00 · 2정</div>
+            </div>
+            <span class="record-badge" style="color:#D9534F;">미복용</span>
+          </div>
+        </div>
+
+        <div class="bottom-tab">
+          <div class="tab-item inactive"><span class="tab-icon">🏠</span><span class="tab-label">홈</span></div>
+          <div class="tab-item inactive"><span class="tab-icon">💊</span><span class="tab-label">내 약</span></div>
+          <div class="tab-item active"><span class="tab-icon">📅</span><span class="tab-label" style="color:#4A90D9;">달력</span></div>
+          <div class="tab-item inactive"><span class="tab-icon">⚙️</span><span class="tab-label">설정</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 약 등록 폼 ── -->
+  <div class="screen-wrap">
+    <div class="screen-label">✏️ 약 등록</div>
+    <div class="phone">
+      <div class="screen" style="background:#F8F9FA;">
+        <div class="header" style="padding:12px 16px 14px;">
+          <div class="header-row">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="color:#fff;font-size:18px;">‹</span>
+              <div class="header-title">약 등록</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-scroll">
+          <div class="form-card">
+            <div class="form-section-title">기본 정보</div>
+            <div class="form-label">약 이름 *</div>
+            <input class="form-input" value="타이레놀" readonly>
+            <div class="form-label">1회 복용량 *</div>
+            <input class="form-input" value="1정" readonly>
+          </div>
+
+          <div class="form-card">
+            <div class="form-section-title">복용 시간</div>
+            <div class="form-label">1일 복용 횟수 *</div>
+            <div class="seg-row">
+              <div class="seg">1회</div>
+              <div class="seg active">2회</div>
+              <div class="seg">3회</div>
+              <div class="seg">직접</div>
+            </div>
+            <div class="form-label" style="margin-top:12px;">복용 시간 설정 *</div>
+            <div class="time-btn">⏱ 08:00</div>
+            <div class="time-btn">⏱ 21:00</div>
+          </div>
+
+          <div class="form-card">
+            <div class="form-section-title">복용 요일</div>
+            <div class="seg-row">
+              <div class="seg active">매일</div>
+              <div class="seg">평일</div>
+              <div class="seg">주말</div>
+              <div class="seg">직접</div>
+            </div>
+          </div>
+
+          <div class="form-card">
+            <div class="form-section-title">색상 태그</div>
+            <div class="color-row">
+              <div class="color-circle selected" style="background:#4A90D9;">✓</div>
+              <div class="color-circle" style="background:#5CB85C;"></div>
+              <div class="color-circle" style="background:#F0AD4E;"></div>
+              <div class="color-circle" style="background:#D9534F;"></div>
+              <div class="color-circle" style="background:#9B59B6;"></div>
+              <div class="color-circle" style="background:#1ABC9C;"></div>
+            </div>
+          </div>
+
+          <div class="save-btn">💾 약 등록하기</div>
+          <div style="height:20px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 설정 ── -->
+  <div class="screen-wrap">
+    <div class="screen-label">⚙️ 설정</div>
+    <div class="phone">
+      <div class="screen">
+        <div class="header">
+          <div class="header-title">설정</div>
+        </div>
+
+        <div class="scroll" style="padding:0;">
+          <div class="settings-section">
+            <div class="settings-section-label">알림</div>
+            <div class="settings-card">
+              <div class="settings-row">
+                <div class="settings-icon" style="background:#4A90D922;">🔊</div>
+                <div class="settings-body">
+                  <div class="settings-title">알림 소리</div>
+                </div>
+                <div class="s-switch on"></div>
+              </div>
+              <div class="settings-divider"></div>
+              <div class="settings-row">
+                <div class="settings-icon" style="background:#9B59B622;">📳</div>
+                <div class="settings-body">
+                  <div class="settings-title">알림 진동</div>
+                </div>
+                <div class="s-switch on"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <div class="settings-section-label">데이터</div>
+            <div class="settings-card">
+              <div class="settings-row">
+                <div class="settings-icon" style="background:#D9534F22;">🔄</div>
+                <div class="settings-body">
+                  <div class="settings-title danger-text">복용 기록 초기화</div>
+                  <div class="settings-sub">4개 약 등록됨</div>
+                </div>
+                <span style="color:#ccc;font-size:14px;">›</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <div class="settings-section-label">구매</div>
+            <div class="settings-card">
+              <div class="settings-row">
+                <div class="settings-icon" style="background:#F0AD4E22;">🚫</div>
+                <div class="settings-body">
+                  <div class="settings-title">광고 제거</div>
+                  <div class="settings-sub">₩2,200 · 영구 제거</div>
+                </div>
+                <span style="color:#ccc;font-size:14px;">›</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <div class="settings-section-label">앱 정보</div>
+            <div class="settings-card">
+              <div class="settings-row">
+                <div class="settings-icon" style="background:#1ABC9C22;">🛡️</div>
+                <div class="settings-body">
+                  <div class="settings-title">개인정보처리방침</div>
+                </div>
+                <span style="color:#ccc;font-size:14px;">›</span>
+              </div>
+              <div class="settings-divider"></div>
+              <div class="settings-row">
+                <div class="settings-icon" style="background:#88888822;">ℹ️</div>
+                <div class="settings-body">
+                  <div class="settings-title">앱 버전</div>
+                  <div class="settings-sub">v1.0.0</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="text-align:center;padding:28px 0 16px;color:#C0C0C0;font-size:11px;line-height:18px;">
+            MediRemind © 2024<br>약 복용 알리미 앱
+          </div>
+        </div>
+
+        <div class="bottom-tab">
+          <div class="tab-item inactive"><span class="tab-icon">🏠</span><span class="tab-label">홈</span></div>
+          <div class="tab-item inactive"><span class="tab-icon">💊</span><span class="tab-label">내 약</span></div>
+          <div class="tab-item inactive"><span class="tab-icon">📅</span><span class="tab-label">달력</span></div>
+          <div class="tab-item active"><span class="tab-icon">⚙️</span><span class="tab-label" style="color:#4A90D9;">설정</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div style="text-align:center;margin-top:48px;color:#aaa;font-size:12px;">
+  Made with ❤️ · React Native + Expo SDK 51 · TypeScript
+</div>
+
+</body>
+</html>
