@@ -74,14 +74,21 @@ export async function scheduleNotificationsForMedicine(medicine: Medicine): Prom
       const trigger = new Date(targetDate);
       trigger.setHours(hours, minutes, 0, 0);
 
+      // Apply notification offset (notify N minutes before dose time)
+      const offset = medicine.notificationOffset ?? 0;
+      if (offset > 0) {
+        trigger.setTime(trigger.getTime() - offset * 60 * 1000);
+      }
+
       // Skip if already past
       if (trigger <= now) continue;
 
+      const offsetLabel = offset > 0 ? ` (${offset}분 전 알림)` : '';
       try {
         const id = await Notifications.scheduleNotificationAsync({
           content: {
             title: '💊 약 복용 알림',
-            body: `${medicine.name} 복용할 시간이에요 (${medicine.dosage})`,
+            body: `${medicine.name} 복용할 시간이에요 (${medicine.dosage})${offsetLabel}`,
             sound: settings.sound ? 'default' : undefined,
             vibrate: settings.vibration ? [0, 250, 250, 250] : undefined,
             data: {

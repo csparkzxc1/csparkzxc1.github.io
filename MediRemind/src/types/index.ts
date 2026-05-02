@@ -11,6 +11,7 @@ export interface Medicine {
   isActive: boolean;
   createdAt: string; // ISO string
   prescription: Prescription | null;
+  notificationOffset: number; // minutes before dose time to notify (0 = at dose time)
 }
 
 export interface Prescription {

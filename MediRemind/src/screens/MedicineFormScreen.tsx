@@ -156,6 +156,14 @@ type DayMode = 'everyday' | 'weekday' | 'weekend' | 'custom';
 
 const DEFAULT_TIMES = ['08:00', '13:00', '21:00'];
 
+const NOTIFICATION_OFFSETS: { label: string; value: number }[] = [
+  { label: '정시', value: 0 },
+  { label: '5분 전', value: 5 },
+  { label: '10분 전', value: 10 },
+  { label: '15분 전', value: 15 },
+  { label: '30분 전', value: 30 },
+];
+
 export default function MedicineFormScreen() {
   const navigation = useNavigation();
   const route = useRoute<RouteParams>();
@@ -198,6 +206,11 @@ export default function MedicineFormScreen() {
   const [dayMode, setDayMode] = useState<DayMode>(getDayMode());
   const [selectedDays, setSelectedDays] = useState<number[]>(
     Array.isArray(existing?.days) ? (existing.days as number[]) : [0, 1, 2, 3, 4, 5, 6]
+  );
+
+  // Notification offset
+  const [notificationOffset, setNotificationOffset] = useState<number>(
+    existing?.notificationOffset ?? 0
   );
 
   // Prescription
@@ -278,6 +291,7 @@ export default function MedicineFormScreen() {
       isActive: existing?.isActive ?? true,
       createdAt: existing?.createdAt ?? new Date().toISOString(),
       prescription,
+      notificationOffset,
     };
 
     try {
@@ -464,6 +478,30 @@ export default function MedicineFormScreen() {
               </TouchableOpacity>
             ))}
           </View>
+        </View>
+
+        {/* ─ 알림 시간 조정 ─ */}
+        <View style={styles.card}>
+          <SectionTitle title="알림 시간 조정" />
+          <Text style={styles.label}>복용 시간 기준 알림 시점</Text>
+          <View style={styles.offsetRow}>
+            {NOTIFICATION_OFFSETS.map(({ label, value }) => (
+              <TouchableOpacity
+                key={value}
+                style={[styles.offsetChip, notificationOffset === value && styles.offsetChipActive]}
+                onPress={() => setNotificationOffset(value)}
+              >
+                <Text style={[styles.offsetChipText, notificationOffset === value && styles.offsetChipTextActive]}>
+                  {label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          {notificationOffset > 0 && (
+            <Text style={styles.offsetHint}>
+              복용 {notificationOffset}분 전에 알림을 드려요
+            </Text>
+          )}
         </View>
 
         {/* ─ 메모 ─ */}
@@ -787,6 +825,37 @@ const styles = StyleSheet.create({
   },
   alertDayChipTextActive: {
     color: '#FFF',
+  },
+  offsetRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 8,
+  },
+  offsetChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: '#DDD',
+    backgroundColor: '#F8F9FA',
+  },
+  offsetChipActive: {
+    borderColor: '#4A90D9',
+    backgroundColor: '#EEF5FB',
+  },
+  offsetChipText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#888',
+  },
+  offsetChipTextActive: {
+    color: '#4A90D9',
+  },
+  offsetHint: {
+    fontSize: 12,
+    color: '#4A90D9',
+    marginTop: 4,
   },
   saveBtn: {
     backgroundColor: '#4A90D9',

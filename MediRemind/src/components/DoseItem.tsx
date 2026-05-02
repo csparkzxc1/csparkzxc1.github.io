@@ -41,6 +41,7 @@ export default function DoseItem({ record, medicine, onToggle }: DoseItemProps) 
 
   const medicineColor = medicine?.color ?? '#4A90D9';
   const timeLabel = formatTimeDisplay(record.scheduledTime);
+  const offset = medicine?.notificationOffset ?? 0;
 
   return (
     <Animated.View style={[styles.container, { transform: [{ scale: scaleAnim }] }]}>
@@ -60,6 +61,13 @@ export default function DoseItem({ record, medicine, onToggle }: DoseItemProps) 
           <Text style={styles.meta}> {timeLabel}</Text>
           <Text style={styles.metaDot}>  ·  </Text>
           <Text style={styles.meta}>{medicine?.dosage ?? ''}</Text>
+          {offset > 0 && (
+            <>
+              <Text style={styles.metaDot}>  ·  </Text>
+              <Ionicons name="notifications-outline" size={12} color="#4A90D9" />
+              <Text style={[styles.meta, { color: '#4A90D9' }]}> {offset}분 전</Text>
+            </>
+          )}
         </View>
       </View>
       <TouchableOpacity

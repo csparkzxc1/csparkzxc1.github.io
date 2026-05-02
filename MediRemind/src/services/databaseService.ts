@@ -22,7 +22,8 @@ export async function initDatabase(): Promise<void> {
         memo TEXT NOT NULL DEFAULT '',
         isActive INTEGER NOT NULL DEFAULT 1,
         createdAt TEXT NOT NULL,
-        prescription TEXT
+        prescription TEXT,
+        notificationOffset INTEGER NOT NULL DEFAULT 0
       );
 
       CREATE TABLE IF NOT EXISTS dose_records (
@@ -38,6 +39,14 @@ export async function initDatabase(): Promise<void> {
       CREATE INDEX IF NOT EXISTS idx_dose_records_date ON dose_records(date);
       CREATE INDEX IF NOT EXISTS idx_dose_records_medicineId ON dose_records(medicineId);
     `);
+    // Migration: add notificationOffset for existing installations
+    try {
+      await db.execAsync(
+        `ALTER TABLE medicines ADD COLUMN notificationOffset INTEGER NOT NULL DEFAULT 0;`
+      );
+    } catch {
+      // Column already exists — safe to ignore
+    }
   } catch (error) {
     console.error('[DB] initDatabase error:', error);
     throw error;
@@ -68,8 +77,8 @@ export async function insertMedicine(medicine: Medicine): Promise<void> {
   try {
     const database = getDb();
     await database.runAsync(
-      `INSERT INTO medicines (id, name, dosage, times, days, color, memo, isActive, createdAt, prescription)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO medicines (id, name, dosage, times, days, color, memo, isActive, createdAt, prescription, notificationOffset)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         medicine.id,
         medicine.name,
@@ -81,6 +90,7 @@ export async function insertMedicine(medicine: Medicine): Promise<void> {
         medicine.isActive ? 1 : 0,
         medicine.createdAt,
         medicine.prescription ? JSON.stringify(medicine.prescription) : null,
+        medicine.notificationOffset ?? 0,
       ]
     );
   } catch (error) {
@@ -94,7 +104,7 @@ export async function updateMedicine(medicine: Medicine): Promise<void> {
     const database = getDb();
     await database.runAsync(
       `UPDATE medicines
-       SET name=?, dosage=?, times=?, days=?, color=?, memo=?, isActive=?, prescription=?
+       SET name=?, dosage=?, times=?, days=?, color=?, memo=?, isActive=?, prescription=?, notificationOffset=?
        WHERE id=?`,
       [
         medicine.name,
@@ -105,6 +115,7 @@ export async function updateMedicine(medicine: Medicine): Promise<void> {
         medicine.memo,
         medicine.isActive ? 1 : 0,
         medicine.prescription ? JSON.stringify(medicine.prescription) : null,
+        medicine.notificationOffset ?? 0,
         medicine.id,
       ]
     );
@@ -302,6 +313,7 @@ function deserializeMedicine(row: Record<string, unknown>): Medicine {
     isActive: (row.isActive as number) === 1,
     createdAt: row.createdAt as string,
     prescription,
+    notificationOffset: (row.notificationOffset as number) ?? 0,
   };
 }
 
