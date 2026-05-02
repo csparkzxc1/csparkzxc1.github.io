@@ -56,6 +56,7 @@ export interface MedicineStore {
 
 export interface DoseStore {
   doseRecords: DoseRecord[];
+  rangeRecords: DoseRecord[];
   isLoading: boolean;
   loadDoseRecords: (date: string) => Promise<void>;
   loadDoseRecordsRange: (startDate: string, endDate: string) => Promise<void>;

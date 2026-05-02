@@ -1,5 +1,6 @@
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Medicine } from '../types';
 import { isMedicineScheduledForWeekday } from '../utils/dateUtils';
 import { getDaysUntilPrescriptionEnd } from '../utils/prescriptionUtils';
@@ -161,8 +162,6 @@ async function schedulePrescriptionAlerts(medicine: Medicine): Promise<void> {
 }
 
 // ─── Storage Helpers for Notification IDs ───────────────────────────────────
-
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const NOTIF_IDS_PREFIX = '@mediremind_notif_ids_';
 

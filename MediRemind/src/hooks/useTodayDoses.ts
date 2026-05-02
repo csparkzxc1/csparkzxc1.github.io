@@ -15,9 +15,7 @@ export function useTodayDoses() {
   }, [medicines, today]);
 
   useEffect(() => {
-    if (medicines.length >= 0) {
-      refresh();
-    }
+    refresh();
   }, [medicines.length, today]);
 
   const takenCount = doseRecords.filter((r) => r.isTaken).length;

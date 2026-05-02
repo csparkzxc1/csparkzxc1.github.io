@@ -76,10 +76,6 @@ export default function CalendarScreen() {
     }
 
     // Compute monthly adherence rate
-    const allDates = Object.values(dateMap).filter((_, idx) => {
-      const date = Object.keys(dateMap)[idx];
-      return date <= today;
-    });
     const completeDays = Object.entries(dateMap).filter(
       ([date, v]) => date <= today && v.hasTaken && !v.hasMissed
     ).length;
