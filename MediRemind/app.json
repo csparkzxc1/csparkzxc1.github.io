@@ -11,7 +11,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#4A90D9"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.mediremind.app",
@@ -50,6 +52,12 @@
     ],
     "runtimeVersion": {
       "policy": "appVersion"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "2959d7e0-3d54-4d0c-b0ea-809f097b008b"
+      }
+    },
+    "owner": "csparkzxc"
   }
 }
