@@ -48,19 +48,8 @@
       ],
       "expo-updates"
     ],
-    "updates": {
-      "enabled": true,
-      "checkAutomatically": "ON_LOAD",
-      "fallbackToCacheTimeout": 0,
-      "url": "https://u.expo.dev/YOUR_EAS_PROJECT_ID"
-    },
     "runtimeVersion": {
       "policy": "appVersion"
-    },
-    "extra": {
-      "eas": {
-        "projectId": "YOUR_EAS_PROJECT_ID"
-      }
     }
   }
 }
