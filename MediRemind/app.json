@@ -16,7 +16,7 @@
     ],
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.mediremind.app",
+      "bundleIdentifier": "com.csparkzxc.mediremind",
       "buildNumber": "1",
       "infoPlist": {
         "NSUserNotificationUsageDescription": "약 복용 알림을 위해 알림 권한이 필요합니다."
@@ -27,7 +27,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#4A90D9"
       },
-      "package": "com.mediremind.app",
+      "package": "com.csparkzxc.mediremind",
       "versionCode": 1,
       "permissions": [
         "RECEIVE_BOOT_COMPLETED",
