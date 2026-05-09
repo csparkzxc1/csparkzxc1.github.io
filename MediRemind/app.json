@@ -53,6 +53,12 @@
     "runtimeVersion": {
       "policy": "appVersion"
     },
+    "updates": {
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/2959d7e0-3d54-4d0c-b0ea-809f097b008b"
+    },
     "extra": {
       "eas": {
         "projectId": "2959d7e0-3d54-4d0c-b0ea-809f097b008b"
