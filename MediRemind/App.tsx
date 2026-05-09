@@ -11,6 +11,7 @@ import {
 } from './src/services/notificationService';
 import { initAds } from './src/services/adService';
 import { useMedicineStore } from './src/store/medicineStore';
+import { checkAndApplyUpdate } from './src/utils/updateUtils';
 
 function AppInit({ onReady }: { onReady: () => void }) {
   const { loadMedicines } = useMedicineStore();
@@ -18,20 +19,23 @@ function AppInit({ onReady }: { onReady: () => void }) {
   useEffect(() => {
     (async () => {
       try {
-        // 1. Init DB
+        // 1. OTA 업데이트 확인 (production 빌드에서만 동작)
+        await checkAndApplyUpdate();
+
+        // 2. Init DB
         await initDatabase();
 
-        // 2. Load medicines from DB
+        // 3. Load medicines from DB
         await loadMedicines();
 
-        // 3. Request notification permission (graceful degradation)
+        // 4. Request notification permission (graceful degradation)
         await setupNotificationChannel();
         const granted = await requestNotificationPermission();
         if (!granted) {
           console.warn('[App] Notification permission not granted.');
         }
 
-        // 4. Init ads
+        // 5. Init ads
         initAds();
       } catch (error) {
         console.error('[App] Initialization error:', error);

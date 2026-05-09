@@ -15,6 +15,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.mediremind.app",
+      "buildNumber": "1",
       "infoPlist": {
         "NSUserNotificationUsageDescription": "약 복용 알림을 위해 알림 권한이 필요합니다."
       }
@@ -25,6 +26,7 @@
         "backgroundColor": "#4A90D9"
       },
       "package": "com.mediremind.app",
+      "versionCode": 1,
       "permissions": [
         "RECEIVE_BOOT_COMPLETED",
         "VIBRATE",
@@ -44,11 +46,21 @@
           "sounds": []
         }
       ],
-      "expo-sqlite"
+      "expo-sqlite",
+      "expo-updates"
     ],
+    "updates": {
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/YOUR_EAS_PROJECT_ID"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "extra": {
       "eas": {
-        "projectId": "mediremind-project-id"
+        "projectId": "YOUR_EAS_PROJECT_ID"
       }
     }
   }

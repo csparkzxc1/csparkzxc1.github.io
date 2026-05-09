@@ -22,6 +22,7 @@ import {
 import { useDoseStore } from '../store/doseStore';
 import { cancelAllNotifications } from '../services/notificationService';
 import { useMedicineStore } from '../store/medicineStore';
+import { checkAndApplyUpdate, getBuildInfo } from '../utils/updateUtils';
 
 const APP_VERSION = '1.0.0';
 
@@ -69,6 +70,8 @@ export default function SettingsScreen() {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [vibrationEnabled, setVibrationEnabled] = useState(true);
   const [adRemoved, setAdRemovedState] = useState(false);
+  const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
+  const buildInfo = getBuildInfo();
 
   const { clearAllRecords } = useDoseStore();
   const { medicines } = useMedicineStore();
@@ -129,6 +132,23 @@ export default function SettingsScreen() {
         },
       ]
     );
+  };
+
+  const handleCheckUpdate = async () => {
+    if (__DEV__) {
+      Alert.alert('업데이트', '개발 환경에서는 OTA 업데이트를 사용할 수 없습니다.');
+      return;
+    }
+    setIsCheckingUpdate(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const result = await checkAndApplyUpdate();
+    setIsCheckingUpdate(false);
+    if (result.isError) {
+      Alert.alert('업데이트 확인 실패', '네트워크 연결을 확인해 주세요.');
+    } else if (!result.isAvailable) {
+      Alert.alert('최신 버전', '현재 최신 버전을 사용 중입니다.');
+    }
+    // isAvailable=true면 reloadAsync()로 앱이 자동 재시작됨
   };
 
   const handlePrivacyPolicy = () => {
@@ -207,6 +227,24 @@ export default function SettingsScreen() {
           </View>
         </View>
 
+        {/* ─ 업데이트 ─ */}
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>업데이트</Text>
+          <View style={styles.card}>
+            <SettingRow
+              icon="cloud-download-outline"
+              iconColor="#4A90D9"
+              title={isCheckingUpdate ? '확인 중…' : '업데이트 확인'}
+              subtitle={
+                buildInfo.channel
+                  ? `채널: ${buildInfo.channel}`
+                  : '최신 버전 여부를 확인합니다'
+              }
+              onPress={isCheckingUpdate ? undefined : handleCheckUpdate}
+            />
+          </View>
+        </View>
+
         {/* ─ 앱 정보 ─ */}
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>앱 정보</Text>
@@ -222,8 +260,19 @@ export default function SettingsScreen() {
               icon="information-circle"
               iconColor="#888"
               title="앱 버전"
-              subtitle={`v${APP_VERSION}`}
+              subtitle={`v${APP_VERSION}${buildInfo.runtimeVersion ? ` (${buildInfo.runtimeVersion})` : ''}`}
             />
+            {buildInfo.updateId && (
+              <>
+                <View style={styles.divider} />
+                <SettingRow
+                  icon="git-commit-outline"
+                  iconColor="#AAA"
+                  title="업데이트 ID"
+                  subtitle={buildInfo.updateId.slice(0, 8) + '…'}
+                />
+              </>
+            )}
           </View>
         </View>
 
