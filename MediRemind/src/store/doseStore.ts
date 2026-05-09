@@ -6,6 +6,7 @@ import {
   getDoseRecordsByDateRange,
   insertDoseRecord,
   updateDoseRecord,
+  deleteDoseRecord,
   clearAllDoseRecords,
 } from '../services/databaseService';
 import { isMedicineScheduledForDate } from '../utils/dateUtils';
@@ -97,15 +98,19 @@ export const useDoseStore = create<DoseStoreState>((set, get) => ({
   generateDosesForDate: async (medicines: Medicine[], date: string) => {
     try {
       const existing = await getDoseRecordsByDate(date);
+
+      // Build expected record IDs from current medicine schedules
+      const expectedIds = new Set<string>();
+      const toInsert: DoseRecord[] = [];
       const existingIds = new Set(existing.map((r) => r.id));
 
-      const toInsert: DoseRecord[] = [];
       for (const med of medicines) {
         if (!med.isActive) continue;
         if (!isMedicineScheduledForDate(med, date)) continue;
 
         for (const time of med.times) {
           const id = generateRecordId(med.id, date, time);
+          expectedIds.add(id);
           if (!existingIds.has(id)) {
             toInsert.push({
               id,
@@ -119,11 +124,17 @@ export const useDoseStore = create<DoseStoreState>((set, get) => ({
         }
       }
 
+      // Remove untaken records that no longer match current schedule
+      for (const rec of existing) {
+        if (!rec.isTaken && !expectedIds.has(rec.id)) {
+          await deleteDoseRecord(rec.id);
+        }
+      }
+
       for (const record of toInsert) {
         await insertDoseRecord(record);
       }
 
-      // Reload
       const all = await getDoseRecordsByDate(date);
       set({ doseRecords: all });
     } catch (error) {

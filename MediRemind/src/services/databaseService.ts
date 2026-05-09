@@ -203,6 +203,15 @@ export async function updateDoseRecord(record: DoseRecord): Promise<void> {
   }
 }
 
+export async function deleteDoseRecord(id: string): Promise<void> {
+  try {
+    const database = getDb();
+    await database.runAsync('DELETE FROM dose_records WHERE id=?', [id]);
+  } catch (error) {
+    console.error('[DB] deleteDoseRecord error:', error);
+  }
+}
+
 export async function deleteDoseRecordsByMedicineAndDate(
   medicineId: string,
   date: string

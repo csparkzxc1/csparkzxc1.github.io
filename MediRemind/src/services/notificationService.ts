@@ -61,7 +61,7 @@ export async function scheduleNotificationsForMedicine(medicine: Medicine): Prom
   const now = new Date();
   const identifiers: string[] = [];
 
-  for (let dayOffset = 0; dayOffset < 30; dayOffset++) {
+  for (let dayOffset = 0; dayOffset < 60; dayOffset++) {
     const targetDate = new Date(now);
     targetDate.setDate(now.getDate() + dayOffset);
     const weekday = targetDate.getDay(); // 0=Sun...6=Sat

@@ -14,9 +14,14 @@ export function useTodayDoses() {
     await loadDoseRecords(today);
   }, [medicines, today]);
 
+  // Re-run when any medicine's schedule (times, days, active state) changes
+  const medicinesKey = medicines
+    .map((m) => `${m.id}:${m.isActive}:${m.times.join(',')}:${JSON.stringify(m.days)}`)
+    .join('|');
+
   useEffect(() => {
     refresh();
-  }, [medicines.length, today]);
+  }, [medicinesKey, today]);
 
   const takenCount = doseRecords.filter((r) => r.isTaken).length;
   const totalCount = doseRecords.length;

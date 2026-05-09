@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, ActivityIndicator, StyleSheet, Text, Alert } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
+import { format } from 'date-fns';
 
 import AppNavigator from './src/navigation/AppNavigator';
 import { initDatabase } from './src/services/databaseService';
@@ -11,10 +12,12 @@ import {
 } from './src/services/notificationService';
 import { initAds } from './src/services/adService';
 import { useMedicineStore } from './src/store/medicineStore';
+import { useDoseStore } from './src/store/doseStore';
 import { checkAndApplyUpdate } from './src/utils/updateUtils';
 
 function AppInit({ onReady }: { onReady: () => void }) {
   const { loadMedicines } = useMedicineStore();
+  const { generateDosesForDate } = useDoseStore();
 
   useEffect(() => {
     (async () => {
@@ -28,14 +31,18 @@ function AppInit({ onReady }: { onReady: () => void }) {
         // 3. Load medicines from DB
         await loadMedicines();
 
-        // 4. Request notification permission (graceful degradation)
+        // 4. Generate today's dose records immediately on startup
+        const { medicines } = useMedicineStore.getState();
+        await generateDosesForDate(medicines, format(new Date(), 'yyyy-MM-dd'));
+
+        // 5. Request notification permission (graceful degradation)
         await setupNotificationChannel();
         const granted = await requestNotificationPermission();
         if (!granted) {
           console.warn('[App] Notification permission not granted.');
         }
 
-        // 5. Init ads
+        // 6. Init ads
         initAds();
       } catch (error) {
         console.error('[App] Initialization error:', error);
