@@ -7,7 +7,6 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
-  Modal,
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -32,9 +31,7 @@ type RouteParams = RouteProp<RootStackParamList, 'MedicineForm'>;
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const DOSAGE_PRESETS = [
-  '0.5정', '1정', '1.5정', '2정', '2.5정', '3정', '4정', '5정', '6정', '7정', '8정', '10정',
-];
+const DOSAGE_CHIPS = ['0.5정', '1정', '1.5정', '2정', '3정', '5정', '10정'];
 
 // [BUG 2] 1~6회 + 직접 입력
 type FreqOption = '1' | '2' | '3' | '4' | '5' | '6' | 'custom';
@@ -61,230 +58,26 @@ function pad(n: number) {
   return String(n).padStart(2, '0');
 }
 
-function TimePickerModal({
-  visible,
-  initialTime,
-  onConfirm,
-  onClose,
-}: {
-  visible: boolean;
-  initialTime: string;
-  onConfirm: (time: string) => void;
-  onClose: () => void;
-}) {
-  const [hour, setHour] = useState(0);
-  const [minute, setMinute] = useState(0);
-  const [hourText, setHourText] = useState('00');
-  const [minuteText, setMinuteText] = useState('00');
-
-  // Reset state every time the modal opens
-  useEffect(() => {
-    if (visible) {
-      const parts = initialTime.split(':');
-      const h = Math.max(0, Math.min(23, parseInt(parts[0], 10) || 0));
-      const m = Math.max(0, Math.min(59, parseInt(parts[1], 10) || 0));
-      setHour(h);
-      setMinute(m);
-      setHourText(pad(h));
-      setMinuteText(pad(m));
-    }
-  }, [visible, initialTime]);
-
-  function applyHour(val: number) {
-    const clamped = Math.max(0, Math.min(23, isNaN(val) ? 0 : val));
-    setHour(clamped);
-    setHourText(pad(clamped));
+function normalizeTime(input: string): string {
+  const clean = input.replace(/[^0-9:]/g, '');
+  let h: number, m: number;
+  if (clean.includes(':')) {
+    const [hStr, mStr] = clean.split(':');
+    h = parseInt(hStr, 10) || 0;
+    m = parseInt(mStr, 10) || 0;
+  } else if (clean.length >= 3) {
+    const pivot = clean.length === 3 ? 1 : 2;
+    h = parseInt(clean.slice(0, pivot), 10) || 0;
+    m = parseInt(clean.slice(pivot), 10) || 0;
+  } else {
+    h = parseInt(clean, 10) || 0;
+    m = 0;
   }
-
-  function applyMinute(val: number) {
-    const clamped = Math.max(0, Math.min(59, isNaN(val) ? 0 : val));
-    setMinute(clamped);
-    setMinuteText(pad(clamped));
-  }
-
-  // Read from text input first to handle typed-but-not-blurred values
-  const stepHour = (delta: number) => {
-    const cur = parseInt(hourText, 10);
-    const base = isNaN(cur) ? hour : Math.max(0, Math.min(23, cur));
-    applyHour((base + delta + 24) % 24);
-  };
-
-  const stepMinute = (delta: number) => {
-    const cur = parseInt(minuteText, 10);
-    const base = isNaN(cur) ? minute : Math.max(0, Math.min(59, cur));
-    applyMinute((base + delta + 60) % 60);
-  };
-
-  const handleConfirm = () => {
-    const h = Math.max(0, Math.min(23, parseInt(hourText, 10) || 0));
-    const m = Math.max(0, Math.min(59, parseInt(minuteText, 10) || 0));
-    onConfirm(`${pad(h)}:${pad(m)}`);
-  };
-
-  return (
-    <Modal visible={visible} transparent animationType="slide">
-      <TouchableOpacity style={tpStyles.overlay} onPress={onClose} activeOpacity={1}>
-        <View style={tpStyles.sheet}>
-          <Text style={tpStyles.title}>복용 시간 설정</Text>
-
-          <View style={tpStyles.pickers}>
-            {/* ── 시 ── */}
-            <View style={tpStyles.pickerCol}>
-              <TouchableOpacity onPress={() => stepHour(1)} style={tpStyles.arrowBtn}>
-                <Ionicons name="chevron-up" size={32} color="#4A90D9" />
-              </TouchableOpacity>
-              <TextInput
-                style={tpStyles.pickerInput}
-                value={hourText}
-                onChangeText={(t) => setHourText(t.replace(/[^0-9]/g, '').slice(0, 2))}
-                onBlur={() => applyHour(parseInt(hourText, 10))}
-                keyboardType="number-pad"
-                maxLength={2}
-                selectTextOnFocus
-              />
-              <Text style={tpStyles.rangeHint}>시 (0–23)</Text>
-              <TouchableOpacity onPress={() => stepHour(-1)} style={tpStyles.arrowBtn}>
-                <Ionicons name="chevron-down" size={32} color="#4A90D9" />
-              </TouchableOpacity>
-            </View>
-
-            <Text style={tpStyles.colon}>:</Text>
-
-            {/* ── 분 ── */}
-            <View style={tpStyles.pickerCol}>
-              <TouchableOpacity onPress={() => stepMinute(5)} style={tpStyles.arrowBtn}>
-                <Ionicons name="chevron-up" size={32} color="#4A90D9" />
-              </TouchableOpacity>
-              <TextInput
-                style={tpStyles.pickerInput}
-                value={minuteText}
-                onChangeText={(t) => setMinuteText(t.replace(/[^0-9]/g, '').slice(0, 2))}
-                onBlur={() => applyMinute(parseInt(minuteText, 10))}
-                keyboardType="number-pad"
-                maxLength={2}
-                selectTextOnFocus
-              />
-              <Text style={tpStyles.rangeHint}>분 (0–59)</Text>
-              <TouchableOpacity onPress={() => stepMinute(-5)} style={tpStyles.arrowBtn}>
-                <Ionicons name="chevron-down" size={32} color="#4A90D9" />
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Quick minute buttons */}
-          <View style={tpStyles.quickRow}>
-            {[0, 15, 30, 45].map((m) => (
-              <TouchableOpacity
-                key={m}
-                style={[tpStyles.quickBtn, minute === m && tpStyles.quickBtnActive]}
-                onPress={() => applyMinute(m)}
-              >
-                <Text style={[tpStyles.quickBtnText, minute === m && tpStyles.quickBtnTextActive]}>
-                  :{pad(m)}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          <TouchableOpacity style={tpStyles.confirmBtn} onPress={handleConfirm}>
-            <Text style={tpStyles.confirmText}>확인</Text>
-          </TouchableOpacity>
-        </View>
-      </TouchableOpacity>
-    </Modal>
-  );
+  h = Math.max(0, Math.min(23, h));
+  m = Math.max(0, Math.min(59, m));
+  return `${pad(h)}:${pad(m)}`;
 }
 
-const tpStyles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'flex-end',
-  },
-  sheet: {
-    backgroundColor: '#FFF',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 24,
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: '#222',
-    marginBottom: 20,
-  },
-  pickers: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-    marginBottom: 16,
-  },
-  pickerCol: {
-    alignItems: 'center',
-    gap: 8,
-  },
-  arrowBtn: {
-    padding: 6,
-  },
-  pickerInput: {
-    fontSize: 48,
-    fontWeight: '700',
-    color: '#222',
-    width: 90,
-    textAlign: 'center',
-    borderBottomWidth: 3,
-    borderBottomColor: '#4A90D9',
-    paddingBottom: 4,
-    paddingTop: 4,
-  },
-  rangeHint: {
-    fontSize: 11,
-    color: '#AAA',
-  },
-  colon: {
-    fontSize: 40,
-    fontWeight: '700',
-    color: '#222',
-    marginBottom: 28,
-  },
-  quickRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 20,
-  },
-  quickBtn: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1.5,
-    borderColor: '#DDD',
-    backgroundColor: '#F8F9FA',
-  },
-  quickBtnActive: {
-    borderColor: '#4A90D9',
-    backgroundColor: '#EEF5FB',
-  },
-  quickBtnText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#888',
-  },
-  quickBtnTextActive: {
-    color: '#4A90D9',
-  },
-  confirmBtn: {
-    backgroundColor: '#4A90D9',
-    borderRadius: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 56,
-  },
-  confirmText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-});
 
 // ─── Main Form ───────────────────────────────────────────────────────────────
 
@@ -300,6 +93,9 @@ export default function MedicineFormScreen() {
 
   const [name, setName] = useState(existing?.name ?? '');
   const [dosage, setDosage] = useState(existing?.dosage ?? '1정');
+  const [dosageCustom, setDosageCustom] = useState(
+    () => !DOSAGE_CHIPS.includes(existing?.dosage ?? '1정')
+  );
   const [memo, setMemo] = useState(existing?.memo ?? '');
   const [color, setColor] = useState<ColorTag>(
     (existing?.color as ColorTag) ?? '#4A90D9'
@@ -318,7 +114,6 @@ export default function MedicineFormScreen() {
   const [times, setTimes] = useState<string[]>(
     existing?.times ?? [DEFAULT_TIMES[0]]
   );
-  const [timePickerIdx, setTimePickerIdx] = useState<number | null>(null);
 
   // Days
   const getDayMode = (): DayMode => {
@@ -366,23 +161,6 @@ export default function MedicineFormScreen() {
   }, [freq]);
 
   // ─── Handlers ────────────────────────────────────────────────────────────
-
-  // Dosage stepper for 정 unit
-  const extractJeongNum = (): number => {
-    if (dosage.endsWith('정')) {
-      const n = parseFloat(dosage.slice(0, -1));
-      return isNaN(n) || n <= 0 ? 1 : n;
-    }
-    return 1;
-  };
-
-  const stepDosage = (delta: number) => {
-    const current = extractJeongNum();
-    const next = Math.round((current + delta) * 2) / 2;
-    if (next >= 0.5 && next <= 20) {
-      setDosage(`${next % 1 === 0 ? next : next}정`);
-    }
-  };
 
   // [BUG 2] 직접 입력 횟수 적용
   const applyCustomFreq = () => {
@@ -510,64 +288,47 @@ export default function MedicineFormScreen() {
 
           <Text style={styles.label}>1회 복용량 *</Text>
 
-          {/* 정 단위 스테퍼 */}
-          <View style={styles.dosageStepper}>
-            <TouchableOpacity
-              style={styles.stepperBtn}
-              onPress={() => stepDosage(-0.5)}
-            >
-              <Text style={styles.stepperBtnText}>−</Text>
-            </TouchableOpacity>
-            <View style={styles.stepperDisplay}>
-              <Text style={styles.stepperValue}>
-                {dosage.endsWith('정') ? dosage : '직접입력'}
-              </Text>
-            </View>
-            <TouchableOpacity
-              style={styles.stepperBtn}
-              onPress={() => stepDosage(0.5)}
-            >
-              <Text style={styles.stepperBtnText}>+</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* 프리셋 칩 */}
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.dosagePresetScroll}
-            contentContainerStyle={styles.dosagePresetContent}
-          >
-            {DOSAGE_PRESETS.map((preset) => (
+          {/* 복용량 칩 */}
+          <View style={styles.dosageChipRow}>
+            {DOSAGE_CHIPS.map((chip) => (
               <TouchableOpacity
-                key={preset}
+                key={chip}
                 style={[
                   styles.dosageChip,
-                  dosage === preset && styles.dosageChipActive,
+                  dosage === chip && !dosageCustom && styles.dosageChipActive,
                 ]}
-                onPress={() => setDosage(preset)}
+                onPress={() => { setDosage(chip); setDosageCustom(false); }}
               >
-                <Text
-                  style={[
-                    styles.dosageChipText,
-                    dosage === preset && styles.dosageChipTextActive,
-                  ]}
-                >
-                  {preset}
+                <Text style={[
+                  styles.dosageChipText,
+                  dosage === chip && !dosageCustom && styles.dosageChipTextActive,
+                ]}>
+                  {chip}
                 </Text>
               </TouchableOpacity>
             ))}
-          </ScrollView>
+            <TouchableOpacity
+              style={[styles.dosageChip, dosageCustom && styles.dosageChipActive]}
+              onPress={() => setDosageCustom(true)}
+            >
+              <Text style={[styles.dosageChipText, dosageCustom && styles.dosageChipTextActive]}>
+                직접입력
+              </Text>
+            </TouchableOpacity>
+          </View>
 
-          {/* 기타 단위 자유 입력 (mg, 캡슐 등) */}
-          <TextInput
-            style={styles.input}
-            value={dosage}
-            onChangeText={setDosage}
-            placeholder="기타 단위 직접 입력 (예: 500mg, 2캡슐, 1포)"
-            placeholderTextColor="#BBB"
-            maxLength={20}
-          />
+          {dosageCustom && (
+            <TextInput
+              style={styles.input}
+              value={dosage}
+              onChangeText={setDosage}
+              placeholder="예: 2.5정, 500mg, 2캡슐"
+              placeholderTextColor="#BBB"
+              keyboardType="decimal-pad"
+              maxLength={20}
+              autoFocus
+            />
+          )}
         </View>
 
         {/* ─ 복용 횟수 / 시간 ─ */}
@@ -622,14 +383,29 @@ export default function MedicineFormScreen() {
           <Text style={[styles.label, { marginTop: 16 }]}>복용 시간 설정 *</Text>
           {times.map((t, idx) => (
             <View key={idx} style={styles.timeRow}>
-              <TouchableOpacity
-                style={styles.timeBtn}
-                onPress={() => setTimePickerIdx(idx)}
-              >
-                <Ionicons name="time-outline" size={18} color="#4A90D9" />
-                <Text style={styles.timeText}>{t}</Text>
-                <Text style={styles.timeTapHint}>탭하여 수정</Text>
-              </TouchableOpacity>
+              <View style={styles.timeInputWrapper}>
+                <Ionicons name="time-outline" size={18} color="#4A90D9" style={{ marginRight: 8 }} />
+                <TextInput
+                  style={styles.timeInput}
+                  value={t}
+                  onChangeText={(v) => {
+                    const next = [...times];
+                    next[idx] = v;
+                    setTimes(next);
+                  }}
+                  onBlur={() => {
+                    const next = [...times];
+                    next[idx] = normalizeTime(t);
+                    next.sort();
+                    setTimes(next);
+                  }}
+                  selectTextOnFocus
+                  keyboardType="numbers-and-punctuation"
+                  placeholder="08:30"
+                  placeholderTextColor="#BBB"
+                  maxLength={5}
+                />
+              </View>
               {times.length > 1 && (
                 <TouchableOpacity
                   style={styles.removeTimeBtn}
@@ -798,21 +574,6 @@ export default function MedicineFormScreen() {
         <View style={{ height: 40 }} />
       </ScrollView>
 
-      {/* Time Picker Modal */}
-      {timePickerIdx !== null && (
-        <TimePickerModal
-          visible
-          initialTime={times[timePickerIdx] ?? '08:00'}
-          onConfirm={(t) => {
-            const next = [...times];
-            next[timePickerIdx] = t;
-            next.sort();
-            setTimes(next);
-            setTimePickerIdx(null);
-          }}
-          onClose={() => setTimePickerIdx(null)}
-        />
-      )}
     </>
   );
 }
@@ -847,48 +608,13 @@ const styles = StyleSheet.create({
   },
   memoInput: { minHeight: 80, paddingTop: 12 },
 
-  // 복용량 스테퍼
-  dosageStepper: {
+  // 복용량 칩 그리드
+  dosageChipRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+    flexWrap: 'wrap',
+    gap: 8,
     marginBottom: 12,
   },
-  stepperBtn: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#4A90D9',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#4A90D9',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  stepperBtnText: {
-    color: '#FFF',
-    fontSize: 26,
-    fontWeight: '700',
-    lineHeight: 30,
-  },
-  stepperDisplay: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#4A90D9',
-    backgroundColor: '#F0F7FF',
-  },
-  stepperValue: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#4A90D9',
-  },
-
-  // 복용량 프리셋
   dosagePresetScroll: { marginBottom: 10 },
   dosagePresetContent: { flexDirection: 'row', gap: 8, paddingRight: 4 },
   dosageChip: {
@@ -955,21 +681,24 @@ const styles = StyleSheet.create({
 
   // Time row
   timeRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10, gap: 10 },
-  timeBtn: {
+  timeInputWrapper: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#F0F7FF',
     borderRadius: 10,
-    paddingVertical: 12,
     paddingHorizontal: 14,
-    gap: 8,
     minHeight: 48,
     borderWidth: 1,
     borderColor: '#D0E8FF',
   },
-  timeText: { fontSize: 17, fontWeight: '700', color: '#4A90D9' },
-  timeTapHint: { fontSize: 11, color: '#AAA', marginLeft: 'auto' },
+  timeInput: {
+    flex: 1,
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#4A90D9',
+    paddingVertical: 10,
+  },
   removeTimeBtn: { padding: 4 },
   addTimeBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
   addTimeBtnText: { color: '#4A90D9', fontSize: 14, fontWeight: '600' },
