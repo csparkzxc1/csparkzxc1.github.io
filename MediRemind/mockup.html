@@ -3,821 +3,442 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MediRemind 목업</title>
+<title>MediRemind — 2025 Design Mockup</title>
 <style>
-/* ── Reset & Base ── */
-*{margin:0;padding:0;box-sizing:border-box;}
-body{
-  background:linear-gradient(135deg,#c9d6df 0%,#e2ebf0 100%);
-  font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR','Segoe UI',sans-serif;
-  min-height:100vh;padding:48px 24px 64px;
-}
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+    background:#1E2235; padding:40px 24px; color:#1A1D2B;
+  }
+  h1 { color:#FFF; text-align:center; font-size:22px; margin-bottom:6px; font-weight:800; }
+  .sub { color:#9AA1B5; text-align:center; font-size:13px; margin-bottom:36px; }
+  .screens { display:flex; gap:28px; justify-content:center; flex-wrap:wrap; }
 
-/* ── Page title ── */
-.page-title{text-align:center;margin-bottom:48px;}
-.page-title h1{font-size:32px;font-weight:800;color:#222;letter-spacing:-0.5px;}
-.page-title p{font-size:13px;color:#888;margin-top:6px;}
+  /* ── Phone shell ── */
+  .phone {
+    width:340px; background:#000; border-radius:44px; padding:10px;
+    box-shadow:0 24px 60px rgba(0,0,0,.5);
+  }
+  .screen {
+    background:#F4F6FB; border-radius:36px; overflow:hidden; height:700px;
+    display:flex; flex-direction:column; position:relative;
+  }
+  .notch {
+    position:absolute; top:10px; left:50%; transform:translateX(-50%);
+    width:110px; height:26px; background:#000; border-radius:16px; z-index:50;
+  }
+  .status { display:flex; justify-content:space-between; padding:14px 26px 4px; font-size:12px; font-weight:700; color:#1A1D2B; }
+  .screen-label { color:#8A91A8; text-align:center; font-size:12px; font-weight:700; padding:10px 0 2px; letter-spacing:1px; text-transform:uppercase; }
+  .body { flex:1; overflow:hidden; padding:0 16px; }
 
-/* ── Layout ── */
-.row{display:flex;gap:36px;justify-content:center;flex-wrap:wrap;align-items:flex-start;}
-.col{display:flex;flex-direction:column;align-items:center;gap:14px;}
-.col-label{
-  font-size:11px;font-weight:700;color:#555;
-  letter-spacing:1px;text-transform:uppercase;
-  background:rgba(255,255,255,0.6);
-  border-radius:20px;padding:5px 14px;
-}
+  /* ── Light large-title header ── */
+  .header { display:flex; justify-content:space-between; align-items:flex-end; padding:16px 20px 12px; }
+  .header .date { color:#8A91A8; font-size:12px; font-weight:600; margin-bottom:3px; }
+  .header .title { color:#1A1D2B; font-size:24px; font-weight:800; letter-spacing:-.5px; }
+  .fab {
+    width:42px; height:42px; border-radius:21px; background:#4A6CF7; color:#FFF;
+    display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:400;
+    box-shadow:0 6px 14px rgba(74,108,247,.4);
+  }
 
-/* ── Phone shell ── */
-.phone{
-  width:320px;height:660px;
-  background:#1a1a1a;
-  border-radius:44px;
-  padding:12px;
-  box-shadow:
-    0 30px 80px rgba(0,0,0,0.35),
-    0 0 0 1px rgba(255,255,255,0.08),
-    inset 0 0 0 1px rgba(255,255,255,0.04);
-  position:relative;
-  flex-shrink:0;
-}
-.phone-inner{
-  width:100%;height:100%;
-  border-radius:34px;
-  overflow:hidden;
-  background:#F8F9FA;
-  display:flex;flex-direction:column;
-  position:relative;
-}
-/* notch */
-.phone::before{
-  content:'';
-  position:absolute;
-  top:20px;left:50%;transform:translateX(-50%);
-  width:88px;height:26px;
-  background:#1a1a1a;
-  border-radius:0 0 18px 18px;
-  z-index:20;
-}
+  /* ── Cards ── */
+  .card {
+    background:#FFF; border-radius:20px; padding:18px; margin-bottom:12px;
+    box-shadow:0 8px 20px rgba(63,74,126,.08);
+  }
 
-/* ── Screen header ── */
-.screen{display:flex;flex-direction:column;flex:1;overflow:hidden;}
+  /* ── Progress ── */
+  .prog-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+  .prog-label { font-size:12px; color:#8A91A8; font-weight:600; margin-bottom:3px; }
+  .prog-count { font-size:13px; color:#8A91A8; font-weight:600; }
+  .prog-count b { color:#4A6CF7; font-size:16px; font-weight:800; }
+  .prog-pct { font-size:34px; font-weight:800; color:#4A6CF7; letter-spacing:-1px; }
+  .prog-pct span { font-size:17px; }
+  .track { height:12px; background:#EBEEF6; border-radius:6px; overflow:hidden; }
+  .fill { height:100%; width:66%; background:#4A6CF7; border-radius:6px; }
 
-.hdr{
-  background:#4A90D9;
-  padding:38px 20px 18px;
-  flex-shrink:0;
-}
-.hdr-row{display:flex;justify-content:space-between;align-items:center;}
-.hdr-date{color:rgba(255,255,255,0.8);font-size:11px;margin-bottom:2px;}
-.hdr-title{color:#fff;font-size:20px;font-weight:700;}
-.hdr-add{
-  background:#fff;width:40px;height:40px;border-radius:20px;
-  display:flex;align-items:center;justify-content:center;
-  color:#4A90D9;font-size:24px;font-weight:300;
-  box-shadow:0 2px 8px rgba(0,0,0,0.12);flex-shrink:0;
-}
-.hdr-badge{
-  background:rgba(255,255,255,0.25);border-radius:14px;
-  padding:5px 12px;color:#fff;font-size:12px;font-weight:700;
-}
+  /* ── Banner ── */
+  .banner {
+    background:#FFFBEB; border-left:4px solid #F59E0B; border-radius:16px;
+    padding:12px 14px; margin-bottom:12px; box-shadow:0 4px 10px rgba(63,74,126,.05);
+  }
+  .banner-title { font-size:12px; font-weight:700; color:#92400E; margin-bottom:8px; }
+  .pill {
+    display:inline-flex; align-items:center; gap:6px; background:#FFF; border:1.5px solid #F59E0B;
+    border-radius:18px; padding:5px 11px; font-size:12px; font-weight:600; margin-right:6px;
+  }
+  .pill .dot { width:8px; height:8px; border-radius:4px; background:#F59E0B; }
+  .pill .dday { color:#F59E0B; font-weight:800; }
+  .pill.urgent { border-color:#EF4444; }
+  .pill.urgent .dday { color:#EF4444; }
 
-/* ── Scrollable body ── */
-.body{
-  flex:1;overflow-y:auto;
-  padding:14px;
-  display:flex;flex-direction:column;gap:10px;
-  scrollbar-width:none;
-}
-.body::-webkit-scrollbar{display:none;}
+  /* ── Dose item ── */
+  .dose {
+    display:flex; align-items:center; background:#FFF; border-radius:18px; margin-bottom:10px;
+    box-shadow:0 6px 14px rgba(63,74,126,.07); overflow:hidden; min-height:70px;
+  }
+  .dose .bar { width:5px; align-self:stretch; }
+  .dose .info { flex:1; padding:13px 14px; }
+  .dose .name { font-size:15px; font-weight:700; color:#1A1D2B; margin-bottom:4px; letter-spacing:-.2px; }
+  .dose .name.done { text-decoration:line-through; color:#A9B0C5; }
+  .dose .meta { font-size:12px; color:#8A91A8; }
+  .dose .meta .accent { color:#4A6CF7; }
+  .check {
+    width:44px; height:44px; border-radius:22px; margin-right:14px; flex-shrink:0;
+    background:#F1F3F9; border:2px solid #E3E7F1;
+    display:flex; align-items:center; justify-content:center; font-size:22px; color:#C4CBDD;
+  }
+  .check.done {
+    background:#10B981; border-color:#10B981; color:#FFF;
+    box-shadow:0 4px 10px rgba(16,185,129,.35);
+  }
 
-/* ── Card base ── */
-.card{
-  background:#fff;border-radius:12px;padding:16px;
-  box-shadow:0 2px 8px rgba(0,0,0,0.06);flex-shrink:0;
-}
+  /* ── Medicine card ── */
+  .med { display:flex; align-items:center; gap:12px; background:#FFF; border-radius:18px; padding:14px 16px; margin-bottom:10px; box-shadow:0 6px 14px rgba(63,74,126,.07); }
+  .med .icon { width:42px; height:42px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:19px; flex-shrink:0; }
+  .med .icon.blue { background:rgba(74,108,247,.12); }
+  .med .icon.green { background:rgba(16,185,129,.12); }
+  .med .icon.purple { background:rgba(139,92,246,.12); }
+  .med .b { flex:1; min-width:0; }
+  .med .row1 { display:flex; align-items:center; gap:8px; margin-bottom:3px; }
+  .med .nm { font-size:15px; font-weight:700; color:#1A1D2B; letter-spacing:-.2px; }
+  .badge { border-radius:12px; padding:2px 9px; font-size:10px; font-weight:800; color:#FFF; }
+  .badge.g { background:#10B981; } .badge.o { background:#F59E0B; } .badge.r { background:#EF4444; }
+  .med .mt { font-size:12px; color:#8A91A8; }
+  .switch { width:44px; height:26px; border-radius:13px; background:#4A6CF7; position:relative; flex-shrink:0; }
+  .switch::after { content:''; position:absolute; right:3px; top:3px; width:20px; height:20px; background:#FFF; border-radius:10px; box-shadow:0 1px 3px rgba(0,0,0,.2); }
+  .switch.off { background:#CCD2E0; }
+  .switch.off::after { left:3px; right:auto; }
+  .med.swiped { transform:translateX(-64px); }
+  .swipe-wrap { position:relative; border-radius:18px; overflow:hidden; margin-bottom:10px; }
+  .swipe-wrap .med { margin-bottom:0; }
+  .del { position:absolute; right:0; top:0; bottom:0; width:64px; background:#EF4444; color:#FFF; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:11px; font-weight:700; gap:2px; border-radius:0 18px 18px 0; }
 
-/* ── Progress bar ── */
-.prog-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
-.prog-lbl{font-size:14px;font-weight:600;color:#333;}
-.prog-cnt{font-size:13px;color:#888;}
-.prog-cnt b{font-size:15px;font-weight:700;color:#F0AD4E;}
-.prog-track{height:12px;background:#E9ECEF;border-radius:6px;overflow:hidden;margin-bottom:4px;}
-.prog-fill{height:100%;border-radius:6px;}
-.prog-pct{font-size:11px;color:#aaa;text-align:right;}
+  /* ── Form ── */
+  .sec-title { font-size:13px; font-weight:700; color:#4A6CF7; margin-bottom:11px; }
+  .lbl { font-size:12px; font-weight:600; color:#555; margin-bottom:7px; }
+  .input { background:#F4F6FB; border:1px solid #E5E7EB; border-radius:12px; padding:11px 13px; font-size:13px; color:#1A1D2B; margin-bottom:10px; }
+  .chips { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:10px; }
+  .chip { border:1.5px solid #DDD; background:#F4F6FB; border-radius:18px; padding:7px 12px; font-size:12px; font-weight:600; color:#888; }
+  .chip.on { border-color:#4A6CF7; background:#EDF1FE; color:#4A6CF7; }
+  .freq { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
+  .freq .f { flex:1; min-width:38px; text-align:center; border:1.5px solid #DDD; border-radius:10px; padding:9px 0; font-size:12px; font-weight:600; color:#888; }
+  .freq .f.on { border-color:#4A6CF7; background:#EDF1FE; color:#4A6CF7; }
+  .time-in { display:flex; align-items:center; gap:8px; background:#F0F3FF; border:1px solid #DCE3FD; border-radius:12px; padding:11px 13px; margin-bottom:8px; }
+  .time-in .t { font-size:16px; font-weight:700; color:#4A6CF7; flex:1; }
+  .time-in .cursor { display:inline-block; width:2px; height:18px; background:#4A6CF7; vertical-align:middle; animation:blink 1s infinite; }
+  @keyframes blink { 50% { opacity:0; } }
+  .minus { color:#EF4444; font-size:18px; }
+  .save { background:#4A6CF7; border-radius:16px; color:#FFF; text-align:center; padding:14px; font-size:15px; font-weight:700; box-shadow:0 8px 18px rgba(74,108,247,.35); margin-top:4px; }
 
-/* ── Prescription banner ── */
-.presc{
-  background:#FFF9EF;border-radius:12px;padding:12px 14px;
-  border-left:4px solid #F0AD4E;
-  box-shadow:0 1px 4px rgba(0,0,0,0.05);flex-shrink:0;
-}
-.presc-hdr{display:flex;align-items:center;gap:5px;margin-bottom:8px;}
-.presc-hdr-txt{font-size:12px;font-weight:700;color:#7D5A00;}
-.presc-badges{display:flex;gap:7px;flex-wrap:wrap;}
-.pbadge{
-  display:flex;align-items:center;gap:5px;
-  background:#fff;border-radius:16px;border:1.5px solid #F0AD4E;
-  padding:4px 10px;font-size:11px;
-}
-.pbadge.urgent{border-color:#D9534F;}
-.pdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
-.pname{font-weight:600;color:#333;max-width:60px;overflow:hidden;white-space:nowrap;}
-.pdday{font-weight:700;color:#F0AD4E;}
-.pdday.urg{color:#D9534F;}
+  /* ── Calendar ── */
+  .rate-badge { background:#EDF1FE; color:#4A6CF7; border-radius:16px; padding:6px 13px; font-size:12px; font-weight:800; }
+  .cal { background:#FFF; border-radius:20px; padding:14px; margin-bottom:12px; box-shadow:0 8px 20px rgba(63,74,126,.08); }
+  .cal .mon { text-align:center; font-weight:800; font-size:14px; margin-bottom:10px; color:#1A1D2B; }
+  .cal table { width:100%; border-collapse:collapse; font-size:11px; text-align:center; }
+  .cal th { color:#8A91A8; font-weight:600; padding:4px 0; }
+  .cal td { padding:6px 0; color:#333; position:relative; }
+  .cal td.dis { color:#CCD2E0; }
+  .cal td.sel { background:#4A6CF7; color:#FFF; border-radius:10px; font-weight:800; }
+  .d { position:absolute; bottom:1px; left:50%; transform:translateX(-50%); display:flex; gap:2px; }
+  .d i { width:4px; height:4px; border-radius:2px; display:block; }
+  .d .g { background:#10B981; } .d .r { background:#EF4444; }
+  .rec { display:flex; align-items:center; gap:10px; background:#FFF; border-radius:16px; padding:12px 14px; margin-bottom:8px; box-shadow:0 4px 10px rgba(63,74,126,.06); border-left:4px solid #10B981; }
+  .rec.miss { border-left-color:#EF4444; }
+  .rec .sd { width:9px; height:9px; border-radius:5px; background:#10B981; }
+  .rec.miss .sd { background:#EF4444; }
+  .rec .rn { flex:1; font-size:13px; font-weight:600; color:#1A1D2B; }
+  .rec .rt { font-size:11px; color:#8A91A8; }
+  .rec .st { font-size:12px; font-weight:800; color:#10B981; }
+  .rec.miss .st { color:#EF4444; }
 
-/* ── Dose item ── */
-.dose{
-  display:flex;align-items:center;
-  background:#fff;border-radius:12px;overflow:hidden;
-  box-shadow:0 2px 6px rgba(0,0,0,0.07);
-  min-height:68px;flex-shrink:0;
-}
-.dose-bar{width:5px;align-self:stretch;flex-shrink:0;}
-.dose-info{flex:1;padding:13px 12px;}
-.dose-name{font-size:15px;font-weight:600;color:#222;margin-bottom:3px;}
-.dose-name.done{text-decoration:line-through;color:#AAA;}
-.dose-meta{font-size:11px;color:#888;display:flex;align-items:center;gap:3px;flex-wrap:wrap;}
-.meta-dot{color:#CCC;}
-.notif-chip{color:#4A90D9;font-size:11px;display:flex;align-items:center;gap:2px;}
-.dose-btn{
-  margin-right:12px;width:60px;height:34px;border-radius:17px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:12px;font-weight:700;flex-shrink:0;
-}
-.dose-btn.done{background:#5CB85C;color:#fff;}
-.dose-btn.pending{background:#E9ECEF;color:#555;}
+  /* ── Settings ── */
+  .set-lbl { font-size:10px; font-weight:700; color:#999; letter-spacing:.8px; text-transform:uppercase; margin:14px 4px 7px; }
+  .set-card { background:#FFF; border-radius:18px; overflow:hidden; box-shadow:0 4px 12px rgba(63,74,126,.06); }
+  .set-row { display:flex; align-items:center; gap:12px; padding:13px 14px; }
+  .set-row + .set-row { border-top:1px solid #F3F4F6; }
+  .set-ic { width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px; }
+  .set-tt { flex:1; font-size:13px; font-weight:500; color:#1A1D2B; }
+  .set-tt small { display:block; font-size:11px; color:#999; margin-top:1px; }
+  .chev { color:#CCC; font-size:14px; }
 
-/* ── All done ── */
-.all-done{
-  background:#5CB85C;border-radius:12px;padding:13px;
-  text-align:center;color:#fff;font-size:13px;font-weight:600;flex-shrink:0;
-}
-
-/* ── Medicine card ── */
-.mcard{
-  background:#fff;border-radius:12px;padding:14px 14px 14px 14px;
-  display:flex;align-items:center;gap:12px;
-  box-shadow:0 2px 6px rgba(0,0,0,0.07);flex-shrink:0;
-}
-.mcard.off{opacity:0.55;}
-.mdot{width:13px;height:13px;border-radius:50%;flex-shrink:0;}
-.mbody{flex:1;min-width:0;}
-.mname-row{display:flex;align-items:center;gap:7px;margin-bottom:3px;}
-.mname{font-size:14px;font-weight:700;color:#222;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.mname.off{color:#AAA;}
-.dday-badge{
-  font-size:10px;font-weight:700;color:#fff;
-  padding:2px 7px;border-radius:8px;flex-shrink:0;
-}
-.mmeta{font-size:11px;color:#777;margin-top:2px;}
-.expired-lbl{font-size:11px;color:#D9534F;font-weight:500;margin-top:4px;}
-
-/* ── Toggle ── */
-.tog{
-  width:40px;height:22px;border-radius:11px;
-  position:relative;flex-shrink:0;
-  transition:background .2s;
-}
-.tog.on{background:#4A90D9;}
-.tog.off{background:#ccc;}
-.tog::after{
-  content:'';position:absolute;
-  width:18px;height:18px;background:#fff;
-  border-radius:50%;top:2px;
-  box-shadow:0 1px 3px rgba(0,0,0,0.2);
-  transition:left .2s;
-}
-.tog.on::after{left:20px;}
-.tog.off::after{left:2px;}
-
-/* ── Calendar header ── */
-.cal-hdr{background:#4A90D9;padding:38px 20px 18px;flex-shrink:0;}
-.cal-hdr-row{display:flex;justify-content:space-between;align-items:center;}
-
-/* ── Calendar widget ── */
-.cal-widget{background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.07);flex-shrink:0;}
-.cal-nav{display:flex;align-items:center;justify-content:center;gap:24px;padding:10px 0 4px;}
-.cal-nav-month{font-size:14px;font-weight:700;color:#222;}
-.cal-nav-arr{color:#4A90D9;font-size:18px;font-weight:700;}
-.cal-dh{display:grid;grid-template-columns:repeat(7,1fr);padding:2px 8px 0;}
-.cal-dh span{text-align:center;font-size:10px;font-weight:700;color:#aaa;padding:3px 0;}
-.cal-dh span:first-child{color:#D9534F;}
-.cal-dh span:last-child{color:#4A90D9;}
-.cal-g{display:grid;grid-template-columns:repeat(7,1fr);padding:2px 8px 8px;gap:1px;}
-.cd{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  font-size:11px;color:#333;padding:2px 0;gap:2px;cursor:pointer;
-  aspect-ratio:1;border-radius:50%;
-}
-.cd.sel{background:#4A90D9;color:#fff;}
-.cd.tod{color:#4A90D9;font-weight:700;}
-.cd.emp{color:transparent;}
-.dots{display:flex;gap:2px;justify-content:center;}
-.d{width:4px;height:4px;border-radius:50%;}
-
-/* ── Calendar detail ── */
-.cal-detail{padding:12px;flex:1;overflow-y:auto;}
-.detail-title{font-size:13px;font-weight:700;color:#333;margin-bottom:10px;}
-.rec{
-  display:flex;align-items:center;
-  background:#fff;border-radius:10px;padding:10px 12px;
-  margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,0.05);
-  border-left:4px solid transparent;
-}
-.rec.tk{border-left-color:#5CB85C;}
-.rec.ms{border-left-color:#D9534F;}
-.rec-dot{width:8px;height:8px;border-radius:50%;margin-right:10px;flex-shrink:0;}
-.rec-info{flex:1;}
-.rec-name{font-size:12px;font-weight:600;color:#222;margin-bottom:1px;}
-.rec-time{font-size:11px;color:#888;}
-.rec-badge{font-size:11px;font-weight:700;}
-
-/* ── Settings ── */
-.settings-hdr{background:#4A90D9;padding:38px 20px 18px;flex-shrink:0;}
-.s-body{flex:1;overflow-y:auto;scrollbar-width:none;}
-.s-body::-webkit-scrollbar{display:none;}
-.s-sec{padding:0 14px;margin-top:16px;}
-.s-sec-lbl{
-  font-size:10px;font-weight:700;color:#999;
-  text-transform:uppercase;letter-spacing:.6px;
-  margin-bottom:6px;margin-left:2px;
-}
-.s-card{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.06);}
-.s-row{
-  display:flex;align-items:center;padding:13px 14px;gap:12px;min-height:52px;
-}
-.s-icon{
-  width:34px;height:34px;border-radius:9px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:16px;flex-shrink:0;
-}
-.s-texts{flex:1;}
-.s-title{font-size:13px;font-weight:500;color:#222;}
-.s-title.danger{color:#D9534F;}
-.s-sub{font-size:11px;color:#999;margin-top:1px;}
-.s-div{height:1px;background:#F3F4F6;margin-left:60px;}
-.sw{width:38px;height:20px;border-radius:10px;position:relative;flex-shrink:0;}
-.sw.on{background:#4A90D9;}
-.sw.off{background:#ccc;}
-.sw::after{
-  content:'';position:absolute;width:16px;height:16px;
-  background:#fff;border-radius:50%;top:2px;
-  box-shadow:0 1px 3px rgba(0,0,0,0.2);
-}
-.sw.on::after{left:20px;}
-.sw.off::after{left:2px;}
-.s-arr{color:#ccc;font-size:14px;}
-.s-footer{text-align:center;padding:24px 0 16px;color:#C0C0C0;font-size:11px;line-height:18px;}
-
-/* ── Form screen ── */
-.form-hdr{background:#4A90D9;padding:38px 16px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
-.form-back{color:#fff;font-size:20px;font-weight:600;}
-.form-hdr-title{color:#fff;font-size:18px;font-weight:700;}
-.form-body{
-  flex:1;overflow-y:auto;padding:12px;
-  display:flex;flex-direction:column;gap:10px;
-  scrollbar-width:none;
-}
-.form-body::-webkit-scrollbar{display:none;}
-.f-card{background:#fff;border-radius:12px;padding:14px;box-shadow:0 2px 6px rgba(0,0,0,0.06);}
-.f-sec-title{font-size:13px;font-weight:700;color:#4A90D9;margin-bottom:12px;}
-.f-label{font-size:12px;font-weight:600;color:#555;margin-bottom:6px;}
-.f-input{
-  background:#F8F9FA;border:1px solid #E5E7EB;border-radius:10px;
-  padding:11px 12px;font-size:13px;color:#222;
-  width:100%;margin-bottom:12px;
-}
-.f-input:last-child{margin-bottom:0;}
-.seg-row{display:flex;gap:6px;}
-.seg{
-  flex:1;text-align:center;padding:9px 4px;
-  border:1.5px solid #ddd;border-radius:10px;
-  font-size:12px;font-weight:600;color:#888;
-}
-.seg.on{border-color:#4A90D9;background:#EEF5FB;color:#4A90D9;}
-.time-btn{
-  display:flex;align-items:center;gap:7px;
-  background:#F0F7FF;border:1px solid #D0E8FF;border-radius:10px;
-  padding:11px 12px;margin-bottom:8px;
-}
-.time-btn-txt{font-size:15px;font-weight:700;color:#4A90D9;}
-.color-row{display:flex;gap:10px;flex-wrap:wrap;}
-.cc{
-  width:34px;height:34px;border-radius:17px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:14px;color:#fff;font-weight:700;
-}
-.cc.sel{box-shadow:0 0 0 3px #fff,0 0 0 5px #4A90D9;transform:scale(1.1);}
-
-/* offset chips */
-.offset-row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:8px;}
-.oc{
-  padding:8px 13px;border-radius:20px;border:1.5px solid #ddd;
-  background:#F8F9FA;font-size:12px;font-weight:600;color:#888;
-}
-.oc.on{border-color:#4A90D9;background:#EEF5FB;color:#4A90D9;}
-.offset-hint{font-size:11px;color:#4A90D9;margin-top:2px;}
-
-.save-btn{
-  background:#4A90D9;border-radius:14px;padding:15px;
-  text-align:center;color:#fff;font-size:15px;font-weight:700;
-  box-shadow:0 4px 14px rgba(74,144,217,0.35);
-  display:flex;align-items:center;justify-content:center;gap:8px;
-}
-
-/* ── Bottom tab ── */
-.tab{
-  display:flex;background:#fff;
-  border-top:1px solid #F0F0F0;
-  box-shadow:0 -2px 8px rgba(0,0,0,0.06);
-  flex-shrink:0;
-}
-.ti{
-  flex:1;display:flex;flex-direction:column;align-items:center;
-  padding:8px 0 14px;gap:3px;cursor:pointer;
-}
-.ti-icon{font-size:20px;}
-.ti-lbl{font-size:10px;font-weight:600;color:#AAA;}
-.ti.act .ti-lbl{color:#4A90D9;}
-
-/* ── Swipe hint ── */
-.swipe-hint{
-  position:relative;overflow:hidden;border-radius:12px;flex-shrink:0;
-}
-.swipe-del{
-  position:absolute;right:0;top:0;bottom:0;width:72px;
-  background:#D9534F;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;border-radius:12px;
-  font-size:11px;color:#fff;font-weight:600;gap:2px;
-}
-.swipe-del-icon{font-size:18px;}
-.swipe-card{transform:translateX(-72px);position:relative;z-index:1;}
+  /* ── Tab bar ── */
+  .tabbar {
+    display:flex; background:#FFF; padding:10px 8px 22px;
+    box-shadow:0 -6px 20px rgba(26,34,70,.07);
+  }
+  .tab { flex:1; text-align:center; font-size:10px; font-weight:600; color:#9AA1B5; }
+  .tab .ic { font-size:20px; display:block; margin-bottom:2px; }
+  .tab.on { color:#4A6CF7; }
 </style>
 </head>
 <body>
+<h1>💊 MediRemind — 2025 Design Refresh</h1>
+<p class="sub">라이트 라지 타이틀 헤더 · 인디고 팔레트(#4A6CF7) · 소프트 뎁스 카드 · 원형 체크 버튼</p>
 
-<div class="page-title">
-  <h1>💊 MediRemind</h1>
-  <p>React Native + Expo · 실제 코드 기반 목업</p>
-</div>
+<div class="screens">
 
-<div class="row">
+  <!-- ═══ 1. HOME ═══ -->
+  <div class="phone"><div class="screen">
+    <div class="notch"></div>
+    <div class="status"><span>9:41</span><span>📶 🔋</span></div>
+    <div class="screen-label">홈</div>
+    <div class="header">
+      <div>
+        <div class="date">7월 6일 월요일</div>
+        <div class="title">오늘의 복용 현황</div>
+      </div>
+      <div class="fab">+</div>
+    </div>
+    <div class="body">
+      <div class="card">
+        <div class="prog-head">
+          <div>
+            <div class="prog-label">오늘 복용 현황</div>
+            <div class="prog-count"><b>2</b> / 3회 완료</div>
+          </div>
+          <div class="prog-pct">66<span>%</span></div>
+        </div>
+        <div class="track"><div class="fill"></div></div>
+      </div>
 
-  <!-- ════ 홈 ════ -->
-  <div class="col">
-    <div class="col-label">🏠 홈 화면</div>
-    <div class="phone">
-      <div class="phone-inner">
-        <div class="screen">
-          <div class="hdr">
-            <div class="hdr-row">
-              <div>
-                <div class="hdr-date">2026년 5월 2일 (토요일)</div>
-                <div class="hdr-title">오늘의 복용 현황</div>
-              </div>
-              <div class="hdr-add">+</div>
-            </div>
+      <div class="banner">
+        <div class="banner-title">⚠️ 재처방 임박 알림</div>
+        <span class="pill urgent"><span class="dot" style="background:#EF4444"></span>혈압약 <span class="dday">D-2</span></span>
+        <span class="pill"><span class="dot"></span>오메가3 <span class="dday">D-6</span></span>
+      </div>
+
+      <div class="dose">
+        <div class="bar" style="background:#4A6CF7"></div>
+        <div class="info">
+          <div class="name done">혈압약</div>
+          <div class="meta">🕗 오전 8:00 · 1정 · <span class="accent">🔔 10분 전</span></div>
+        </div>
+        <div class="check done">✓</div>
+      </div>
+      <div class="dose">
+        <div class="bar" style="background:#10B981"></div>
+        <div class="info">
+          <div class="name done">오메가3</div>
+          <div class="meta">🕐 오후 1:00 · 2정</div>
+        </div>
+        <div class="check done">✓</div>
+      </div>
+      <div class="dose">
+        <div class="bar" style="background:#8B5CF6"></div>
+        <div class="info">
+          <div class="name">종합비타민</div>
+          <div class="meta">🕘 오후 9:00 · 1정 · <span class="accent">🔔 5분 전</span></div>
+        </div>
+        <div class="check">✓</div>
+      </div>
+    </div>
+    <div class="tabbar">
+      <div class="tab on"><span class="ic">🏠</span>홈</div>
+      <div class="tab"><span class="ic">💊</span>내 약</div>
+      <div class="tab"><span class="ic">📅</span>달력</div>
+      <div class="tab"><span class="ic">⚙️</span>설정</div>
+    </div>
+  </div></div>
+
+  <!-- ═══ 2. MEDICINE LIST ═══ -->
+  <div class="phone"><div class="screen">
+    <div class="notch"></div>
+    <div class="status"><span>9:41</span><span>📶 🔋</span></div>
+    <div class="screen-label">내 약 목록</div>
+    <div class="header">
+      <div><div class="title">내 약 목록</div></div>
+      <div class="fab">+</div>
+    </div>
+    <div class="body">
+      <div class="med">
+        <div class="icon blue">💊</div>
+        <div class="b">
+          <div class="row1"><span class="nm">혈압약</span><span class="badge r">D-2</span></div>
+          <div class="mt">🕗 오전 8:00 · 매일 · 1정</div>
+        </div>
+        <div class="switch"></div>
+      </div>
+      <div class="med">
+        <div class="icon green">💊</div>
+        <div class="b">
+          <div class="row1"><span class="nm">오메가3</span><span class="badge o">D-6</span></div>
+          <div class="mt">🕐 오후 1:00 · 매일 · 2정</div>
+        </div>
+        <div class="switch"></div>
+      </div>
+      <div class="swipe-wrap">
+        <div class="del">🗑<br>삭제</div>
+        <div class="med swiped">
+          <div class="icon purple">💊</div>
+          <div class="b">
+            <div class="row1"><span class="nm">종합비타민</span><span class="badge g">D-24</span></div>
+            <div class="mt">🕘 오후 9:00 · 평일 · 1정</div>
           </div>
-          <div class="body">
-            <!-- Progress card -->
-            <div class="card">
-              <div class="prog-row">
-                <span class="prog-lbl">오늘 복용 현황</span>
-                <span class="prog-cnt"><b>2</b> / 4 완료</span>
-              </div>
-              <div class="prog-track">
-                <div class="prog-fill" style="width:50%;background:#F0AD4E;"></div>
-              </div>
-              <div class="prog-pct">50%</div>
-            </div>
-            <!-- Prescription banner -->
-            <div class="presc">
-              <div class="presc-hdr">
-                <span style="font-size:14px;">⚠️</span>
-                <span class="presc-hdr-txt">재처방 임박 알림</span>
-              </div>
-              <div class="presc-badges">
-                <div class="pbadge urgent">
-                  <div class="pdot" style="background:#D9534F;"></div>
-                  <span class="pname">타이레놀</span>
-                  <span class="pdday urg">D-2</span>
-                </div>
-                <div class="pbadge">
-                  <div class="pdot" style="background:#9B59B6;"></div>
-                  <span class="pname">오메가3</span>
-                  <span class="pdday">D-5</span>
-                </div>
-              </div>
-            </div>
-            <!-- Dose items -->
-            <div class="dose">
-              <div class="dose-bar" style="background:#4A90D9;"></div>
-              <div class="dose-info">
-                <div class="dose-name done">타이레놀</div>
-                <div class="dose-meta">
-                  <span>⏰</span><span>오전 8:00</span>
-                  <span class="meta-dot">·</span><span>1정</span>
-                  <span class="meta-dot">·</span>
-                  <span class="notif-chip">🔔 10분 전</span>
-                </div>
-              </div>
-              <div class="dose-btn done">✓</div>
-            </div>
-            <div class="dose">
-              <div class="dose-bar" style="background:#5CB85C;"></div>
-              <div class="dose-info">
-                <div class="dose-name done">종합비타민</div>
-                <div class="dose-meta">
-                  <span>⏰</span><span>오전 8:00</span>
-                  <span class="meta-dot">·</span><span>1캡슐</span>
-                </div>
-              </div>
-              <div class="dose-btn done">✓</div>
-            </div>
-            <div class="dose">
-              <div class="dose-bar" style="background:#9B59B6;"></div>
-              <div class="dose-info">
-                <div class="dose-name">오메가3</div>
-                <div class="dose-meta">
-                  <span>⏰</span><span>오후 1:00</span>
-                  <span class="meta-dot">·</span><span>2정</span>
-                  <span class="meta-dot">·</span>
-                  <span class="notif-chip">🔔 15분 전</span>
-                </div>
-              </div>
-              <div class="dose-btn pending">복용</div>
-            </div>
-            <div class="dose">
-              <div class="dose-bar" style="background:#D9534F;"></div>
-              <div class="dose-info">
-                <div class="dose-name">혈압약</div>
-                <div class="dose-meta">
-                  <span>⏰</span><span>오후 9:00</span>
-                  <span class="meta-dot">·</span><span>1정</span>
-                </div>
-              </div>
-              <div class="dose-btn pending">복용</div>
-            </div>
-          </div>
-          <!-- AdBanner placeholder -->
-          <div style="background:#f0f0f0;text-align:center;padding:8px;font-size:10px;color:#aaa;flex-shrink:0;">
-            광고 배너 (AdMob)
-          </div>
-          <div class="tab">
-            <div class="ti act"><span class="ti-icon">🏠</span><span class="ti-lbl" style="color:#4A90D9;">홈</span></div>
-            <div class="ti"><span class="ti-icon" style="opacity:.4;">💊</span><span class="ti-lbl">내 약</span></div>
-            <div class="ti"><span class="ti-icon" style="opacity:.4;">📅</span><span class="ti-lbl">달력</span></div>
-            <div class="ti"><span class="ti-icon" style="opacity:.4;">⚙️</span><span class="ti-lbl">설정</span></div>
-          </div>
+          <div class="switch"></div>
+        </div>
+      </div>
+      <div class="med" style="opacity:.55">
+        <div class="icon blue">💊</div>
+        <div class="b">
+          <div class="row1"><span class="nm">수면유도제</span></div>
+          <div class="mt">🕚 오후 11:00 · 매일 · 0.5정</div>
+        </div>
+        <div class="switch off"></div>
+      </div>
+      <p style="text-align:center; font-size:11px; color:#9AA1B5; margin-top:8px">← 왼쪽으로 밀면 삭제</p>
+    </div>
+    <div class="tabbar">
+      <div class="tab"><span class="ic">🏠</span>홈</div>
+      <div class="tab on"><span class="ic">💊</span>내 약</div>
+      <div class="tab"><span class="ic">📅</span>달력</div>
+      <div class="tab"><span class="ic">⚙️</span>설정</div>
+    </div>
+  </div></div>
+
+  <!-- ═══ 3. FORM ═══ -->
+  <div class="phone"><div class="screen">
+    <div class="notch"></div>
+    <div class="status"><span>9:41</span><span>📶 🔋</span></div>
+    <div class="screen-label">약 등록 / 수정</div>
+    <div class="header"><div><div class="title" style="font-size:19px">약 등록</div></div></div>
+    <div class="body" style="overflow-y:hidden">
+      <div class="card" style="padding:15px">
+        <div class="sec-title">기본 정보</div>
+        <div class="lbl">약 이름 *</div>
+        <div class="input">타이레놀</div>
+        <div class="lbl">1회 복용량 * — 칩 + 직접입력</div>
+        <div class="chips">
+          <span class="chip">0.5정</span><span class="chip">1정</span><span class="chip">1.5정</span>
+          <span class="chip on">2정</span><span class="chip">3정</span><span class="chip">5정</span>
+          <span class="chip">10정</span><span class="chip">직접입력</span>
+        </div>
+      </div>
+      <div class="card" style="padding:15px">
+        <div class="sec-title">복용 시간</div>
+        <div class="lbl">1일 복용 횟수 * — 1~6회 + 직접</div>
+        <div class="freq">
+          <div class="f">1회</div><div class="f on">2회</div><div class="f">3회</div>
+          <div class="f">4회</div><div class="f">5회</div><div class="f">6회</div><div class="f">직접</div>
+        </div>
+        <div class="lbl">복용 시간 — 탭하여 바로 입력</div>
+        <div class="time-in"><span>🕐</span><span class="t">08:00</span></div>
+        <div class="time-in" style="border-color:#4A6CF7">
+          <span>🕐</span><span class="t">13:3<span class="cursor"></span></span><span class="minus">⊖</span>
+        </div>
+      </div>
+      <div class="card" style="padding:15px">
+        <div class="sec-title">알림 시간 조정</div>
+        <div class="chips" style="margin-bottom:4px">
+          <span class="chip">정시</span><span class="chip">5분 전</span><span class="chip on">10분 전</span>
+          <span class="chip">15분 전</span><span class="chip">30분 전</span>
+        </div>
+      </div>
+      <div class="save">💾 약 등록하기</div>
+    </div>
+  </div></div>
+
+  <!-- ═══ 4. CALENDAR ═══ -->
+  <div class="phone"><div class="screen">
+    <div class="notch"></div>
+    <div class="status"><span>9:41</span><span>📶 🔋</span></div>
+    <div class="screen-label">복용 기록</div>
+    <div class="header">
+      <div><div class="title">복용 기록</div></div>
+      <div class="rate-badge">이번 달 87%</div>
+    </div>
+    <div class="body">
+      <div class="cal">
+        <div class="mon">‹&nbsp;&nbsp;2026년 7월&nbsp;&nbsp;›</div>
+        <table>
+          <tr><th>일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th></tr>
+          <tr><td class="dis">28</td><td class="dis">29</td><td class="dis">30</td><td>1<span class="d"><i class="g"></i></span></td><td>2<span class="d"><i class="g"></i></span></td><td>3<span class="d"><i class="g"></i><i class="r"></i></span></td><td>4<span class="d"><i class="g"></i></span></td></tr>
+          <tr><td>5<span class="d"><i class="r"></i></span></td><td class="sel">6</td><td>7</td><td>8</td><td>9</td><td>10</td><td>11</td></tr>
+          <tr><td>12</td><td>13</td><td>14</td><td>15</td><td>16</td><td>17</td><td>18</td></tr>
+        </table>
+      </div>
+      <div style="font-size:13px; font-weight:700; margin:2px 4px 8px;">오늘</div>
+      <div class="rec">
+        <span class="sd"></span>
+        <div class="rn">혈압약<div class="rt">오전 8:00 · 1정</div></div>
+        <span class="st">복용</span>
+      </div>
+      <div class="rec">
+        <span class="sd"></span>
+        <div class="rn">오메가3<div class="rt">오후 1:00 · 2정</div></div>
+        <span class="st">복용</span>
+      </div>
+      <div class="rec miss">
+        <span class="sd"></span>
+        <div class="rn">종합비타민<div class="rt">오후 9:00 · 1정</div></div>
+        <span class="st">미복용</span>
+      </div>
+    </div>
+    <div class="tabbar">
+      <div class="tab"><span class="ic">🏠</span>홈</div>
+      <div class="tab"><span class="ic">💊</span>내 약</div>
+      <div class="tab on"><span class="ic">📅</span>달력</div>
+      <div class="tab"><span class="ic">⚙️</span>설정</div>
+    </div>
+  </div></div>
+
+  <!-- ═══ 5. SETTINGS ═══ -->
+  <div class="phone"><div class="screen">
+    <div class="notch"></div>
+    <div class="status"><span>9:41</span><span>📶 🔋</span></div>
+    <div class="screen-label">설정</div>
+    <div class="header"><div><div class="title">설정</div></div></div>
+    <div class="body">
+      <div class="set-lbl">알림</div>
+      <div class="set-card">
+        <div class="set-row">
+          <div class="set-ic" style="background:rgba(74,108,247,.12)">🔊</div>
+          <div class="set-tt">알림 소리</div>
+          <div class="switch"></div>
+        </div>
+        <div class="set-row">
+          <div class="set-ic" style="background:rgba(139,92,246,.12)">📳</div>
+          <div class="set-tt">알림 진동</div>
+          <div class="switch"></div>
+        </div>
+      </div>
+      <div class="set-lbl">업데이트</div>
+      <div class="set-card">
+        <div class="set-row">
+          <div class="set-ic" style="background:rgba(74,108,247,.12)">☁️</div>
+          <div class="set-tt">업데이트 확인<small>채널: production</small></div>
+          <span class="chev">›</span>
+        </div>
+      </div>
+      <div class="set-lbl">데이터</div>
+      <div class="set-card">
+        <div class="set-row">
+          <div class="set-ic" style="background:rgba(239,68,68,.12)">🔄</div>
+          <div class="set-tt" style="color:#EF4444">복용 기록 초기화<small>4개 약 등록됨</small></div>
+          <span class="chev">›</span>
+        </div>
+      </div>
+      <div class="set-lbl">앱 정보</div>
+      <div class="set-card">
+        <div class="set-row">
+          <div class="set-ic" style="background:rgba(20,184,166,.12)">🛡</div>
+          <div class="set-tt">개인정보처리방침</div>
+          <span class="chev">›</span>
+        </div>
+        <div class="set-row">
+          <div class="set-ic" style="background:rgba(136,136,136,.12)">ℹ️</div>
+          <div class="set-tt">앱 버전<small>v1.0.0 (1.0.0)</small></div>
         </div>
       </div>
     </div>
-  </div>
-
-  <!-- ════ 내 약 목록 ════ -->
-  <div class="col">
-    <div class="col-label">💊 내 약 목록</div>
-    <div class="phone">
-      <div class="phone-inner">
-        <div class="screen">
-          <div class="hdr">
-            <div class="hdr-row">
-              <div class="hdr-title">내 약 목록</div>
-              <div style="background:rgba(255,255,255,.25);width:36px;height:36px;border-radius:18px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:300;">+</div>
-            </div>
-          </div>
-          <div class="body">
-            <!-- swipe revealed card -->
-            <div class="swipe-hint">
-              <div class="swipe-del">
-                <span class="swipe-del-icon">🗑</span>
-                <span>삭제</span>
-              </div>
-              <div class="swipe-card">
-                <div class="mcard">
-                  <div class="mdot" style="background:#4A90D9;"></div>
-                  <div class="mbody">
-                    <div class="mname-row">
-                      <span class="mname">타이레놀</span>
-                      <span class="dday-badge" style="background:#D9534F;">D-2</span>
-                    </div>
-                    <div class="mmeta">⏱ 오전 8:00, 오후 9:00</div>
-                    <div class="mmeta">📅 매일 · 1정</div>
-                    <div class="expired-lbl">⚠️ 재처방 임박</div>
-                  </div>
-                  <div class="tog on"></div>
-                </div>
-              </div>
-            </div>
-            <div class="mcard">
-              <div class="mdot" style="background:#5CB85C;"></div>
-              <div class="mbody">
-                <div class="mname-row"><span class="mname">종합비타민</span></div>
-                <div class="mmeta">⏱ 오전 8:00</div>
-                <div class="mmeta">📅 매일 · 1캡슐</div>
-              </div>
-              <div class="tog on"></div>
-            </div>
-            <div class="mcard">
-              <div class="mdot" style="background:#9B59B6;"></div>
-              <div class="mbody">
-                <div class="mname-row">
-                  <span class="mname">오메가3</span>
-                  <span class="dday-badge" style="background:#F0AD4E;">D-5</span>
-                </div>
-                <div class="mmeta">⏱ 오후 1:00</div>
-                <div class="mmeta">📅 평일 · 2정</div>
-              </div>
-              <div class="tog on"></div>
-            </div>
-            <div class="mcard off">
-              <div class="mdot" style="background:#D9534F;"></div>
-              <div class="mbody">
-                <div class="mname-row"><span class="mname off">혈압약</span></div>
-                <div class="mmeta">⏱ 오후 9:00</div>
-                <div class="mmeta">📅 매일 · 1정</div>
-              </div>
-              <div class="tog off"></div>
-            </div>
-            <div class="mcard">
-              <div class="mdot" style="background:#1ABC9C;"></div>
-              <div class="mbody">
-                <div class="mname-row">
-                  <span class="mname">아스피린</span>
-                  <span class="dday-badge" style="background:#5CB85C;">D-14</span>
-                </div>
-                <div class="mmeta">⏱ 오전 8:00</div>
-                <div class="mmeta">📅 주말 · 1정</div>
-              </div>
-              <div class="tog on"></div>
-            </div>
-          </div>
-          <div class="tab">
-            <div class="ti"><span class="ti-icon" style="opacity:.4;">🏠</span><span class="ti-lbl">홈</span></div>
-            <div class="ti act"><span class="ti-icon">💊</span><span class="ti-lbl" style="color:#4A90D9;">내 약</span></div>
-            <div class="ti"><span class="ti-icon" style="opacity:.4;">📅</span><span class="ti-lbl">달력</span></div>
-            <div class="ti"><span class="ti-icon" style="opacity:.4;">⚙️</span><span class="ti-lbl">설정</span></div>
-          </div>
-        </div>
-      </div>
+    <div class="tabbar">
+      <div class="tab"><span class="ic">🏠</span>홈</div>
+      <div class="tab"><span class="ic">💊</span>내 약</div>
+      <div class="tab"><span class="ic">📅</span>달력</div>
+      <div class="tab on"><span class="ic">⚙️</span>설정</div>
     </div>
-  </div>
-
-  <!-- ════ 달력 ════ -->
-  <div class="col">
-    <div class="col-label">📅 복용 달력</div>
-    <div class="phone">
-      <div class="phone-inner">
-        <div class="screen">
-          <div class="cal-hdr">
-            <div class="cal-hdr-row">
-              <div class="hdr-title">복용 기록</div>
-              <div class="hdr-badge">이번 달 78%</div>
-            </div>
-          </div>
-          <!-- Calendar sticky -->
-          <div class="cal-widget">
-            <div class="cal-nav">
-              <span class="cal-nav-arr">‹</span>
-              <span class="cal-nav-month">2026년 5월</span>
-              <span class="cal-nav-arr">›</span>
-            </div>
-            <div class="cal-dh">
-              <span>일</span><span>월</span><span>화</span>
-              <span>수</span><span>목</span><span>금</span><span>토</span>
-            </div>
-            <div class="cal-g">
-              <div class="cd emp"></div><div class="cd emp"></div><div class="cd emp"></div><div class="cd emp"></div>
-              <div class="cd">1<div class="dots"><div class="d" style="background:#5CB85C;"></div></div></div>
-              <div class="cd">2<div class="dots"><div class="d" style="background:#5CB85C;"></div><div class="d" style="background:#D9534F;"></div></div></div>
-              <div class="cd sel">3</div>
-              <div class="cd">4<div class="dots"><div class="d" style="background:#5CB85C;"></div></div></div>
-              <div class="cd">5<div class="dots"><div class="d" style="background:#5CB85C;"></div></div></div>
-              <div class="cd">6<div class="dots"><div class="d" style="background:#D9534F;"></div></div></div>
-              <div class="cd">7<div class="dots"><div class="d" style="background:#5CB85C;"></div></div></div>
-              <div class="cd">8<div class="dots"><div class="d" style="background:#5CB85C;"></div></div></div>
-              <div class="cd">9<div class="dots"><div class="d" style="background:#5CB85C;"></div></div></div>
-              <div class="cd">10</div>
-              <div class="cd">11<div class="dots"><div class="d" style="background:#5CB85C;"></div></div></div>
-              <div class="cd tod">12<div class="dots"><div class="d" style="background:#5CB85C;"></div></div></div>
-              <div class="cd">13</div>
-              <div class="cd">14</div>
-            </div>
-          </div>
-          <!-- Day detail -->
-          <div class="cal-detail">
-            <div class="detail-title">5월 3일</div>
-            <div class="rec tk">
-              <div class="rec-dot" style="background:#5CB85C;"></div>
-              <div class="rec-info">
-                <div class="rec-name">타이레놀</div>
-                <div class="rec-time">오전 8:00 · 1정</div>
-              </div>
-              <span class="rec-badge" style="color:#5CB85C;">복용</span>
-            </div>
-            <div class="rec tk">
-              <div class="rec-dot" style="background:#5CB85C;"></div>
-              <div class="rec-info">
-                <div class="rec-name">종합비타민</div>
-                <div class="rec-time">오전 8:00 · 1캡슐</div>
-              </div>
-              <span class="rec-badge" style="color:#5CB85C;">복용</span>
-            </div>
-            <div class="rec ms">
-              <div class="rec-dot" style="background:#D9534F;"></div>
-              <div class="rec-info">
-                <div class="rec-name">오메가3</div>
-                <div class="rec-time">오후 1:00 · 2정</div>
-              </div>
-              <span class="rec-badge" style="color:#D9534F;">미복용</span>
-            </div>
-            <div class="rec tk">
-              <div class="rec-dot" style="background:#D9534F;"></div>
-              <div class="rec-info">
-                <div class="rec-name">혈압약</div>
-                <div class="rec-time">오후 9:00 · 1정</div>
-              </div>
-              <span class="rec-badge" style="color:#5CB85C;">복용</span>
-            </div>
-          </div>
-          <div class="tab">
-            <div class="ti"><span class="ti-icon" style="opacity:.4;">🏠</span><span class="ti-lbl">홈</span></div>
-            <div class="ti"><span class="ti-icon" style="opacity:.4;">💊</span><span class="ti-lbl">내 약</span></div>
-            <div class="ti act"><span class="ti-icon">📅</span><span class="ti-lbl" style="color:#4A90D9;">달력</span></div>
-            <div class="ti"><span class="ti-icon" style="opacity:.4;">⚙️</span><span class="ti-lbl">설정</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ════ 약 등록 (알림 offset 포함) ════ -->
-  <div class="col">
-    <div class="col-label">✏️ 약 등록 / 수정</div>
-    <div class="phone">
-      <div class="phone-inner">
-        <div class="screen">
-          <div class="form-hdr">
-            <span class="form-back">‹</span>
-            <span class="form-hdr-title">약 등록</span>
-          </div>
-          <div class="form-body">
-            <!-- 기본 정보 -->
-            <div class="f-card">
-              <div class="f-sec-title">기본 정보</div>
-              <div class="f-label">약 이름 *</div>
-              <div class="f-input">오메가3</div>
-              <div class="f-label">1회 복용량 *</div>
-              <div class="f-input" style="margin-bottom:0;">2정</div>
-            </div>
-            <!-- 복용 시간 -->
-            <div class="f-card">
-              <div class="f-sec-title">복용 시간</div>
-              <div class="f-label">1일 복용 횟수 *</div>
-              <div class="seg-row">
-                <div class="seg">1회</div>
-                <div class="seg on">2회</div>
-                <div class="seg">3회</div>
-                <div class="seg">직접</div>
-              </div>
-              <div class="f-label" style="margin-top:12px;">복용 시간 설정 *</div>
-              <div class="time-btn"><span>⏱</span><span class="time-btn-txt">08:00</span></div>
-              <div class="time-btn" style="margin-bottom:0;"><span>⏱</span><span class="time-btn-txt">13:00</span></div>
-            </div>
-            <!-- 복용 요일 -->
-            <div class="f-card">
-              <div class="f-sec-title">복용 요일</div>
-              <div class="seg-row">
-                <div class="seg">매일</div>
-                <div class="seg on">평일</div>
-                <div class="seg">주말</div>
-                <div class="seg">직접</div>
-              </div>
-            </div>
-            <!-- 색상 태그 -->
-            <div class="f-card">
-              <div class="f-sec-title">색상 태그</div>
-              <div class="color-row">
-                <div class="cc" style="background:#4A90D9;"></div>
-                <div class="cc" style="background:#5CB85C;"></div>
-                <div class="cc" style="background:#F0AD4E;"></div>
-                <div class="cc" style="background:#D9534F;"></div>
-                <div class="cc sel" style="background:#9B59B6;">✓</div>
-                <div class="cc" style="background:#1ABC9C;"></div>
-              </div>
-            </div>
-            <!-- 알림 시간 조정 ← NEW -->
-            <div class="f-card" style="border:1.5px solid #D0E8FF;">
-              <div class="f-sec-title">🔔 알림 시간 조정</div>
-              <div class="f-label">복용 시간 기준 알림 시점</div>
-              <div class="offset-row">
-                <div class="oc">정시</div>
-                <div class="oc">5분 전</div>
-                <div class="oc">10분 전</div>
-                <div class="oc on">15분 전</div>
-                <div class="oc">30분 전</div>
-              </div>
-              <div class="offset-hint">복용 15분 전에 알림을 드려요</div>
-            </div>
-            <!-- 저장 버튼 -->
-            <div class="save-btn">💾 약 등록하기</div>
-            <div style="height:16px;"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ════ 설정 ════ -->
-  <div class="col">
-    <div class="col-label">⚙️ 설정</div>
-    <div class="phone">
-      <div class="phone-inner">
-        <div class="screen">
-          <div class="settings-hdr">
-            <div class="hdr-title">설정</div>
-          </div>
-          <div class="s-body">
-            <div class="s-sec">
-              <div class="s-sec-lbl">알림</div>
-              <div class="s-card">
-                <div class="s-row">
-                  <div class="s-icon" style="background:#4A90D922;">🔊</div>
-                  <div class="s-texts"><div class="s-title">알림 소리</div></div>
-                  <div class="sw on"></div>
-                </div>
-                <div class="s-div"></div>
-                <div class="s-row">
-                  <div class="s-icon" style="background:#9B59B622;">📳</div>
-                  <div class="s-texts"><div class="s-title">알림 진동</div></div>
-                  <div class="sw on"></div>
-                </div>
-              </div>
-            </div>
-            <div class="s-sec">
-              <div class="s-sec-lbl">데이터</div>
-              <div class="s-card">
-                <div class="s-row">
-                  <div class="s-icon" style="background:#D9534F22;">🔄</div>
-                  <div class="s-texts">
-                    <div class="s-title danger">복용 기록 초기화</div>
-                    <div class="s-sub">5개 약 등록됨</div>
-                  </div>
-                  <span class="s-arr">›</span>
-                </div>
-              </div>
-            </div>
-            <div class="s-sec">
-              <div class="s-sec-lbl">구매</div>
-              <div class="s-card">
-                <div class="s-row">
-                  <div class="s-icon" style="background:#F0AD4E22;">🚫</div>
-                  <div class="s-texts">
-                    <div class="s-title">광고 제거</div>
-                    <div class="s-sub">₩2,200 · 영구 제거</div>
-                  </div>
-                  <span class="s-arr">›</span>
-                </div>
-              </div>
-            </div>
-            <div class="s-sec">
-              <div class="s-sec-lbl">앱 정보</div>
-              <div class="s-card">
-                <div class="s-row">
-                  <div class="s-icon" style="background:#1ABC9C22;">🛡️</div>
-                  <div class="s-texts"><div class="s-title">개인정보처리방침</div></div>
-                  <span class="s-arr">›</span>
-                </div>
-                <div class="s-div"></div>
-                <div class="s-row">
-                  <div class="s-icon" style="background:#88888818;">ℹ️</div>
-                  <div class="s-texts">
-                    <div class="s-title">앱 버전</div>
-                    <div class="s-sub">v1.0.0</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="s-footer">MediRemind © 2024<br>약 복용 알리미 앱</div>
-          </div>
-          <div class="tab">
-            <div class="ti"><span class="ti-icon" style="opacity:.4;">🏠</span><span class="ti-lbl">홈</span></div>
-            <div class="ti"><span class="ti-icon" style="opacity:.4;">💊</span><span class="ti-lbl">내 약</span></div>
-            <div class="ti"><span class="ti-icon" style="opacity:.4;">📅</span><span class="ti-lbl">달력</span></div>
-            <div class="ti act"><span class="ti-icon">⚙️</span><span class="ti-lbl" style="color:#4A90D9;">설정</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+  </div></div>
 
 </div>
-
-<div style="text-align:center;margin-top:56px;color:#aaa;font-size:12px;line-height:20px;">
-  React Native + Expo SDK 51 · TypeScript · Zustand · expo-sqlite · expo-notifications<br>
-  Colors: Primary #4A90D9 · Success #5CB85C · Warning #F0AD4E · Danger #D9534F
-</div>
-
 </body>
 </html>
