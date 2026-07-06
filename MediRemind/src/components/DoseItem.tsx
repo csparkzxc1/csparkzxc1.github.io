@@ -39,7 +39,7 @@ export default function DoseItem({ record, medicine, onToggle }: DoseItemProps) 
     onToggle(record);
   };
 
-  const medicineColor = medicine?.color ?? '#4A90D9';
+  const medicineColor = medicine?.color ?? '#4A6CF7';
   const timeLabel = formatTimeDisplay(record.scheduledTime);
   const offset = medicine?.notificationOffset ?? 0;
 
@@ -64,8 +64,8 @@ export default function DoseItem({ record, medicine, onToggle }: DoseItemProps) 
           {offset > 0 && (
             <>
               <Text style={styles.metaDot}>  ·  </Text>
-              <Ionicons name="notifications-outline" size={12} color="#4A90D9" />
-              <Text style={[styles.meta, { color: '#4A90D9' }]}> {offset}분 전</Text>
+              <Ionicons name="notifications-outline" size={12} color="#4A6CF7" />
+              <Text style={[styles.meta, { color: '#4A6CF7' }]}> {offset}분 전</Text>
             </>
           )}
         </View>
@@ -76,11 +76,11 @@ export default function DoseItem({ record, medicine, onToggle }: DoseItemProps) 
         activeOpacity={0.7}
         accessibilityLabel={record.isTaken ? '복용 취소' : '복용 완료'}
       >
-        {record.isTaken ? (
-          <Ionicons name="checkmark" size={20} color="#fff" />
-        ) : (
-          <Text style={styles.checkLabel}>복용</Text>
-        )}
+        <Ionicons
+          name="checkmark"
+          size={26}
+          color={record.isTaken ? '#FFFFFF' : '#C4CBDD'}
+        />
       </TouchableOpacity>
     </Animated.View>
   );
@@ -91,15 +91,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    borderRadius: 18,
     marginVertical: 6,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.07,
-    shadowRadius: 4,
+    shadowColor: '#3F4A7E',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
     elevation: 2,
-    minHeight: 72,
+    minHeight: 76,
   },
   colorBar: {
     width: 5,
@@ -107,18 +107,19 @@ const styles = StyleSheet.create({
   },
   info: {
     flex: 1,
-    paddingVertical: 14,
-    paddingHorizontal: 14,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
   },
   name: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#222',
-    marginBottom: 4,
+    fontWeight: '700',
+    color: '#1A1D2B',
+    marginBottom: 5,
+    letterSpacing: -0.2,
   },
   nameStrike: {
     textDecorationLine: 'line-through',
-    color: '#AAA',
+    color: '#A9B0C5',
   },
   metaRow: {
     flexDirection: 'row',
@@ -126,27 +127,30 @@ const styles = StyleSheet.create({
   },
   meta: {
     fontSize: 13,
-    color: '#888',
+    color: '#8A91A8',
   },
   metaDot: {
-    color: '#CCC',
+    color: '#D4D9E6',
     fontSize: 13,
   },
   checkBtn: {
-    marginRight: 14,
-    backgroundColor: '#E9ECEF',
-    borderRadius: 20,
-    width: 64,
-    height: 36,
+    marginRight: 16,
+    backgroundColor: '#F1F3F9',
+    borderRadius: 24,
+    width: 48,
+    height: 48,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#E3E7F1',
   },
   checkBtnDone: {
-    backgroundColor: '#5CB85C',
-  },
-  checkLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#555',
+    backgroundColor: '#10B981',
+    borderColor: '#10B981',
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
 });

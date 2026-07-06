@@ -85,8 +85,8 @@ export default function CalendarScreen() {
     const marks: MarkedDates = {};
     for (const [date, status] of Object.entries(dateMap)) {
       const dots: { color: string; key: string }[] = [];
-      if (status.hasTaken) dots.push({ color: '#5CB85C', key: 'taken' });
-      if (status.hasMissed) dots.push({ color: '#D9534F', key: 'missed' });
+      if (status.hasTaken) dots.push({ color: '#10B981', key: 'taken' });
+      if (status.hasMissed) dots.push({ color: '#EF4444', key: 'missed' });
       marks[date] = { dots, marked: dots.length > 0 };
     }
 
@@ -94,7 +94,7 @@ export default function CalendarScreen() {
     marks[selectedDate] = {
       ...(marks[selectedDate] ?? {}),
       selected: true,
-      selectedColor: '#4A90D9',
+      selectedColor: '#4A6CF7',
     };
 
     setMarkedDates(marks);
@@ -143,13 +143,13 @@ export default function CalendarScreen() {
             theme={{
               backgroundColor: '#FFFFFF',
               calendarBackground: '#FFFFFF',
-              selectedDayBackgroundColor: '#4A90D9',
+              selectedDayBackgroundColor: '#4A6CF7',
               selectedDayTextColor: '#FFFFFF',
-              todayTextColor: '#4A90D9',
+              todayTextColor: '#4A6CF7',
               dayTextColor: '#333',
               textDisabledColor: '#CCC',
               monthTextColor: '#222',
-              arrowColor: '#4A90D9',
+              arrowColor: '#4A6CF7',
               textMonthFontWeight: '700',
               textDayFontSize: 14,
               textMonthFontSize: 16,
@@ -187,7 +187,7 @@ export default function CalendarScreen() {
                   <View
                     style={[
                       styles.statusDot,
-                      { backgroundColor: record.isTaken ? '#5CB85C' : '#D9534F' },
+                      { backgroundColor: record.isTaken ? '#10B981' : '#EF4444' },
                     ]}
                   />
                   <View style={styles.recordInfo}>
@@ -202,7 +202,7 @@ export default function CalendarScreen() {
                   <Text
                     style={[
                       styles.recordStatus,
-                      { color: record.isTaken ? '#5CB85C' : '#D9534F' },
+                      { color: record.isTaken ? '#10B981' : '#EF4444' },
                     ]}
                   >
                     {record.isTaken ? '복용' : '미복용'}
@@ -222,32 +222,33 @@ export default function CalendarScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#F4F6FB',
   },
   headerBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#4A90D9',
+    backgroundColor: '#F4F6FB',
     paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 20,
+    paddingTop: 20,
+    paddingBottom: 14,
   },
   headerTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#FFF',
+    fontSize: 27,
+    fontWeight: '800',
+    color: '#1A1D2B',
+    letterSpacing: -0.5,
   },
   rateBadge: {
-    backgroundColor: 'rgba(255,255,255,0.25)',
-    borderRadius: 14,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
+    backgroundColor: '#EDF1FE',
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
   },
   rateText: {
-    color: '#FFF',
+    color: '#4A6CF7',
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   scroll: {
     flex: 1,
@@ -291,7 +292,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFF',
-    borderRadius: 10,
+    borderRadius: 16,
     padding: 14,
     marginBottom: 10,
     shadowColor: '#000',
@@ -302,11 +303,11 @@ const styles = StyleSheet.create({
   },
   recordTaken: {
     borderLeftWidth: 4,
-    borderLeftColor: '#5CB85C',
+    borderLeftColor: '#10B981',
   },
   recordMissed: {
     borderLeftWidth: 4,
-    borderLeftColor: '#D9534F',
+    borderLeftColor: '#EF4444',
   },
   statusDot: {
     width: 10,

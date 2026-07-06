@@ -70,20 +70,20 @@ export interface DoseStore {
 // ─── UI / Misc Types ────────────────────────────────────────────────────────
 
 export type ColorTag =
-  | '#4A90D9'
-  | '#5CB85C'
-  | '#F0AD4E'
-  | '#D9534F'
-  | '#9B59B6'
-  | '#1ABC9C';
+  | '#4A6CF7'
+  | '#10B981'
+  | '#F59E0B'
+  | '#EF4444'
+  | '#8B5CF6'
+  | '#14B8A6';
 
 export const COLOR_TAGS: ColorTag[] = [
-  '#4A90D9',
-  '#5CB85C',
-  '#F0AD4E',
-  '#D9534F',
-  '#9B59B6',
-  '#1ABC9C',
+  '#4A6CF7',
+  '#10B981',
+  '#F59E0B',
+  '#EF4444',
+  '#8B5CF6',
+  '#14B8A6',
 ];
 
 export type FrequencyOption = '1' | '2' | '3' | 'custom';

@@ -37,7 +37,7 @@ export async function setupNotificationChannel(): Promise<void> {
       name: '약 복용 알림',
       importance: Notifications.AndroidImportance.HIGH,
       vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#4A90D9',
+      lightColor: '#4A6CF7',
       sound: 'default',
     });
 

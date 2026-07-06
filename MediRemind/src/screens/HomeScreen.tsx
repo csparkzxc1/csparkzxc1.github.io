@@ -75,7 +75,7 @@ export default function HomeScreen() {
           onPress={() => navigation.navigate('MedicineForm', undefined)}
           accessibilityLabel="약 추가"
         >
-          <Ionicons name="add" size={26} color="#4A90D9" />
+          <Ionicons name="add" size={26} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
 
@@ -83,7 +83,7 @@ export default function HomeScreen() {
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         refreshControl={
-          <RefreshControl refreshing={isLoading} onRefresh={refresh} tintColor="#4A90D9" />
+          <RefreshControl refreshing={isLoading} onRefresh={refresh} tintColor="#4A6CF7" />
         }
         showsVerticalScrollIndicator={false}
       >
@@ -151,39 +151,41 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#F4F6FB',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#4A90D9',
+    alignItems: 'flex-end',
+    backgroundColor: '#F4F6FB',
     paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 20,
+    paddingTop: 20,
+    paddingBottom: 14,
   },
   dateText: {
-    color: 'rgba(255,255,255,0.8)',
-    fontSize: 13,
-    marginBottom: 2,
+    color: '#8A91A8',
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 4,
   },
   headerTitle: {
-    color: '#FFFFFF',
-    fontSize: 22,
-    fontWeight: '700',
+    color: '#1A1D2B',
+    fontSize: 27,
+    fontWeight: '800',
+    letterSpacing: -0.5,
   },
   addBtn: {
-    backgroundColor: '#FFFFFF',
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    backgroundColor: '#4A6CF7',
+    width: 46,
+    height: 46,
+    borderRadius: 23,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowColor: '#4A6CF7',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    elevation: 6,
   },
   scroll: {
     flex: 1,
@@ -194,21 +196,26 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 20,
+    padding: 20,
     marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowColor: '#3F4A7E',
+    shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.07,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowRadius: 16,
+    elevation: 3,
   },
   allDoneBanner: {
-    backgroundColor: '#5CB85C',
-    borderRadius: 12,
-    padding: 14,
+    backgroundColor: '#10B981',
+    borderRadius: 16,
+    padding: 16,
     marginBottom: 12,
     alignItems: 'center',
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 4,
   },
   allDoneText: {
     color: '#FFF',
@@ -235,7 +242,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   emptyBtn: {
-    backgroundColor: '#4A90D9',
+    backgroundColor: '#4A6CF7',
     borderRadius: 24,
     paddingHorizontal: 24,
     paddingVertical: 12,

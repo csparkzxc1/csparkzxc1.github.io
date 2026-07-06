@@ -98,7 +98,7 @@ export default function MedicineFormScreen() {
   );
   const [memo, setMemo] = useState(existing?.memo ?? '');
   const [color, setColor] = useState<ColorTag>(
-    (existing?.color as ColorTag) ?? '#4A90D9'
+    (existing?.color as ColorTag) ?? '#4A6CF7'
   );
 
   // [BUG 2] 1~6회 + 직접 입력
@@ -384,7 +384,7 @@ export default function MedicineFormScreen() {
           {times.map((t, idx) => (
             <View key={idx} style={styles.timeRow}>
               <View style={styles.timeInputWrapper}>
-                <Ionicons name="time-outline" size={18} color="#4A90D9" style={{ marginRight: 8 }} />
+                <Ionicons name="time-outline" size={18} color="#4A6CF7" style={{ marginRight: 8 }} />
                 <TextInput
                   style={styles.timeInput}
                   value={t}
@@ -411,14 +411,14 @@ export default function MedicineFormScreen() {
                   style={styles.removeTimeBtn}
                   onPress={() => removeTime(idx)}
                 >
-                  <Ionicons name="remove-circle" size={22} color="#D9534F" />
+                  <Ionicons name="remove-circle" size={22} color="#EF4444" />
                 </TouchableOpacity>
               )}
             </View>
           ))}
           {freq === 'custom' && (
             <TouchableOpacity style={styles.addTimeBtn} onPress={addTime}>
-              <Ionicons name="add-circle-outline" size={20} color="#4A90D9" />
+              <Ionicons name="add-circle-outline" size={20} color="#4A6CF7" />
               <Text style={styles.addTimeBtnText}>시간 추가</Text>
             </TouchableOpacity>
           )}
@@ -579,23 +579,23 @@ export default function MedicineFormScreen() {
 }
 
 const styles = StyleSheet.create({
-  scroll: { flex: 1, backgroundColor: '#F8F9FA' },
+  scroll: { flex: 1, backgroundColor: '#F4F6FB' },
   content: { padding: 16 },
   card: {
     backgroundColor: '#FFF',
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 18,
+    padding: 18,
     marginBottom: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowColor: '#3F4A7E',
+    shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.06,
-    shadowRadius: 4,
+    shadowRadius: 12,
     elevation: 2,
   },
-  sectionTitle: { fontSize: 15, fontWeight: '700', color: '#4A90D9', marginBottom: 14 },
+  sectionTitle: { fontSize: 15, fontWeight: '700', color: '#4A6CF7', marginBottom: 14 },
   label: { fontSize: 14, fontWeight: '600', color: '#555', marginBottom: 8 },
   input: {
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#F4F6FB',
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
@@ -623,11 +623,11 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1.5,
     borderColor: '#DDD',
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#F4F6FB',
   },
-  dosageChipActive: { borderColor: '#4A90D9', backgroundColor: '#EEF5FB' },
+  dosageChipActive: { borderColor: '#4A6CF7', backgroundColor: '#EDF1FE' },
   dosageChipText: { fontSize: 13, fontWeight: '600', color: '#888' },
-  dosageChipTextActive: { color: '#4A90D9' },
+  dosageChipTextActive: { color: '#4A6CF7' },
 
   // [BUG 2] 복용 횟수
   freqGrid: {
@@ -646,9 +646,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexGrow: 1,
   },
-  freqChipActive: { borderColor: '#4A90D9', backgroundColor: '#EEF5FB' },
+  freqChipActive: { borderColor: '#4A6CF7', backgroundColor: '#EDF1FE' },
   freqChipText: { fontSize: 14, color: '#888', fontWeight: '600' },
-  freqChipTextActive: { color: '#4A90D9' },
+  freqChipTextActive: { color: '#4A6CF7' },
   customFreqRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -658,10 +658,10 @@ const styles = StyleSheet.create({
   },
   customFreqInput: {
     width: 72,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#F4F6FB',
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#4A90D9',
+    borderColor: '#4A6CF7',
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 16,
@@ -672,7 +672,7 @@ const styles = StyleSheet.create({
   },
   customFreqUnit: { fontSize: 14, color: '#888', flex: 1 },
   customFreqApplyBtn: {
-    backgroundColor: '#4A90D9',
+    backgroundColor: '#4A6CF7',
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 10,
@@ -685,23 +685,23 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F0F7FF',
+    backgroundColor: '#F0F3FF',
     borderRadius: 10,
     paddingHorizontal: 14,
     minHeight: 48,
     borderWidth: 1,
-    borderColor: '#D0E8FF',
+    borderColor: '#DCE3FD',
   },
   timeInput: {
     flex: 1,
     fontSize: 18,
     fontWeight: '700',
-    color: '#4A90D9',
+    color: '#4A6CF7',
     paddingVertical: 10,
   },
   removeTimeBtn: { padding: 4 },
   addTimeBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
-  addTimeBtnText: { color: '#4A90D9', fontSize: 14, fontWeight: '600' },
+  addTimeBtnText: { color: '#4A6CF7', fontSize: 14, fontWeight: '600' },
 
   // Day
   segRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
@@ -715,16 +715,16 @@ const styles = StyleSheet.create({
     borderColor: '#DDD',
     alignItems: 'center',
   },
-  segActive: { borderColor: '#4A90D9', backgroundColor: '#EEF5FB' },
+  segActive: { borderColor: '#4A6CF7', backgroundColor: '#EDF1FE' },
   segText: { fontSize: 14, color: '#888', fontWeight: '600' },
-  segTextActive: { color: '#4A90D9' },
+  segTextActive: { color: '#4A6CF7' },
   dayRow: { flexDirection: 'row', marginTop: 14, gap: 8, flexWrap: 'wrap' },
   dayChip: {
     width: 40, height: 40, borderRadius: 20,
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1.5, borderColor: '#DDD', backgroundColor: '#F8F9FA',
+    borderWidth: 1.5, borderColor: '#DDD', backgroundColor: '#F4F6FB',
   },
-  dayChipActive: { backgroundColor: '#4A90D9', borderColor: '#4A90D9' },
+  dayChipActive: { backgroundColor: '#4A6CF7', borderColor: '#4A6CF7' },
   dayChipText: { fontSize: 13, fontWeight: '700', color: '#888' },
   dayChipTextActive: { color: '#FFF' },
 
@@ -741,17 +741,17 @@ const styles = StyleSheet.create({
   offsetRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 8 },
   offsetChip: {
     paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
-    borderWidth: 1.5, borderColor: '#DDD', backgroundColor: '#F8F9FA',
+    borderWidth: 1.5, borderColor: '#DDD', backgroundColor: '#F4F6FB',
   },
-  offsetChipActive: { borderColor: '#4A90D9', backgroundColor: '#EEF5FB' },
+  offsetChipActive: { borderColor: '#4A6CF7', backgroundColor: '#EDF1FE' },
   offsetChipText: { fontSize: 13, fontWeight: '600', color: '#888' },
-  offsetChipTextActive: { color: '#4A90D9' },
-  offsetHint: { fontSize: 12, color: '#4A90D9', marginTop: 4 },
+  offsetChipTextActive: { color: '#4A6CF7' },
+  offsetHint: { fontSize: 12, color: '#4A6CF7', marginTop: 4 },
 
   // Prescription
   prescRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
   prescToggle: { backgroundColor: '#E9ECEF', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 6 },
-  prescToggleOn: { backgroundColor: '#4A90D9' },
+  prescToggleOn: { backgroundColor: '#4A6CF7' },
   prescToggleText: { fontSize: 13, fontWeight: '700', color: '#888' },
   prescToggleTextOn: { color: '#FFF' },
   alertDayRow: { flexDirection: 'row', gap: 10 },
@@ -759,15 +759,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20,
     borderWidth: 1.5, borderColor: '#DDD',
   },
-  alertDayChipActive: { backgroundColor: '#F0AD4E', borderColor: '#F0AD4E' },
+  alertDayChipActive: { backgroundColor: '#F59E0B', borderColor: '#F59E0B' },
   alertDayChipText: { fontSize: 14, fontWeight: '700', color: '#888' },
   alertDayChipTextActive: { color: '#FFF' },
 
   // Save
   saveBtn: {
-    backgroundColor: '#4A90D9', borderRadius: 14, paddingVertical: 16, marginTop: 8,
+    backgroundColor: '#4A6CF7', borderRadius: 16, paddingVertical: 17, marginTop: 8,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    shadowColor: '#4A90D9', shadowOffset: { width: 0, height: 4 },
+    shadowColor: '#4A6CF7', shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.35, shadowRadius: 8, elevation: 6,
   },
   saveBtnText: { color: '#FFF', fontSize: 17, fontWeight: '700' },

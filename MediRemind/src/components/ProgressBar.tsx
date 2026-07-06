@@ -23,16 +23,21 @@ export default function ProgressBar({ progress, takenCount, totalCount }: Progre
     outputRange: ['0%', '100%'],
   });
 
-  const color =
-    progress === 1 ? '#5CB85C' : progress >= 0.5 ? '#F0AD4E' : '#4A90D9';
+  const color = progress === 1 ? '#10B981' : '#4A6CF7';
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.label}>오늘 복용 현황</Text>
-        <Text style={styles.count}>
-          <Text style={[styles.taken, { color }]}>{takenCount}</Text>
-          <Text style={styles.total}> / {totalCount} 완료</Text>
+        <View>
+          <Text style={styles.label}>오늘 복용 현황</Text>
+          <Text style={styles.count}>
+            <Text style={[styles.taken, { color }]}>{takenCount}</Text>
+            <Text style={styles.total}> / {totalCount}회 완료</Text>
+          </Text>
+        </View>
+        <Text style={[styles.percentBig, { color }]}>
+          {Math.round(progress * 100)}
+          <Text style={styles.percentUnit}>%</Text>
         </Text>
       </View>
       <View style={styles.track}>
@@ -40,50 +45,54 @@ export default function ProgressBar({ progress, takenCount, totalCount }: Progre
           style={[styles.fill, { width: widthPercent, backgroundColor: color }]}
         />
       </View>
-      <Text style={styles.percent}>{Math.round(progress * 100)}%</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 8,
+    marginVertical: 4,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 14,
   },
   label: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
-    color: '#333',
+    color: '#8A91A8',
+    marginBottom: 4,
   },
   count: {
-    fontSize: 14,
+    fontSize: 15,
   },
   taken: {
-    fontWeight: '700',
-    fontSize: 16,
+    fontWeight: '800',
+    fontSize: 18,
   },
   total: {
-    color: '#888',
+    color: '#8A91A8',
+    fontWeight: '600',
+  },
+  percentBig: {
+    fontSize: 40,
+    fontWeight: '800',
+    letterSpacing: -1,
+  },
+  percentUnit: {
+    fontSize: 20,
+    fontWeight: '700',
   },
   track: {
-    height: 12,
-    backgroundColor: '#E9ECEF',
-    borderRadius: 6,
+    height: 14,
+    backgroundColor: '#EBEEF6',
+    borderRadius: 7,
     overflow: 'hidden',
   },
   fill: {
     height: '100%',
-    borderRadius: 6,
-  },
-  percent: {
-    marginTop: 4,
-    fontSize: 12,
-    color: '#888',
-    textAlign: 'right',
+    borderRadius: 7,
   },
 });

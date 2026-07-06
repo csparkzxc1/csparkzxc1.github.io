@@ -21,23 +21,24 @@ function BottomTabNavigator() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: '#4A90D9',
-        tabBarInactiveTintColor: '#AAA',
+        tabBarActiveTintColor: '#4A6CF7',
+        tabBarInactiveTintColor: '#9AA1B5',
         tabBarStyle: {
-          height: Platform.OS === 'ios' ? 88 : 64,
+          height: Platform.OS === 'ios' ? 88 : 66,
           paddingBottom: Platform.OS === 'ios' ? 28 : 10,
-          paddingTop: 8,
+          paddingTop: 10,
           backgroundColor: '#FFFFFF',
-          borderTopColor: '#F0F0F0',
-          elevation: 8,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.07,
-          shadowRadius: 6,
+          borderTopWidth: 0,
+          elevation: 12,
+          shadowColor: '#1A2246',
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.06,
+          shadowRadius: 12,
         },
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '600',
+          letterSpacing: 0.2,
         },
         tabBarIcon: ({ color, size, focused }) => {
           let iconName: keyof typeof Ionicons.glyphMap;
@@ -83,10 +84,11 @@ export default function AppNavigator() {
     <NavigationContainer>
       <Stack.Navigator
         screenOptions={{
-          headerStyle: { backgroundColor: '#4A90D9' },
-          headerTintColor: '#FFFFFF',
+          headerStyle: { backgroundColor: '#F4F6FB' },
+          headerTintColor: '#1A1D2B',
           headerTitleStyle: { fontWeight: '700', fontSize: 18 },
-          contentStyle: { backgroundColor: '#F8F9FA' },
+          headerShadowVisible: false,
+          contentStyle: { backgroundColor: '#F4F6FB' },
         }}
       >
         <Stack.Screen

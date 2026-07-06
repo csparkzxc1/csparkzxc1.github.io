@@ -18,7 +18,7 @@ export async function initDatabase(): Promise<void> {
         dosage TEXT NOT NULL,
         times TEXT NOT NULL,
         days TEXT NOT NULL,
-        color TEXT NOT NULL DEFAULT '#4A90D9',
+        color TEXT NOT NULL DEFAULT '#4A6CF7',
         memo TEXT NOT NULL DEFAULT '',
         isActive INTEGER NOT NULL DEFAULT 1,
         createdAt TEXT NOT NULL,

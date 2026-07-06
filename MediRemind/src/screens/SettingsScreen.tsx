@@ -170,13 +170,13 @@ export default function SettingsScreen() {
           <View style={styles.card}>
             <SettingRow
               icon="volume-high"
-              iconColor="#4A90D9"
+              iconColor="#4A6CF7"
               title="알림 소리"
               right={
                 <Switch
                   value={soundEnabled}
                   onValueChange={handleSoundToggle}
-                  trackColor={{ false: '#CCC', true: '#4A90D9' }}
+                  trackColor={{ false: '#CCC', true: '#4A6CF7' }}
                   thumbColor="#FFF"
                 />
               }
@@ -184,13 +184,13 @@ export default function SettingsScreen() {
             <View style={styles.divider} />
             <SettingRow
               icon="phone-portrait"
-              iconColor="#9B59B6"
+              iconColor="#8B5CF6"
               title="알림 진동"
               right={
                 <Switch
                   value={vibrationEnabled}
                   onValueChange={handleVibrationToggle}
-                  trackColor={{ false: '#CCC', true: '#9B59B6' }}
+                  trackColor={{ false: '#CCC', true: '#8B5CF6' }}
                   thumbColor="#FFF"
                 />
               }
@@ -204,7 +204,7 @@ export default function SettingsScreen() {
           <View style={styles.card}>
             <SettingRow
               icon="refresh-circle"
-              iconColor="#D9534F"
+              iconColor="#EF4444"
               title="복용 기록 초기화"
               subtitle={`${medicines.length}개 약 등록됨`}
               onPress={handleResetRecords}
@@ -219,7 +219,7 @@ export default function SettingsScreen() {
           <View style={styles.card}>
             <SettingRow
               icon="ban"
-              iconColor="#F0AD4E"
+              iconColor="#F59E0B"
               title="광고 제거"
               subtitle={adRemoved ? '✓ 구매 완료' : '₩2,200 · 영구 제거'}
               onPress={adRemoved ? undefined : handleRemoveAd}
@@ -233,7 +233,7 @@ export default function SettingsScreen() {
           <View style={styles.card}>
             <SettingRow
               icon="cloud-download-outline"
-              iconColor="#4A90D9"
+              iconColor="#4A6CF7"
               title={isCheckingUpdate ? '확인 중…' : '업데이트 확인'}
               subtitle={
                 buildInfo.channel
@@ -251,7 +251,7 @@ export default function SettingsScreen() {
           <View style={styles.card}>
             <SettingRow
               icon="shield-checkmark"
-              iconColor="#1ABC9C"
+              iconColor="#14B8A6"
               title="개인정보처리방침"
               onPress={handlePrivacyPolicy}
             />
@@ -292,18 +292,19 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#F4F6FB',
   },
   headerBar: {
-    backgroundColor: '#4A90D9',
+    backgroundColor: '#F4F6FB',
     paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 20,
+    paddingTop: 20,
+    paddingBottom: 14,
   },
   headerTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#FFF',
+    fontSize: 27,
+    fontWeight: '800',
+    color: '#1A1D2B',
+    letterSpacing: -0.5,
   },
   scroll: {
     flex: 1,
@@ -323,7 +324,7 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: '#FFF',
-    borderRadius: 14,
+    borderRadius: 18,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
@@ -355,7 +356,7 @@ const styles = StyleSheet.create({
     color: '#222',
   },
   dangerTitle: {
-    color: '#D9534F',
+    color: '#EF4444',
   },
   rowSubtitle: {
     fontSize: 12,

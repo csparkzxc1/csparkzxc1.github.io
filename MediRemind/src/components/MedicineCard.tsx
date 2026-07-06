@@ -35,7 +35,7 @@ export default function MedicineCard({
     ? isPrescriptionExpiringSoon(medicine.prescription, 7)
     : false;
 
-  const ddayColor = expired ? '#D9534F' : expiringSoon ? '#F0AD4E' : '#5CB85C';
+  const ddayColor = expired ? '#EF4444' : expiringSoon ? '#F59E0B' : '#10B981';
 
   return (
     <TouchableOpacity
@@ -43,7 +43,9 @@ export default function MedicineCard({
       onPress={onPress}
       activeOpacity={0.85}
     >
-      <View style={[styles.colorDot, { backgroundColor: medicine.color }]} />
+      <View style={[styles.iconBox, { backgroundColor: medicine.color + '1F' }]}>
+        <Ionicons name="medical" size={20} color={medicine.color} />
+      </View>
       <View style={styles.body}>
         <View style={styles.nameRow}>
           <Text
@@ -78,7 +80,7 @@ export default function MedicineCard({
       <Switch
         value={medicine.isActive}
         onValueChange={onToggleActive}
-        trackColor={{ false: '#CCC', true: '#4A90D9' }}
+        trackColor={{ false: '#CCC', true: '#4A6CF7' }}
         thumbColor="#FFFFFF"
       />
     </TouchableOpacity>
@@ -90,23 +92,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    borderRadius: 18,
     marginVertical: 6,
     padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.07,
-    shadowRadius: 4,
+    shadowColor: '#3F4A7E',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
     elevation: 2,
-    minHeight: 80,
+    minHeight: 84,
   },
   cardInactive: {
-    opacity: 0.6,
+    opacity: 0.55,
   },
-  colorDot: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+  iconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginRight: 14,
     flexShrink: 0,
   },
@@ -124,16 +128,17 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#222',
+    color: '#1A1D2B',
     flex: 1,
+    letterSpacing: -0.2,
   },
   nameInactive: {
-    color: '#AAA',
+    color: '#A9B0C5',
   },
   ddayBadge: {
-    borderRadius: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+    borderRadius: 12,
+    paddingHorizontal: 9,
+    paddingVertical: 3,
   },
   ddayText: {
     color: '#FFF',
@@ -156,7 +161,7 @@ const styles = StyleSheet.create({
   expiredLabel: {
     marginTop: 6,
     fontSize: 12,
-    color: '#D9534F',
+    color: '#EF4444',
     fontWeight: '500',
   },
 });

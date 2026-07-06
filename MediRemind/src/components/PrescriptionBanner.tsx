@@ -35,7 +35,7 @@ export default function PrescriptionBanner({
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
-        <Ionicons name="alert-circle" size={18} color="#F0AD4E" />
+        <Ionicons name="alert-circle" size={18} color="#F59E0B" />
         <Text style={styles.headerText}>재처방 임박 알림</Text>
       </View>
       <ScrollView
@@ -51,7 +51,7 @@ export default function PrescriptionBanner({
               key={med.id}
               style={[
                 styles.badge,
-                { borderColor: isUrgent ? '#D9534F' : '#F0AD4E' },
+                { borderColor: isUrgent ? '#EF4444' : '#F59E0B' },
               ]}
               onPress={() => onPressMedicine(med.id)}
               activeOpacity={0.8}
@@ -63,7 +63,7 @@ export default function PrescriptionBanner({
               <Text
                 style={[
                   styles.badgeDday,
-                  { color: isUrgent ? '#D9534F' : '#F0AD4E' },
+                  { color: isUrgent ? '#EF4444' : '#F59E0B' },
                 ]}
               >
                 {prescriptionDDayLabel(med.prescription!)}
@@ -78,12 +78,12 @@ export default function PrescriptionBanner({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#FFF9EF',
-    borderRadius: 12,
+    backgroundColor: '#FFFBEB',
+    borderRadius: 16,
     padding: 14,
     marginVertical: 8,
     borderLeftWidth: 4,
-    borderLeftColor: '#F0AD4E',
+    borderLeftColor: '#F59E0B',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#7D5A00',
+    color: '#92400E',
   },
   scroll: {
     flexDirection: 'row',

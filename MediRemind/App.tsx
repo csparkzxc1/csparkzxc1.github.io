@@ -84,7 +84,7 @@ export default function App() {
 
   return (
     <GestureHandlerRootView style={styles.root}>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <AppNavigator />
     </GestureHandlerRootView>
   );
@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
   },
   splashBg: {
     flex: 1,
-    backgroundColor: '#4A90D9',
+    backgroundColor: '#4A6CF7',
     alignItems: 'center',
     justifyContent: 'center',
   },
