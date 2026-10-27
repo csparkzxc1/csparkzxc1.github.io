@@ -5,23 +5,28 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
-  SafeAreaView,
   Alert,
   Animated,
   PanResponder,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 
-import { RootStackParamList, Medicine } from '../types';
-import { useMedicines } from '../hooks/useMedicines';
+import type { Medicine, RootStackParamList } from '../types';
+import { useMedicineStore } from '../store/medicineStore';
+import { useI18n } from '../i18n/I18nProvider';
+import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
+import type { ThemeColors } from '../theme/theme';
 import MedicineCard from '../components/MedicineCard';
+import ScreenHeader from '../components/ScreenHeader';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
-// Simple swipeable row with delete reveal
+const OPEN_OFFSET = -84;
+
 function SwipeableRow({
   medicine,
   onPress,
@@ -33,255 +38,171 @@ function SwipeableRow({
   onToggleActive: () => void;
   onDelete: () => void;
 }) {
+  const { t } = useI18n();
+  const styles = useThemedStyles(makeStyles);
   const translateX = useRef(new Animated.Value(0)).current;
-  const [swiped, setSwiped] = useState(false);
-  const DELETE_THRESHOLD = -80;
-  const OPEN_OFFSET = -80;
+  const [open, setOpen] = useState(false);
+  const openRef = useRef(false);
 
-  const panResponder = PanResponder.create({
-    onStartShouldSetPanResponder: () => false,
-    onMoveShouldSetPanResponder: (_, { dx, dy }) => {
-      return Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 8;
-    },
-    onPanResponderMove: (_, { dx }) => {
-      const newX = (swiped ? OPEN_OFFSET : 0) + dx;
-      translateX.setValue(Math.max(Math.min(newX, 0), -120));
-    },
-    onPanResponderRelease: (_, { dx }) => {
-      const currentX = swiped ? OPEN_OFFSET + dx : dx;
-      if (currentX < DELETE_THRESHOLD) {
-        Animated.spring(translateX, { toValue: OPEN_OFFSET, useNativeDriver: true }).start();
-        setSwiped(true);
-      } else {
-        Animated.spring(translateX, { toValue: 0, useNativeDriver: true }).start();
-        setSwiped(false);
-      }
-    },
-  });
-
-  const closeSwipe = () => {
-    Animated.spring(translateX, { toValue: 0, useNativeDriver: true }).start();
-    setSwiped(false);
+  const animateTo = (toValue: number) => {
+    openRef.current = toValue !== 0;
+    setOpen(openRef.current);
+    Animated.spring(translateX, { toValue, useNativeDriver: true }).start();
   };
 
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, { dx, dy }) =>
+        Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 8,
+      onPanResponderMove: (_, { dx }) => {
+        const base = openRef.current ? OPEN_OFFSET : 0;
+        translateX.setValue(Math.max(Math.min(base + dx, 0), -120));
+      },
+      onPanResponderRelease: (_, { dx }) => {
+        const x = (openRef.current ? OPEN_OFFSET : 0) + dx;
+        animateTo(x < OPEN_OFFSET / 2 ? OPEN_OFFSET : 0);
+      },
+      onPanResponderTerminate: () => animateTo(openRef.current ? OPEN_OFFSET : 0),
+    })
+  ).current;
+
   return (
-    <View style={swipeStyles.wrapper}>
-      {/* Delete button revealed on swipe */}
+    <View style={styles.swipeWrapper}>
       <TouchableOpacity
-        style={swipeStyles.deleteBtn}
+        style={styles.deleteBtn}
         onPress={() => {
-          closeSwipe();
+          animateTo(0);
           onDelete();
         }}
+        accessibilityLabel={t('common.delete')}
       >
         <Ionicons name="trash" size={22} color="#FFF" />
-        <Text style={swipeStyles.deleteBtnText}>삭제</Text>
+        <Text style={styles.deleteBtnText}>{t('common.delete')}</Text>
       </TouchableOpacity>
 
-      <Animated.View
-        style={{ transform: [{ translateX }] }}
-        {...panResponder.panHandlers}
-      >
+      <Animated.View style={{ transform: [{ translateX }] }} {...panResponder.panHandlers}>
         <MedicineCard
           medicine={medicine}
-          onPress={() => {
-            closeSwipe();
-            onPress();
-          }}
-          onToggleActive={() => {
-            closeSwipe();
-            onToggleActive();
-          }}
+          onPress={() => (open ? animateTo(0) : onPress())}
+          onToggleActive={onToggleActive}
         />
       </Animated.View>
     </View>
   );
 }
 
-const swipeStyles = StyleSheet.create({
-  wrapper: {
-    position: 'relative',
-    overflow: 'hidden',
-    borderRadius: 18,
-    marginVertical: 6,
-  },
-  deleteBtn: {
-    position: 'absolute',
-    right: 0,
-    top: 0,
-    bottom: 0,
-    width: 80,
-    backgroundColor: '#EF4444',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 18,
-  },
-  deleteBtnText: {
-    color: '#FFF',
-    fontSize: 12,
-    fontWeight: '600',
-    marginTop: 2,
-  },
-});
-
 export default function MedicineListScreen() {
   const navigation = useNavigation<Nav>();
-  const { medicines, isLoading, deleteMedicine, toggleActive } = useMedicines();
+  const { t } = useI18n();
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+  const { medicines, isLoading, deleteMedicine, toggleActive } = useMedicineStore();
 
   const handleDelete = (medicine: Medicine) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    Alert.alert(
-      '약 삭제',
-      `"${medicine.name}"을(를) 삭제하시겠어요?\n복용 기록도 모두 삭제됩니다.`,
-      [
-        { text: '취소', style: 'cancel' },
-        {
-          text: '삭제',
-          style: 'destructive',
-          onPress: () => deleteMedicine(medicine.id),
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+    Alert.alert(t('list.deleteTitle'), t('list.deleteBody', { name: medicine.name }), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('common.delete'),
+        style: 'destructive',
+        onPress: () => {
+          deleteMedicine(medicine.id).catch((e) => {
+            console.warn('[list] delete failed', e);
+            Alert.alert(t('common.error'), t('form.errSave'));
+          });
         },
-      ]
-    );
+      },
+    ]);
   };
 
-  const handleToggleActive = (medicine: Medicine) => {
-    Haptics.selectionAsync();
-    toggleActive(medicine.id);
-  };
-
-  const handlePress = (medicine: Medicine) => {
-    navigation.navigate('MedicineForm', { medicineId: medicine.id });
-  };
-
-  if (medicines.length === 0 && !isLoading) {
-    return (
-      <SafeAreaView style={styles.safe}>
-        <View style={styles.headerBar}>
-          <Text style={styles.headerTitle}>내 약 목록</Text>
-          <TouchableOpacity
-            style={styles.addFab}
-            onPress={() => navigation.navigate('MedicineForm', undefined)}
-          >
-            <Ionicons name="add" size={22} color="#FFF" />
-          </TouchableOpacity>
-        </View>
-        <View style={styles.empty}>
-          <Ionicons name="medical-outline" size={72} color="#D0D0D0" />
-          <Text style={styles.emptyTitle}>등록된 약이 없어요</Text>
-          <Text style={styles.emptyDesc}>
-            약을 등록하면 정해진 시간에{'\n'}복용 알림을 드려요
-          </Text>
-          <TouchableOpacity
-            style={styles.emptyBtn}
-            onPress={() => navigation.navigate('MedicineForm', undefined)}
-          >
-            <Ionicons name="add-circle" size={18} color="#FFF" />
-            <Text style={styles.emptyBtnText}>첫 약 등록하기</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    );
-  }
+  const addButton = (
+    <TouchableOpacity
+      style={styles.addFab}
+      onPress={() => navigation.navigate('MedicineForm')}
+      accessibilityLabel={t('home.addA11y')}
+    >
+      <Ionicons name="add" size={24} color={colors.onBrand} />
+    </TouchableOpacity>
+  );
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.headerBar}>
-        <Text style={styles.headerTitle}>내 약 목록</Text>
-        <TouchableOpacity
-          style={styles.addFab}
-          onPress={() => navigation.navigate('MedicineForm', undefined)}
-        >
-          <Ionicons name="add" size={22} color="#FFF" />
-        </TouchableOpacity>
-      </View>
+    <SafeAreaView style={styles.safe} edges={['top']}>
+      <ScreenHeader title={t('list.title')} right={addButton} />
 
-      <FlatList
-        data={medicines}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.list}
-        showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => (
-          <SwipeableRow
-            medicine={item}
-            onPress={() => handlePress(item)}
-            onToggleActive={() => handleToggleActive(item)}
-            onDelete={() => handleDelete(item)}
-          />
-        )}
-        ListFooterComponent={<View style={{ height: 24 }} />}
-      />
+      {medicines.length === 0 && !isLoading ? (
+        <View style={styles.empty}>
+          <Ionicons name="medical-outline" size={72} color={colors.textFaint} />
+          <Text style={styles.emptyTitle}>{t('list.emptyTitle')}</Text>
+          <Text style={styles.emptyDesc}>{t('list.emptyDesc')}</Text>
+          <TouchableOpacity style={styles.emptyBtn} onPress={() => navigation.navigate('MedicineForm')}>
+            <Ionicons name="add-circle" size={18} color={colors.onBrand} />
+            <Text style={styles.emptyBtnText}>{t('list.emptyCta')}</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <FlatList
+          data={medicines}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.list}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => (
+            <SwipeableRow
+              medicine={item}
+              onPress={() => navigation.navigate('MedicineForm', { medicineId: item.id })}
+              onToggleActive={() => {
+                Haptics.selectionAsync().catch(() => {});
+                toggleActive(item.id);
+              }}
+              onDelete={() => handleDelete(item)}
+            />
+          )}
+        />
+      )}
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: '#F4F6FB',
-  },
-  headerBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#F4F6FB',
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 14,
-  },
-  headerTitle: {
-    fontSize: 27,
-    fontWeight: '800',
-    color: '#1A1D2B',
-    letterSpacing: -0.5,
-  },
-  addFab: {
-    backgroundColor: '#4A6CF7',
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#4A6CF7',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 10,
-    elevation: 6,
-  },
-  list: {
-    padding: 16,
-  },
-  empty: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 32,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#555',
-    marginTop: 20,
-    marginBottom: 10,
-  },
-  emptyDesc: {
-    fontSize: 14,
-    color: '#999',
-    textAlign: 'center',
-    lineHeight: 22,
-    marginBottom: 28,
-  },
-  emptyBtn: {
-    flexDirection: 'row',
-    backgroundColor: '#4A6CF7',
-    borderRadius: 24,
-    paddingHorizontal: 24,
-    paddingVertical: 13,
-    alignItems: 'center',
-    gap: 8,
-  },
-  emptyBtnText: {
-    color: '#FFF',
-    fontSize: 15,
-    fontWeight: '700',
-  },
-});
+const makeStyles = (c: ThemeColors) =>
+  StyleSheet.create({
+    safe: { flex: 1, backgroundColor: c.bg },
+    addFab: {
+      backgroundColor: c.brand,
+      width: 46,
+      height: 46,
+      borderRadius: 23,
+      alignItems: 'center',
+      justifyContent: 'center',
+      shadowColor: c.brand,
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.35,
+      shadowRadius: 10,
+      elevation: 6,
+    },
+    list: { padding: 16, paddingBottom: 32 },
+    swipeWrapper: { borderRadius: 18, marginVertical: 6, overflow: 'hidden' },
+    deleteBtn: {
+      position: 'absolute',
+      right: 0,
+      top: 0,
+      bottom: 0,
+      width: 84,
+      backgroundColor: c.danger,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 18,
+    },
+    deleteBtnText: { color: '#FFF', fontSize: 12, fontWeight: '600', marginTop: 2 },
+    empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 },
+    emptyTitle: { fontSize: 20, fontWeight: '700', color: c.text, marginTop: 20, marginBottom: 10 },
+    emptyDesc: { fontSize: 14, color: c.textMuted, textAlign: 'center', lineHeight: 22, marginBottom: 28 },
+    emptyBtn: {
+      flexDirection: 'row',
+      backgroundColor: c.brand,
+      borderRadius: 24,
+      paddingHorizontal: 24,
+      paddingVertical: 13,
+      alignItems: 'center',
+      gap: 8,
+    },
+    emptyBtnText: { color: c.onBrand, fontSize: 15, fontWeight: '700' },
+  });

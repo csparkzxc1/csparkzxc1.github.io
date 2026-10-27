@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -7,239 +7,195 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { format } from 'date-fns';
-import 'react-native-get-random-values';
-import { v4 as uuidv4 } from 'uuid';
 
-import { RootStackParamList, Medicine, ColorTag, COLOR_TAGS } from '../types';
+import { COLOR_TAGS, type ColorTag, type Medicine, type RootStackParamList } from '../types';
 import { useMedicineStore } from '../store/medicineStore';
-import { DAY_LABELS } from '../utils/dateUtils';
-
-function generateId(): string {
-  try {
-    return uuidv4();
-  } catch {
-    return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-  }
-}
+import { useI18n } from '../i18n/I18nProvider';
+import { weekdayLabels } from '../i18n/core';
+import { uid } from '../lib/id';
+import { normalizeTime } from '../lib/time';
+import { dateKey } from '../lib/schedule';
+import { isValidDateKey } from '../lib/prescription';
+import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
+import { cardShadow, type Scheme, type ThemeColors } from '../theme/theme';
 
 type RouteParams = RouteProp<RootStackParamList, 'MedicineForm'>;
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const DOSAGE_CHIPS = ['0.5정', '1정', '1.5정', '2정', '3정', '5정', '10정'];
+const DOSAGE_AMOUNTS = ['0.5', '1', '1.5', '2', '3', '5', '10'];
+const DOSAGE_UNITS = ['정', '캡슐', '포', 'mg', 'mL'];
+const DEFAULT_UNIT = '정';
 
-// [BUG 2] 1~6회 + 직접 입력
 type FreqOption = '1' | '2' | '3' | '4' | '5' | '6' | 'custom';
 type DayMode = 'everyday' | 'weekday' | 'weekend' | 'custom';
 
-// 기본 시간 6개까지 준비
-const DEFAULT_TIMES = ['08:00', '10:00', '13:00', '16:00', '19:00', '21:00'];
+const DEFAULT_TIMES = ['08:00', '12:00', '18:00', '21:00', '10:00', '15:00'];
+const OFFSETS = [0, 5, 10, 15, 30];
+const ALERT_DAYS = [3, 5, 7, 14];
 
-const NOTIFICATION_OFFSETS: { label: string; value: number }[] = [
-  { label: '정시', value: 0 },
-  { label: '5분 전', value: 5 },
-  { label: '10분 전', value: 10 },
-  { label: '15분 전', value: 15 },
-  { label: '30분 전', value: 30 },
-];
-
-// ─── Sub-components ──────────────────────────────────────────────────────────
-
-function SectionTitle({ title }: { title: string }) {
-  return <Text style={styles.sectionTitle}>{title}</Text>;
+function presetDosage(amount: string): string {
+  return `${amount}${DEFAULT_UNIT}`;
 }
 
-function pad(n: number) {
-  return String(n).padStart(2, '0');
+/** Splits '2.5정' into ['2.5', '정']; unknown formats keep everything as amount. */
+function splitDosage(dosage: string): { amount: string; unit: string } {
+  const unit = DOSAGE_UNITS.find((u) => dosage.endsWith(u));
+  if (unit) return { amount: dosage.slice(0, -unit.length).trim(), unit };
+  return { amount: dosage, unit: '' };
 }
 
-function normalizeTime(input: string): string {
-  const clean = input.replace(/[^0-9:]/g, '');
-  let h: number, m: number;
-  if (clean.includes(':')) {
-    const [hStr, mStr] = clean.split(':');
-    h = parseInt(hStr, 10) || 0;
-    m = parseInt(mStr, 10) || 0;
-  } else if (clean.length >= 3) {
-    const pivot = clean.length === 3 ? 1 : 2;
-    h = parseInt(clean.slice(0, pivot), 10) || 0;
-    m = parseInt(clean.slice(pivot), 10) || 0;
-  } else {
-    h = parseInt(clean, 10) || 0;
-    m = 0;
-  }
-  h = Math.max(0, Math.min(23, h));
-  m = Math.max(0, Math.min(59, m));
-  return `${pad(h)}:${pad(m)}`;
+function initialFreq(len: number): FreqOption {
+  return len >= 1 && len <= 6 ? (String(len) as FreqOption) : 'custom';
 }
 
+function sortedTimes(times: string[]): string[] {
+  return [...times].sort();
+}
 
-// ─── Main Form ───────────────────────────────────────────────────────────────
+// ─── Screen ──────────────────────────────────────────────────────────────────
 
 export default function MedicineFormScreen() {
   const navigation = useNavigation();
   const route = useRoute<RouteParams>();
-  const medicineId = route.params?.medicineId;
+  const { t } = useI18n();
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
 
+  const medicineId = route.params?.medicineId;
   const { getMedicineById, addMedicine, updateMedicine } = useMedicineStore();
   const existing = medicineId ? getMedicineById(medicineId) : undefined;
 
-  // ─── Form State ──────────────────────────────────────────────────────────
+  useLayoutEffect(() => {
+    navigation.setOptions({ title: existing ? t('nav.editMedicine') : t('nav.addMedicine') });
+  }, [navigation, existing, t]);
+
+  // ─── State ───────────────────────────────────────────────────────────────
 
   const [name, setName] = useState(existing?.name ?? '');
-  const [dosage, setDosage] = useState(existing?.dosage ?? '1정');
+  const [dosage, setDosage] = useState(existing?.dosage ?? presetDosage('1'));
   const [dosageCustom, setDosageCustom] = useState(
-    () => !DOSAGE_CHIPS.includes(existing?.dosage ?? '1정')
+    () => !DOSAGE_AMOUNTS.map(presetDosage).includes(existing?.dosage ?? presetDosage('1'))
   );
-  const [memo, setMemo] = useState(existing?.memo ?? '');
-  const [color, setColor] = useState<ColorTag>(
-    (existing?.color as ColorTag) ?? '#4A6CF7'
+  const initialSplit = splitDosage(existing?.dosage ?? '');
+  const [customAmount, setCustomAmount] = useState(dosageCustom ? initialSplit.amount : '');
+  const [customUnit, setCustomUnit] = useState(
+    dosageCustom && initialSplit.unit ? initialSplit.unit : DEFAULT_UNIT
   );
 
-  // [BUG 2] 1~6회 + 직접 입력
-  const getInitialFreq = (): FreqOption => {
-    const len = existing?.times.length ?? 1;
-    if (len >= 1 && len <= 6) return String(len) as FreqOption;
-    return 'custom';
-  };
-  const [freq, setFreq] = useState<FreqOption>(getInitialFreq());
+  const [memo, setMemo] = useState(existing?.memo ?? '');
+  const [color, setColor] = useState<string>(existing?.color ?? COLOR_TAGS[0]);
+
+  const [freq, setFreq] = useState<FreqOption>(initialFreq(existing?.times.length ?? 1));
   const [customFreqText, setCustomFreqText] = useState(
     freq === 'custom' ? String(existing?.times.length ?? '') : ''
   );
-  const [times, setTimes] = useState<string[]>(
-    existing?.times ?? [DEFAULT_TIMES[0]]
-  );
+  const [times, setTimes] = useState<string[]>(existing?.times ?? [DEFAULT_TIMES[0]]);
 
-  // Days
-  const getDayMode = (): DayMode => {
+  const [dayMode, setDayMode] = useState<DayMode>(() => {
     const d = existing?.days ?? 'everyday';
-    if (d === 'everyday') return 'everyday';
-    if (d === 'weekday') return 'weekday';
-    if (d === 'weekend') return 'weekend';
-    return 'custom';
-  };
-  const [dayMode, setDayMode] = useState<DayMode>(getDayMode());
+    return Array.isArray(d) ? 'custom' : d;
+  });
   const [selectedDays, setSelectedDays] = useState<number[]>(
-    Array.isArray(existing?.days) ? (existing.days as number[]) : [0, 1, 2, 3, 4, 5, 6]
+    Array.isArray(existing?.days) ? existing.days : [0, 1, 2, 3, 4, 5, 6]
   );
 
-  // Notification offset
-  const [notificationOffset, setNotificationOffset] = useState<number>(
-    existing?.notificationOffset ?? 0
-  );
+  const [notificationOffset, setNotificationOffset] = useState(existing?.notificationOffset ?? 0);
 
-  // Prescription
   const [hasPrescription, setHasPrescription] = useState(!!existing?.prescription);
   const [prescStartDate, setPrescStartDate] = useState(
-    existing?.prescription?.startDate ?? format(new Date(), 'yyyy-MM-dd')
+    existing?.prescription?.startDate ?? dateKey(new Date())
   );
-  const [prescDays, setPrescDays] = useState(
-    String(existing?.prescription?.totalDays ?? 30)
-  );
-  const [alertDays, setAlertDays] = useState<number[]>(
-    existing?.prescription?.alertDays ?? [7]
-  );
+  const [prescDays, setPrescDays] = useState(String(existing?.prescription?.totalDays ?? 30));
+  const [alertDays, setAlertDays] = useState<number[]>(existing?.prescription?.alertDays ?? [7]);
 
-  // times 배열 길이를 freq에 맞춰 동기화
+  // Keep the number of time slots in step with the frequency chip.
   useEffect(() => {
     if (freq === 'custom') return;
-    const count = parseInt(freq, 10);
-    if (times.length < count) {
-      const next = [...times];
-      while (next.length < count) {
-        next.push(DEFAULT_TIMES[next.length] ?? '12:00');
-      }
-      setTimes(next);
-    } else if (times.length > count) {
-      setTimes(times.slice(0, count));
-    }
+    resizeTimes(parseInt(freq, 10));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [freq]);
 
   // ─── Handlers ────────────────────────────────────────────────────────────
 
-  // [BUG 2] 직접 입력 횟수 적용
+  function resizeTimes(count: number) {
+    setTimes((prev) => {
+      if (prev.length === count) return prev;
+      if (prev.length > count) return prev.slice(0, count);
+      const next = [...prev];
+      for (const candidate of DEFAULT_TIMES) {
+        if (next.length >= count) break;
+        if (!next.includes(candidate)) next.push(candidate);
+      }
+      while (next.length < count) next.push('12:00');
+      return sortedTimes(next);
+    });
+  }
+
   const applyCustomFreq = () => {
     const n = parseInt(customFreqText, 10);
-    if (isNaN(n) || n < 1 || n > 20) {
-      Alert.alert('입력 오류', '복용 횟수는 1 ~ 20 사이로 입력해주세요.');
+    if (Number.isNaN(n) || n < 1 || n > 20) {
+      Alert.alert(t('form.errTitle'), t('form.errFreq'));
       return;
     }
-    const next = [...times];
-    while (next.length < n) next.push(DEFAULT_TIMES[next.length] ?? '12:00');
-    setTimes(next.slice(0, n));
+    resizeTimes(n);
   };
 
-  const toggleAlertDay = (day: number) => {
-    setAlertDays((prev) =>
-      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
-    );
+  const updateCustomDosage = (amount: string, unit: string) => {
+    const clean = amount.replace(',', '.').replace(/[^0-9.]/g, '');
+    setCustomAmount(clean);
+    setCustomUnit(unit);
+    setDosage(clean ? `${clean}${unit}` : '');
   };
 
-  const toggleCustomDay = (day: number) => {
-    setSelectedDays((prev) =>
-      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
-    );
+  const toggle = (list: number[], value: number) =>
+    list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
+
+  const removeTime = (idx: number) => {
+    if (times.length <= 1) return;
+    const next = times.filter((_, i) => i !== idx);
+    setTimes(next);
+    if (freq !== 'custom') setFreq(initialFreq(next.length));
   };
 
   const addTime = () => setTimes((prev) => [...prev, '12:00']);
 
-  const removeTime = (idx: number) => {
-    if (times.length <= 1) return;
-    setTimes((prev) => prev.filter((_, i) => i !== idx));
-  };
-
-  // ─── Save ─────────────────────────────────────────────────────────────────
+  // ─── Save ────────────────────────────────────────────────────────────────
 
   const handleSave = async () => {
-    if (!name.trim()) {
-      Alert.alert('입력 오류', '약 이름을 입력해주세요.');
-      return;
-    }
-    if (!dosage.trim()) {
-      Alert.alert('입력 오류', '복용량을 입력해주세요.');
-      return;
-    }
-    if (times.length === 0) {
-      Alert.alert('입력 오류', '복용 시간을 하나 이상 설정해주세요.');
-      return;
-    }
+    const finalTimes = sortedTimes([...new Set(times.map(normalizeTime))]);
+    if (!name.trim()) return Alert.alert(t('form.errTitle'), t('form.errName'));
+    if (!dosage.trim()) return Alert.alert(t('form.errTitle'), t('form.errDosage'));
+    if (finalTimes.length === 0) return Alert.alert(t('form.errTitle'), t('form.errTimes'));
 
     const days: Medicine['days'] =
-      dayMode === 'everyday'
-        ? 'everyday'
-        : dayMode === 'weekday'
-        ? 'weekday'
-        : dayMode === 'weekend'
-        ? 'weekend'
+      dayMode !== 'custom'
+        ? dayMode
         : selectedDays.length > 0
-        ? selectedDays.sort()
-        : 'everyday';
+          ? [...selectedDays].sort()
+          : 'everyday';
 
     let prescription: Medicine['prescription'] = null;
     if (hasPrescription) {
-      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-      if (!dateRegex.test(prescStartDate) || isNaN(new Date(prescStartDate).getTime())) {
-        Alert.alert('입력 오류', '처방 시작일을 올바른 형식으로 입력해주세요.\n예: 2024-01-15');
-        return;
+      if (!isValidDateKey(prescStartDate)) return Alert.alert(t('form.errTitle'), t('form.errDate'));
+      const totalDays = parseInt(prescDays, 10);
+      if (Number.isNaN(totalDays) || totalDays < 1) {
+        return Alert.alert(t('form.errTitle'), t('form.errPrescDays'));
       }
-      const totalDaysNum = parseInt(prescDays, 10);
-      if (isNaN(totalDaysNum) || totalDaysNum < 1) {
-        Alert.alert('입력 오류', '처방 일수를 올바르게 입력해주세요.');
-        return;
-      }
-      prescription = { startDate: prescStartDate, totalDays: totalDaysNum, alertDays };
+      prescription = { startDate: prescStartDate, totalDays, alertDays: [...alertDays].sort((a, b) => a - b) };
     }
 
     const medicine: Medicine = {
-      id: existing?.id ?? generateId(),
+      id: existing?.id ?? uid(),
       name: name.trim(),
       dosage: dosage.trim(),
-      times,
+      times: finalTimes,
       days,
       color,
       memo: memo.trim(),
@@ -250,111 +206,131 @@ export default function MedicineFormScreen() {
     };
 
     try {
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      if (existing) {
-        await updateMedicine(medicine);
-      } else {
-        await addMedicine(medicine);
-      }
+      if (existing) await updateMedicine(medicine);
+      else await addMedicine(medicine);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       navigation.goBack();
-    } catch {
-      Alert.alert('오류', '저장 중 문제가 발생했습니다. 다시 시도해주세요.');
+    } catch (e) {
+      console.warn('[form] save failed', e);
+      Alert.alert(t('common.error'), t('form.errSave'));
     }
   };
 
-  // ─── Render ──────────────────────────────────────────────────────────────
+  // ─── Render helpers ──────────────────────────────────────────────────────
+
+  const Chip = ({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) => (
+    <TouchableOpacity style={[styles.chip, active && styles.chipActive]} onPress={onPress}>
+      <Text style={[styles.chipText, active && styles.chipTextActive]}>{label}</Text>
+    </TouchableOpacity>
+  );
+
+  const placeholderColor = colors.textFaint;
 
   return (
-    <>
+    <KeyboardAvoidingView
+      style={styles.flex}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+    >
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* ─ 기본 정보 ─ */}
+        {/* ─ Basics ─ */}
         <View style={styles.card}>
-          <SectionTitle title="기본 정보" />
+          <Text style={styles.sectionTitle}>{t('form.basic')}</Text>
 
-          <Text style={styles.label}>약 이름 *</Text>
+          <Text style={styles.label}>{t('form.name')}</Text>
           <TextInput
             style={styles.input}
             value={name}
             onChangeText={setName}
-            placeholder="예: 타이레놀, 오메가-3"
-            placeholderTextColor="#BBB"
+            placeholder={t('form.namePlaceholder')}
+            placeholderTextColor={placeholderColor}
             maxLength={40}
           />
 
-          <Text style={styles.label}>1회 복용량 *</Text>
-
-          {/* 복용량 칩 */}
-          <View style={styles.dosageChipRow}>
-            {DOSAGE_CHIPS.map((chip) => (
-              <TouchableOpacity
-                key={chip}
-                style={[
-                  styles.dosageChip,
-                  dosage === chip && !dosageCustom && styles.dosageChipActive,
-                ]}
-                onPress={() => { setDosage(chip); setDosageCustom(false); }}
-              >
-                <Text style={[
-                  styles.dosageChipText,
-                  dosage === chip && !dosageCustom && styles.dosageChipTextActive,
-                ]}>
-                  {chip}
-                </Text>
-              </TouchableOpacity>
-            ))}
-            <TouchableOpacity
-              style={[styles.dosageChip, dosageCustom && styles.dosageChipActive]}
-              onPress={() => setDosageCustom(true)}
-            >
-              <Text style={[styles.dosageChipText, dosageCustom && styles.dosageChipTextActive]}>
-                직접입력
-              </Text>
-            </TouchableOpacity>
+          <Text style={styles.label}>{t('form.dosage')}</Text>
+          <View style={styles.chipRow}>
+            {DOSAGE_AMOUNTS.map((amount) => {
+              const value = presetDosage(amount);
+              return (
+                <Chip
+                  key={value}
+                  label={value}
+                  active={!dosageCustom && dosage === value}
+                  onPress={() => {
+                    setDosageCustom(false);
+                    setDosage(value);
+                  }}
+                />
+              );
+            })}
+            <Chip
+              label={t('form.dosageCustom')}
+              active={dosageCustom}
+              onPress={() => {
+                setDosageCustom(true);
+                updateCustomDosage(customAmount, customUnit);
+              }}
+            />
           </View>
 
           {dosageCustom && (
-            <TextInput
-              style={styles.input}
-              value={dosage}
-              onChangeText={setDosage}
-              placeholder="예: 2.5정, 500mg, 2캡슐"
-              placeholderTextColor="#BBB"
-              keyboardType="decimal-pad"
-              maxLength={20}
-              autoFocus
-            />
+            <View style={styles.customDosage}>
+              <TextInput
+                style={[styles.input, styles.customAmountInput]}
+                value={customAmount}
+                onChangeText={(v) => updateCustomDosage(v, customUnit)}
+                placeholder="2.5"
+                placeholderTextColor={placeholderColor}
+                keyboardType="decimal-pad"
+                maxLength={6}
+                selectTextOnFocus
+                autoFocus
+              />
+              <View style={[styles.chipRow, styles.unitRow]}>
+                {DOSAGE_UNITS.map((unit) => (
+                  <Chip
+                    key={unit}
+                    label={unit}
+                    active={customUnit === unit}
+                    onPress={() => updateCustomDosage(customAmount, unit)}
+                  />
+                ))}
+              </View>
+            </View>
           )}
         </View>
 
-        {/* ─ 복용 횟수 / 시간 ─ */}
+        {/* ─ Schedule ─ */}
         <View style={styles.card}>
-          <SectionTitle title="복용 시간" />
+          <Text style={styles.sectionTitle}>{t('form.schedule')}</Text>
 
-          {/* [BUG 2] 1~6회 chip + 직접 입력 */}
-          <Text style={styles.label}>1일 복용 횟수 *</Text>
+          <Text style={styles.label}>{t('form.frequency')}</Text>
           <View style={styles.freqGrid}>
             {(['1', '2', '3', '4', '5', '6'] as FreqOption[]).map((f) => (
               <TouchableOpacity
                 key={f}
-                style={[styles.freqChip, freq === f && styles.freqChipActive]}
+                style={[styles.freqChip, freq === f && styles.chipActive]}
                 onPress={() => setFreq(f)}
               >
-                <Text style={[styles.freqChipText, freq === f && styles.freqChipTextActive]}>
-                  {f}회
+                <Text style={[styles.freqChipText, freq === f && styles.chipTextActive]}>
+                  {t('form.freqUnit', { n: f })}
                 </Text>
               </TouchableOpacity>
             ))}
             <TouchableOpacity
-              style={[styles.freqChip, freq === 'custom' && styles.freqChipActive]}
-              onPress={() => setFreq('custom')}
+              style={[styles.freqChip, freq === 'custom' && styles.chipActive]}
+              onPress={() => {
+                setFreq('custom');
+                setCustomFreqText(String(times.length));
+              }}
             >
-              <Text style={[styles.freqChipText, freq === 'custom' && styles.freqChipTextActive]}>
-                직접
+              <Text style={[styles.freqChipText, freq === 'custom' && styles.chipTextActive]}>
+                {t('form.freqCustom')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -364,108 +340,98 @@ export default function MedicineFormScreen() {
               <TextInput
                 style={styles.customFreqInput}
                 value={customFreqText}
-                onChangeText={setCustomFreqText}
-                placeholder="횟수 입력"
-                placeholderTextColor="#BBB"
-                keyboardType="numeric"
+                onChangeText={(v) => setCustomFreqText(v.replace(/[^0-9]/g, ''))}
+                placeholder={t('form.freqCustomPlaceholder')}
+                placeholderTextColor={placeholderColor}
+                keyboardType="number-pad"
                 maxLength={2}
-                onBlur={applyCustomFreq}
                 returnKeyType="done"
                 onSubmitEditing={applyCustomFreq}
               />
-              <Text style={styles.customFreqUnit}>회 (최대 20)</Text>
-              <TouchableOpacity style={styles.customFreqApplyBtn} onPress={applyCustomFreq}>
-                <Text style={styles.customFreqApplyText}>적용</Text>
+              <Text style={styles.customFreqUnit}>{t('form.freqCustomHint')}</Text>
+              <TouchableOpacity style={styles.applyBtn} onPress={applyCustomFreq}>
+                <Text style={styles.applyText}>{t('form.apply')}</Text>
               </TouchableOpacity>
             </View>
           )}
 
-          <Text style={[styles.label, { marginTop: 16 }]}>복용 시간 설정 *</Text>
-          {times.map((t, idx) => (
+          <Text style={[styles.label, { marginTop: 16 }]}>{t('form.times')}</Text>
+          {times.map((time, idx) => (
             <View key={idx} style={styles.timeRow}>
               <View style={styles.timeInputWrapper}>
-                <Ionicons name="time-outline" size={18} color="#4A6CF7" style={{ marginRight: 8 }} />
+                <Ionicons name="time-outline" size={18} color={colors.brand} style={{ marginRight: 8 }} />
                 <TextInput
                   style={styles.timeInput}
-                  value={t}
-                  onChangeText={(v) => {
-                    const next = [...times];
-                    next[idx] = v;
-                    setTimes(next);
-                  }}
-                  onBlur={() => {
-                    const next = [...times];
-                    next[idx] = normalizeTime(t);
-                    next.sort();
-                    setTimes(next);
-                  }}
+                  value={time}
+                  onChangeText={(v) =>
+                    setTimes((prev) => prev.map((p, i) => (i === idx ? v.replace(/[^0-9:]/g, '') : p)))
+                  }
+                  onBlur={() => setTimes((prev) => sortedTimes(prev.map(normalizeTime)))}
                   selectTextOnFocus
                   keyboardType="numbers-and-punctuation"
                   placeholder="08:30"
-                  placeholderTextColor="#BBB"
+                  placeholderTextColor={placeholderColor}
                   maxLength={5}
+                  accessibilityLabel={`${t('form.times')} ${idx + 1}`}
                 />
               </View>
               {times.length > 1 && (
-                <TouchableOpacity
-                  style={styles.removeTimeBtn}
-                  onPress={() => removeTime(idx)}
-                >
-                  <Ionicons name="remove-circle" size={22} color="#EF4444" />
+                <TouchableOpacity style={styles.removeTimeBtn} onPress={() => removeTime(idx)}>
+                  <Ionicons name="remove-circle" size={24} color={colors.danger} />
                 </TouchableOpacity>
               )}
             </View>
           ))}
           {freq === 'custom' && (
             <TouchableOpacity style={styles.addTimeBtn} onPress={addTime}>
-              <Ionicons name="add-circle-outline" size={20} color="#4A6CF7" />
-              <Text style={styles.addTimeBtnText}>시간 추가</Text>
+              <Ionicons name="add-circle-outline" size={20} color={colors.brand} />
+              <Text style={styles.addTimeText}>{t('form.addTime')}</Text>
             </TouchableOpacity>
           )}
         </View>
 
-        {/* ─ 복용 요일 ─ */}
+        {/* ─ Days ─ */}
         <View style={styles.card}>
-          <SectionTitle title="복용 요일" />
+          <Text style={styles.sectionTitle}>{t('form.days')}</Text>
           <View style={styles.segRow}>
             {(['everyday', 'weekday', 'weekend', 'custom'] as DayMode[]).map((d) => (
               <TouchableOpacity
                 key={d}
-                style={[styles.seg, dayMode === d && styles.segActive]}
+                style={[styles.seg, dayMode === d && styles.chipActive]}
                 onPress={() => setDayMode(d)}
               >
-                <Text style={[styles.segText, dayMode === d && styles.segTextActive]}>
-                  {d === 'everyday' ? '매일' : d === 'weekday' ? '평일' : d === 'weekend' ? '주말' : '직접'}
+                <Text style={[styles.segText, dayMode === d && styles.chipTextActive]}>
+                  {t(`days.${d}`)}
                 </Text>
               </TouchableOpacity>
             ))}
           </View>
-
           {dayMode === 'custom' && (
             <View style={styles.dayRow}>
-              {DAY_LABELS.map((label, idx) => (
-                <TouchableOpacity
-                  key={idx}
-                  style={[styles.dayChip, selectedDays.includes(idx) && styles.dayChipActive]}
-                  onPress={() => toggleCustomDay(idx)}
-                >
-                  <Text style={[styles.dayChipText, selectedDays.includes(idx) && styles.dayChipTextActive]}>
-                    {label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+              {weekdayLabels().map((label, idx) => {
+                const on = selectedDays.includes(idx);
+                return (
+                  <TouchableOpacity
+                    key={idx}
+                    style={[styles.dayChip, on && styles.dayChipActive]}
+                    onPress={() => setSelectedDays((prev) => toggle(prev, idx))}
+                  >
+                    <Text style={[styles.dayChipText, on && styles.dayChipTextActive]}>{label}</Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           )}
         </View>
 
-        {/* ─ 색상 태그 ─ */}
+        {/* ─ Color ─ */}
         <View style={styles.card}>
-          <SectionTitle title="색상 태그" />
+          <Text style={styles.sectionTitle}>{t('form.color')}</Text>
           <View style={styles.colorRow}>
-            {COLOR_TAGS.map((c) => (
+            {COLOR_TAGS.map((c: ColorTag) => (
               <TouchableOpacity
                 key={c}
-                style={[styles.colorCircle, { backgroundColor: c }, color === c && styles.colorCircleSelected]}
+                style={[styles.colorCircle, { backgroundColor: c }, color === c && styles.colorSelected]}
                 onPress={() => setColor(c)}
               >
                 {color === c && <Ionicons name="checkmark" size={18} color="#FFF" />}
@@ -474,301 +440,243 @@ export default function MedicineFormScreen() {
           </View>
         </View>
 
-        {/* ─ 알림 시간 조정 ─ */}
+        {/* ─ Reminder offset ─ */}
         <View style={styles.card}>
-          <SectionTitle title="알림 시간 조정" />
-          <Text style={styles.label}>복용 시간 기준 알림 시점</Text>
-          <View style={styles.offsetRow}>
-            {NOTIFICATION_OFFSETS.map(({ label, value }) => (
-              <TouchableOpacity
+          <Text style={styles.sectionTitle}>{t('form.offsetTitle')}</Text>
+          <Text style={styles.label}>{t('form.offsetLabel')}</Text>
+          <View style={styles.chipRow}>
+            {OFFSETS.map((value) => (
+              <Chip
                 key={value}
-                style={[styles.offsetChip, notificationOffset === value && styles.offsetChipActive]}
+                label={value === 0 ? t('form.offsetOnTime') : t('form.offsetBefore', { n: value })}
+                active={notificationOffset === value}
                 onPress={() => setNotificationOffset(value)}
-              >
-                <Text style={[styles.offsetChipText, notificationOffset === value && styles.offsetChipTextActive]}>
-                  {label}
-                </Text>
-              </TouchableOpacity>
+              />
             ))}
           </View>
           {notificationOffset > 0 && (
-            <Text style={styles.offsetHint}>복용 {notificationOffset}분 전에 알림을 드려요</Text>
+            <Text style={styles.hint}>{t('form.offsetHint', { n: notificationOffset })}</Text>
           )}
         </View>
 
-        {/* ─ 메모 ─ */}
+        {/* ─ Memo ─ */}
         <View style={styles.card}>
-          <SectionTitle title="메모 (선택)" />
+          <Text style={styles.sectionTitle}>{t('form.memo')}</Text>
           <TextInput
             style={[styles.input, styles.memoInput]}
             value={memo}
             onChangeText={setMemo}
-            placeholder="복용 시 주의사항, 보관 방법 등"
-            placeholderTextColor="#BBB"
+            placeholder={t('form.memoPlaceholder')}
+            placeholderTextColor={placeholderColor}
             multiline
             maxLength={200}
             textAlignVertical="top"
           />
         </View>
 
-        {/* ─ 재처방 알림 ─ */}
+        {/* ─ Refill reminder ─ */}
         <View style={styles.card}>
-          <View style={styles.prescRow}>
-            <SectionTitle title="재처방 알림 (선택)" />
+          <View style={styles.prescHeader}>
+            <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>{t('form.prescription')}</Text>
             <TouchableOpacity
-              style={[styles.prescToggle, hasPrescription && styles.prescToggleOn]}
+              style={[styles.toggle, hasPrescription && styles.toggleOn]}
               onPress={() => setHasPrescription(!hasPrescription)}
             >
-              <Text style={[styles.prescToggleText, hasPrescription && styles.prescToggleTextOn]}>
-                {hasPrescription ? 'ON' : 'OFF'}
+              <Text style={[styles.toggleText, hasPrescription && styles.toggleTextOn]}>
+                {hasPrescription ? t('form.on') : t('form.off')}
               </Text>
             </TouchableOpacity>
           </View>
 
           {hasPrescription && (
-            <>
-              <Text style={styles.label}>처방 시작일</Text>
+            <View style={{ marginTop: 14 }}>
+              <Text style={styles.label}>{t('form.prescStart')}</Text>
               <TextInput
                 style={styles.input}
                 value={prescStartDate}
-                onChangeText={setPrescStartDate}
+                onChangeText={(v) => setPrescStartDate(v.replace(/[^0-9-]/g, ''))}
                 placeholder="YYYY-MM-DD"
-                placeholderTextColor="#BBB"
+                placeholderTextColor={placeholderColor}
                 maxLength={10}
-                keyboardType="numeric"
+                keyboardType="numbers-and-punctuation"
               />
-              <Text style={styles.label}>총 처방 일수</Text>
+              <Text style={styles.label}>{t('form.prescDays')}</Text>
               <TextInput
                 style={styles.input}
                 value={prescDays}
-                onChangeText={setPrescDays}
-                placeholder="예: 30"
-                placeholderTextColor="#BBB"
-                keyboardType="numeric"
+                onChangeText={(v) => setPrescDays(v.replace(/[^0-9]/g, ''))}
+                placeholder={t('form.prescDaysPlaceholder')}
+                placeholderTextColor={placeholderColor}
+                keyboardType="number-pad"
                 maxLength={4}
               />
-              <Text style={styles.label}>알림 시점 (복수 선택)</Text>
-              <View style={styles.alertDayRow}>
-                {[3, 5, 7, 14].map((d) => (
-                  <TouchableOpacity
-                    key={d}
-                    style={[styles.alertDayChip, alertDays.includes(d) && styles.alertDayChipActive]}
-                    onPress={() => toggleAlertDay(d)}
-                  >
-                    <Text style={[styles.alertDayChipText, alertDays.includes(d) && styles.alertDayChipTextActive]}>
-                      D-{d}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+              <Text style={styles.label}>{t('form.prescAlert')}</Text>
+              <View style={styles.chipRow}>
+                {ALERT_DAYS.map((d) => {
+                  const on = alertDays.includes(d);
+                  return (
+                    <TouchableOpacity
+                      key={d}
+                      style={[styles.chip, on && styles.alertChipActive]}
+                      onPress={() => setAlertDays((prev) => toggle(prev, d))}
+                    >
+                      <Text style={[styles.chipText, on && styles.alertChipTextActive]}>D-{d}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
-            </>
+            </View>
           )}
         </View>
 
-        {/* ─ 저장 버튼 ─ */}
         <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
-          <Ionicons name="save-outline" size={20} color="#FFF" />
-          <Text style={styles.saveBtnText}>{existing ? '수정 완료' : '약 등록하기'}</Text>
+          <Ionicons name="checkmark-circle" size={20} color={colors.onBrand} />
+          <Text style={styles.saveText}>{existing ? t('form.saveEdit') : t('form.saveNew')}</Text>
         </TouchableOpacity>
-
-        <View style={{ height: 40 }} />
       </ScrollView>
-
-    </>
+    </KeyboardAvoidingView>
   );
 }
 
-const styles = StyleSheet.create({
-  scroll: { flex: 1, backgroundColor: '#F4F6FB' },
-  content: { padding: 16 },
-  card: {
-    backgroundColor: '#FFF',
-    borderRadius: 18,
-    padding: 18,
-    marginBottom: 14,
-    shadowColor: '#3F4A7E',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    elevation: 2,
-  },
-  sectionTitle: { fontSize: 15, fontWeight: '700', color: '#4A6CF7', marginBottom: 14 },
-  label: { fontSize: 14, fontWeight: '600', color: '#555', marginBottom: 8 },
-  input: {
-    backgroundColor: '#F4F6FB',
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 15,
-    color: '#222',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    marginBottom: 14,
-    minHeight: 48,
-  },
-  memoInput: { minHeight: 80, paddingTop: 12 },
+const makeStyles = (c: ThemeColors, scheme: Scheme) =>
+  StyleSheet.create({
+    flex: { flex: 1 },
+    scroll: { flex: 1, backgroundColor: c.bg },
+    content: { padding: 16, paddingBottom: 48 },
+    card: {
+      backgroundColor: c.surface,
+      borderRadius: 18,
+      padding: 18,
+      marginBottom: 14,
+      ...cardShadow(c, scheme),
+    },
+    sectionTitle: { fontSize: 15, fontWeight: '700', color: c.brand, marginBottom: 14 },
+    label: { fontSize: 14, fontWeight: '600', color: c.textMuted, marginBottom: 8 },
+    input: {
+      backgroundColor: c.inputBg,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      fontSize: 15,
+      color: c.text,
+      borderWidth: 1,
+      borderColor: c.line,
+      marginBottom: 14,
+      minHeight: 48,
+    },
+    memoInput: { minHeight: 84, paddingTop: 12, marginBottom: 0 },
 
-  // 복용량 칩 그리드
-  dosageChipRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 12,
-  },
-  dosagePresetScroll: { marginBottom: 10 },
-  dosagePresetContent: { flexDirection: 'row', gap: 8, paddingRight: 4 },
-  dosageChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1.5,
-    borderColor: '#DDD',
-    backgroundColor: '#F4F6FB',
-  },
-  dosageChipActive: { borderColor: '#4A6CF7', backgroundColor: '#EDF1FE' },
-  dosageChipText: { fontSize: 13, fontWeight: '600', color: '#888' },
-  dosageChipTextActive: { color: '#4A6CF7' },
+    chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 6 },
+    chip: {
+      paddingHorizontal: 14,
+      paddingVertical: 9,
+      borderRadius: 20,
+      borderWidth: 1.5,
+      borderColor: c.chipBorder,
+      backgroundColor: c.inputBg,
+    },
+    chipActive: { borderColor: c.brand, backgroundColor: c.brandSoft },
+    chipText: { fontSize: 13, fontWeight: '600', color: c.textMuted },
+    chipTextActive: { color: c.brand },
 
-  // [BUG 2] 복용 횟수
-  freqGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 4,
-  },
-  freqChip: {
-    width: '13%',
-    minWidth: 48,
-    paddingVertical: 10,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: '#DDD',
-    alignItems: 'center',
-    flexGrow: 1,
-  },
-  freqChipActive: { borderColor: '#4A6CF7', backgroundColor: '#EDF1FE' },
-  freqChipText: { fontSize: 14, color: '#888', fontWeight: '600' },
-  freqChipTextActive: { color: '#4A6CF7' },
-  customFreqRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 8,
-    marginBottom: 4,
-  },
-  customFreqInput: {
-    width: 72,
-    backgroundColor: '#F4F6FB',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#4A6CF7',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#222',
-    textAlign: 'center',
-    minHeight: 44,
-  },
-  customFreqUnit: { fontSize: 14, color: '#888', flex: 1 },
-  customFreqApplyBtn: {
-    backgroundColor: '#4A6CF7',
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
-  customFreqApplyText: { color: '#FFF', fontSize: 13, fontWeight: '700' },
+    customDosage: { marginTop: 8 },
+    customAmountInput: { fontSize: 20, fontWeight: '700', marginBottom: 10 },
+    unitRow: { marginBottom: 0 },
 
-  // Time row
-  timeRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10, gap: 10 },
-  timeInputWrapper: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F0F3FF',
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    minHeight: 48,
-    borderWidth: 1,
-    borderColor: '#DCE3FD',
-  },
-  timeInput: {
-    flex: 1,
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#4A6CF7',
-    paddingVertical: 10,
-  },
-  removeTimeBtn: { padding: 4 },
-  addTimeBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
-  addTimeBtnText: { color: '#4A6CF7', fontSize: 14, fontWeight: '600' },
+    freqGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 4 },
+    freqChip: {
+      minWidth: 48,
+      flexGrow: 1,
+      paddingVertical: 11,
+      borderRadius: 12,
+      borderWidth: 1.5,
+      borderColor: c.chipBorder,
+      alignItems: 'center',
+    },
+    freqChipText: { fontSize: 14, color: c.textMuted, fontWeight: '600' },
+    customFreqRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 10 },
+    customFreqInput: {
+      width: 76,
+      backgroundColor: c.inputBg,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: c.brand,
+      paddingVertical: 10,
+      fontSize: 16,
+      fontWeight: '700',
+      color: c.text,
+      textAlign: 'center',
+      minHeight: 46,
+    },
+    customFreqUnit: { fontSize: 14, color: c.textMuted, flex: 1 },
+    applyBtn: { backgroundColor: c.brand, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 11 },
+    applyText: { color: c.onBrand, fontSize: 13, fontWeight: '700' },
 
-  // Day
-  segRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
-  seg: {
-    flex: 1,
-    minWidth: 60,
-    paddingVertical: 10,
-    paddingHorizontal: 8,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: '#DDD',
-    alignItems: 'center',
-  },
-  segActive: { borderColor: '#4A6CF7', backgroundColor: '#EDF1FE' },
-  segText: { fontSize: 14, color: '#888', fontWeight: '600' },
-  segTextActive: { color: '#4A6CF7' },
-  dayRow: { flexDirection: 'row', marginTop: 14, gap: 8, flexWrap: 'wrap' },
-  dayChip: {
-    width: 40, height: 40, borderRadius: 20,
-    alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1.5, borderColor: '#DDD', backgroundColor: '#F4F6FB',
-  },
-  dayChipActive: { backgroundColor: '#4A6CF7', borderColor: '#4A6CF7' },
-  dayChipText: { fontSize: 13, fontWeight: '700', color: '#888' },
-  dayChipTextActive: { color: '#FFF' },
+    timeRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10, gap: 10 },
+    timeInputWrapper: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: c.brandSoft,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      minHeight: 50,
+      borderWidth: 1,
+      borderColor: c.brandBorder,
+    },
+    timeInput: { flex: 1, fontSize: 18, fontWeight: '700', color: c.brand, paddingVertical: 10 },
+    removeTimeBtn: { padding: 4 },
+    addTimeBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
+    addTimeText: { color: c.brand, fontSize: 14, fontWeight: '600' },
 
-  // Color
-  colorRow: { flexDirection: 'row', gap: 12, flexWrap: 'wrap' },
-  colorCircle: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
-  colorCircleSelected: {
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3, shadowRadius: 4, elevation: 4,
-    transform: [{ scale: 1.15 }],
-  },
+    segRow: { flexDirection: 'row', gap: 8 },
+    seg: {
+      flex: 1,
+      paddingVertical: 11,
+      borderRadius: 12,
+      borderWidth: 1.5,
+      borderColor: c.chipBorder,
+      alignItems: 'center',
+    },
+    segText: { fontSize: 14, color: c.textMuted, fontWeight: '600' },
+    dayRow: { flexDirection: 'row', marginTop: 14, justifyContent: 'space-between' },
+    dayChip: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1.5,
+      borderColor: c.chipBorder,
+      backgroundColor: c.inputBg,
+    },
+    dayChipActive: { backgroundColor: c.brand, borderColor: c.brand },
+    dayChipText: { fontSize: 13, fontWeight: '700', color: c.textMuted },
+    dayChipTextActive: { color: c.onBrand },
 
-  // Offset
-  offsetRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 8 },
-  offsetChip: {
-    paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
-    borderWidth: 1.5, borderColor: '#DDD', backgroundColor: '#F4F6FB',
-  },
-  offsetChipActive: { borderColor: '#4A6CF7', backgroundColor: '#EDF1FE' },
-  offsetChipText: { fontSize: 13, fontWeight: '600', color: '#888' },
-  offsetChipTextActive: { color: '#4A6CF7' },
-  offsetHint: { fontSize: 12, color: '#4A6CF7', marginTop: 4 },
+    colorRow: { flexDirection: 'row', gap: 12, flexWrap: 'wrap' },
+    colorCircle: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+    colorSelected: { transform: [{ scale: 1.15 }], borderWidth: 3, borderColor: c.surface },
 
-  // Prescription
-  prescRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
-  prescToggle: { backgroundColor: '#E9ECEF', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 6 },
-  prescToggleOn: { backgroundColor: '#4A6CF7' },
-  prescToggleText: { fontSize: 13, fontWeight: '700', color: '#888' },
-  prescToggleTextOn: { color: '#FFF' },
-  alertDayRow: { flexDirection: 'row', gap: 10 },
-  alertDayChip: {
-    paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20,
-    borderWidth: 1.5, borderColor: '#DDD',
-  },
-  alertDayChipActive: { backgroundColor: '#F59E0B', borderColor: '#F59E0B' },
-  alertDayChipText: { fontSize: 14, fontWeight: '700', color: '#888' },
-  alertDayChipTextActive: { color: '#FFF' },
+    hint: { fontSize: 12, color: c.brand, marginTop: 6 },
 
-  // Save
-  saveBtn: {
-    backgroundColor: '#4A6CF7', borderRadius: 16, paddingVertical: 17, marginTop: 8,
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    shadowColor: '#4A6CF7', shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35, shadowRadius: 8, elevation: 6,
-  },
-  saveBtnText: { color: '#FFF', fontSize: 17, fontWeight: '700' },
-});
+    prescHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    toggle: { backgroundColor: c.surfaceMuted, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 6 },
+    toggleOn: { backgroundColor: c.brand },
+    toggleText: { fontSize: 13, fontWeight: '700', color: c.textMuted },
+    toggleTextOn: { color: c.onBrand },
+    alertChipActive: { backgroundColor: c.warning, borderColor: c.warning },
+    alertChipTextActive: { color: '#FFF' },
+
+    saveBtn: {
+      backgroundColor: c.brand,
+      borderRadius: 16,
+      paddingVertical: 17,
+      marginTop: 4,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 10,
+    },
+    saveText: { color: c.onBrand, fontSize: 17, fontWeight: '700' },
+  });

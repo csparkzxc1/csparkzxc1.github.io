@@ -15,9 +15,9 @@ export interface Medicine {
 }
 
 export interface Prescription {
-  startDate: string;  // ISO date string 'YYYY-MM-DD'
+  startDate: string; // 'YYYY-MM-DD'
   totalDays: number;
-  alertDays: number[]; // e.g. [3, 5, 7]
+  alertDays: number[]; // e.g. [3, 7]
 }
 
 export interface DoseRecord {
@@ -25,7 +25,7 @@ export interface DoseRecord {
   medicineId: string;
   scheduledTime: string; // 'HH:mm'
   takenAt: string | null; // ISO datetime string
-  date: string;           // 'YYYY-MM-DD'
+  date: string; // 'YYYY-MM-DD'
   isTaken: boolean;
 }
 
@@ -34,6 +34,7 @@ export interface DoseRecord {
 export type RootStackParamList = {
   Main: undefined;
   MedicineForm: { medicineId?: string } | undefined;
+  Paywall: undefined;
 };
 
 export type BottomTabParamList = {
@@ -43,39 +44,9 @@ export type BottomTabParamList = {
   Settings: undefined;
 };
 
-// ─── Store Types ───────────────────────────────────────────────────────────
+// ─── Medicine color tags ────────────────────────────────────────────────────
 
-export interface MedicineStore {
-  medicines: Medicine[];
-  isLoading: boolean;
-  loadMedicines: () => Promise<void>;
-  addMedicine: (medicine: Medicine) => Promise<void>;
-  updateMedicine: (medicine: Medicine) => Promise<void>;
-  deleteMedicine: (id: string) => Promise<void>;
-  toggleActive: (id: string) => Promise<void>;
-}
-
-export interface DoseStore {
-  doseRecords: DoseRecord[];
-  rangeRecords: DoseRecord[];
-  isLoading: boolean;
-  loadDoseRecords: (date: string) => Promise<void>;
-  loadDoseRecordsRange: (startDate: string, endDate: string) => Promise<void>;
-  markDose: (record: DoseRecord) => Promise<void>;
-  unmarkDose: (recordId: string) => Promise<void>;
-  generateDosesForDate: (medicines: Medicine[], date: string) => Promise<void>;
-  clearAllRecords: () => Promise<void>;
-}
-
-// ─── UI / Misc Types ────────────────────────────────────────────────────────
-
-export type ColorTag =
-  | '#4A6CF7'
-  | '#10B981'
-  | '#F59E0B'
-  | '#EF4444'
-  | '#8B5CF6'
-  | '#14B8A6';
+export type ColorTag = '#4A6CF7' | '#10B981' | '#F59E0B' | '#EF4444' | '#8B5CF6' | '#14B8A6';
 
 export const COLOR_TAGS: ColorTag[] = [
   '#4A6CF7',
@@ -85,10 +56,3 @@ export const COLOR_TAGS: ColorTag[] = [
   '#8B5CF6',
   '#14B8A6',
 ];
-
-export type FrequencyOption = '1' | '2' | '3' | 'custom';
-
-export interface NotificationSettings {
-  sound: boolean;
-  vibration: boolean;
-}

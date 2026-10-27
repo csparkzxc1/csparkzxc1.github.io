@@ -5,47 +5,44 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#4A90D9"
-    },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.csparkzxc.mediremind",
-      "buildNumber": "1",
+      "buildNumber": "10",
       "infoPlist": {
-        "NSUserNotificationUsageDescription": "약 복용 알림을 위해 알림 권한이 필요합니다."
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
+      "package": "com.csparkzxc.mediremind",
+      "versionCode": 10,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#4A90D9"
+        "backgroundColor": "#4A6CF7"
       },
-      "package": "com.csparkzxc.mediremind",
-      "versionCode": 1,
-      "permissions": [
-        "RECEIVE_BOOT_COMPLETED",
-        "VIBRATE",
-        "SCHEDULE_EXACT_ALARM"
-      ],
-      "googleServicesFile": "./google-services.json"
+      "permissions": ["RECEIVE_BOOT_COMPLETED", "VIBRATE"]
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
+      "expo-sqlite",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#4A6CF7"
+        }
+      ],
       [
         "expo-notifications",
         {
           "icon": "./assets/notification-icon.png",
-          "color": "#4A90D9",
-          "sounds": []
+          "color": "#4A6CF7"
         }
       ],
       "expo-updates"

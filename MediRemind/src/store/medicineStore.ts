@@ -1,12 +1,12 @@
 import { create } from 'zustand';
-import { Medicine } from '../types';
+import type { Medicine } from '../types';
 import {
   getAllMedicines,
   insertMedicine,
   updateMedicine as dbUpdateMedicine,
   deleteMedicine as dbDeleteMedicine,
-} from '../services/databaseService';
-import { scheduleNotificationsForMedicine, cancelNotificationsForMedicine } from '../services/notificationService';
+} from '../db/medicineRepository';
+import { syncNotifications } from '../notifications/notifications';
 
 interface MedicineStoreState {
   medicines: Medicine[];
@@ -19,86 +19,55 @@ interface MedicineStoreState {
   getMedicineById: (id: string) => Medicine | undefined;
 }
 
-export const useMedicineStore = create<MedicineStoreState>((set, get) => ({
-  medicines: [],
-  isLoading: false,
+export const useMedicineStore = create<MedicineStoreState>((set, get) => {
+  const resync = () => syncNotifications(get().medicines);
 
-  loadMedicines: async () => {
-    set({ isLoading: true });
-    try {
-      const medicines = await getAllMedicines();
-      set({ medicines });
-    } catch (error) {
-      console.error('[MedicineStore] loadMedicines error:', error);
-    } finally {
-      set({ isLoading: false });
-    }
-  },
+  return {
+    medicines: [],
+    isLoading: false,
 
-  addMedicine: async (medicine: Medicine) => {
-    try {
+    loadMedicines: async () => {
+      set({ isLoading: true });
+      try {
+        set({ medicines: await getAllMedicines() });
+      } catch (error) {
+        console.error('[MedicineStore] loadMedicines error:', error);
+      } finally {
+        set({ isLoading: false });
+      }
+    },
+
+    addMedicine: async (medicine) => {
       await insertMedicine(medicine);
-      set((state) => ({ medicines: [medicine, ...state.medicines] }));
-      if (medicine.isActive) {
-        await scheduleNotificationsForMedicine(medicine);
-      }
-    } catch (error) {
-      console.error('[MedicineStore] addMedicine error:', error);
-      throw error;
-    }
-  },
+      set((s) => ({ medicines: [medicine, ...s.medicines] }));
+      await resync();
+    },
 
-  updateMedicine: async (medicine: Medicine) => {
-    try {
+    updateMedicine: async (medicine) => {
       await dbUpdateMedicine(medicine);
-      set((state) => ({
-        medicines: state.medicines.map((m) =>
-          m.id === medicine.id ? medicine : m
-        ),
-      }));
-      await cancelNotificationsForMedicine(medicine.id);
-      if (medicine.isActive) {
-        await scheduleNotificationsForMedicine(medicine);
-      }
-    } catch (error) {
-      console.error('[MedicineStore] updateMedicine error:', error);
-      throw error;
-    }
-  },
+      set((s) => ({ medicines: s.medicines.map((m) => (m.id === medicine.id ? medicine : m)) }));
+      await resync();
+    },
 
-  deleteMedicine: async (id: string) => {
-    try {
+    deleteMedicine: async (id) => {
       await dbDeleteMedicine(id);
-      await cancelNotificationsForMedicine(id);
-      set((state) => ({
-        medicines: state.medicines.filter((m) => m.id !== id),
-      }));
-    } catch (error) {
-      console.error('[MedicineStore] deleteMedicine error:', error);
-      throw error;
-    }
-  },
+      set((s) => ({ medicines: s.medicines.filter((m) => m.id !== id) }));
+      await resync();
+    },
 
-  toggleActive: async (id: string) => {
-    const medicine = get().medicines.find((m) => m.id === id);
-    if (!medicine) return;
-    const updated = { ...medicine, isActive: !medicine.isActive };
-    try {
-      await dbUpdateMedicine(updated);
-      set((state) => ({
-        medicines: state.medicines.map((m) => (m.id === id ? updated : m)),
-      }));
-      if (updated.isActive) {
-        await scheduleNotificationsForMedicine(updated);
-      } else {
-        await cancelNotificationsForMedicine(id);
+    toggleActive: async (id) => {
+      const medicine = get().medicines.find((m) => m.id === id);
+      if (!medicine) return;
+      const updated = { ...medicine, isActive: !medicine.isActive };
+      try {
+        await dbUpdateMedicine(updated);
+        set((s) => ({ medicines: s.medicines.map((m) => (m.id === id ? updated : m)) }));
+        await resync();
+      } catch (error) {
+        console.error('[MedicineStore] toggleActive error:', error);
       }
-    } catch (error) {
-      console.error('[MedicineStore] toggleActive error:', error);
-    }
-  },
+    },
 
-  getMedicineById: (id: string) => {
-    return get().medicines.find((m) => m.id === id);
-  },
-}));
+    getMedicineById: (id) => get().medicines.find((m) => m.id === id),
+  };
+});

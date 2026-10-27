@@ -1,125 +1,130 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, ActivityIndicator, StyleSheet, Text, Alert } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { format } from 'date-fns';
+import * as Notifications from 'expo-notifications';
 
 import AppNavigator from './src/navigation/AppNavigator';
-import { initDatabase } from './src/services/databaseService';
-import {
-  requestNotificationPermission,
-  setupNotificationChannel,
-} from './src/services/notificationService';
-import { initAds } from './src/services/adService';
+import Paywall from './src/components/Paywall';
+import { getDb } from './src/db/database';
 import { useMedicineStore } from './src/store/medicineStore';
 import { useDoseStore } from './src/store/doseStore';
+import {
+  ensurePermission,
+  setupNotificationCategories,
+  syncNotifications,
+  takeResponseDoses,
+} from './src/notifications/notifications';
+import { dateKey } from './src/lib/schedule';
 import { checkAndApplyUpdate } from './src/utils/updateUtils';
-
-function AppInit({ onReady }: { onReady: () => void }) {
-  const { loadMedicines } = useMedicineStore();
-  const { generateDosesForDate } = useDoseStore();
-
-  useEffect(() => {
-    (async () => {
-      try {
-        // 1. OTA 업데이트 확인 (production 빌드에서만 동작)
-        await checkAndApplyUpdate();
-
-        // 2. Init DB
-        await initDatabase();
-
-        // 3. Load medicines from DB
-        await loadMedicines();
-
-        // 4. Generate today's dose records immediately on startup
-        const { medicines } = useMedicineStore.getState();
-        await generateDosesForDate(medicines, format(new Date(), 'yyyy-MM-dd'));
-
-        // 5. Request notification permission (graceful degradation)
-        await setupNotificationChannel();
-        const granted = await requestNotificationPermission();
-        if (!granted) {
-          console.warn('[App] Notification permission not granted.');
-        }
-
-        // 6. Init ads
-        initAds();
-      } catch (error) {
-        console.error('[App] Initialization error:', error);
-        Alert.alert(
-          '앱 초기화 오류',
-          '앱을 시작하는 중 문제가 발생했습니다. 앱을 재시작해 주세요.',
-          [{ text: '확인' }]
-        );
-      } finally {
-        onReady();
-      }
-    })();
-  }, []);
-
-  return null;
-}
+import { EntitlementProvider, useEntitlement } from './src/purchase/EntitlementProvider';
+import { I18nProvider, useI18n } from './src/i18n/I18nProvider';
+import { ThemeProvider, useTheme } from './src/theme/ThemeProvider';
 
 export default function App() {
-  const [isReady, setIsReady] = useState(false);
-
-  if (!isReady) {
-    return (
-      <GestureHandlerRootView style={styles.loadingContainer}>
-        <StatusBar style="light" />
-        <AppInit onReady={() => setIsReady(true)} />
-        <View style={styles.splashBg}>
-          <Text style={styles.splashIcon}>💊</Text>
-          <Text style={styles.splashTitle}>MediRemind</Text>
-          <Text style={styles.splashSub}>약 복용 알리미</Text>
-          <ActivityIndicator
-            color="#FFFFFF"
-            size="large"
-            style={styles.spinner}
-          />
-        </View>
-      </GestureHandlerRootView>
-    );
-  }
-
   return (
     <GestureHandlerRootView style={styles.root}>
-      <StatusBar style="dark" />
-      <AppNavigator />
+      <SafeAreaProvider>
+        <I18nProvider>
+          <ThemeProvider>
+            <EntitlementProvider>
+              <Root />
+            </EntitlementProvider>
+          </ThemeProvider>
+        </I18nProvider>
+      </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }
 
+async function handleResponse(response: Notifications.NotificationResponse) {
+  const doses = await takeResponseDoses(response);
+  if (doses.length === 0) return;
+  await useDoseStore.getState().markFromNotification(useMedicineStore.getState().medicines, doses);
+}
+
+function Root() {
+  const { t, language } = useI18n();
+  const { scheme, colors } = useTheme();
+  const { loading: entitlementLoading, status } = useEntitlement();
+  const [ready, setReady] = useState(false);
+  const firstLanguage = useRef(language);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        await checkAndApplyUpdate();
+        await getDb();
+        await useMedicineStore.getState().loadMedicines();
+        const medicines = useMedicineStore.getState().medicines;
+        await useDoseStore.getState().syncDoses(medicines, dateKey(new Date()));
+
+        await setupNotificationCategories();
+        if (await ensurePermission()) await syncNotifications(medicines);
+
+        // A "Mark taken" tap that cold-started the app.
+        const last = await Notifications.getLastNotificationResponseAsync();
+        if (last) await handleResponse(last);
+      } catch (error) {
+        console.error('[App] Initialization error:', error);
+        Alert.alert(t('app.initErrorTitle'), t('app.initErrorBody'));
+      } finally {
+        setReady(true);
+      }
+    })();
+
+    const sub = Notifications.addNotificationResponseReceivedListener((r) => {
+      handleResponse(r).catch((e) => console.warn('[App] response failed', e));
+    });
+    return () => sub.remove();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Notification text and the action button are localized at schedule time.
+  useEffect(() => {
+    if (!ready || language === firstLanguage.current) return;
+    firstLanguage.current = language;
+    setupNotificationCategories()
+      .then(() => syncNotifications(useMedicineStore.getState().medicines))
+      .catch((e) => console.warn('[App] relocalize failed', e));
+  }, [language, ready]);
+
+  if (!ready || entitlementLoading) {
+    return (
+      <View style={[styles.splash, { backgroundColor: colors.brand }]}>
+        <StatusBar style="light" />
+        <Text style={styles.splashIcon}>💊</Text>
+        <Text style={styles.splashTitle}>MediRemind</Text>
+        <Text style={styles.splashSub}>{t('app.subtitle')}</Text>
+        <ActivityIndicator color="#FFFFFF" size="large" />
+      </View>
+    );
+  }
+
+  const statusBar = <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />;
+
+  if (status === 'locked') {
+    return (
+      <>
+        {statusBar}
+        <Paywall />
+      </>
+    );
+  }
+
+  return (
+    <>
+      {statusBar}
+      <AppNavigator />
+    </>
+  );
+}
+
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-  },
-  loadingContainer: {
-    flex: 1,
-  },
-  splashBg: {
-    flex: 1,
-    backgroundColor: '#4A6CF7',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  splashIcon: {
-    fontSize: 64,
-    marginBottom: 16,
-  },
-  splashTitle: {
-    fontSize: 34,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    letterSpacing: 1,
-  },
-  splashSub: {
-    fontSize: 16,
-    color: 'rgba(255,255,255,0.75)',
-    marginTop: 6,
-    marginBottom: 40,
-  },
-  spinner: {
-    marginTop: 8,
-  },
+  root: { flex: 1 },
+  splash: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  splashIcon: { fontSize: 64, marginBottom: 16 },
+  splashTitle: { fontSize: 34, fontWeight: '800', color: '#FFFFFF', letterSpacing: 1 },
+  splashSub: { fontSize: 16, color: 'rgba(255,255,255,0.8)', marginTop: 6, marginBottom: 40 },
 });

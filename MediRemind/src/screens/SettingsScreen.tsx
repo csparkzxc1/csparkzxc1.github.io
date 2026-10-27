@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -8,23 +8,36 @@ import {
   ScrollView,
   Alert,
   Linking,
-  SafeAreaView,
+  ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import Constants from 'expo-constants';
 
-import {
-  getNotificationSettings,
-  saveNotificationSettings,
-  getAdRemoved,
-  setAdRemoved,
-} from '../services/databaseService';
+import type { RootStackParamList } from '../types';
+import { PRIVACY_POLICY_URL } from '../config';
 import { useDoseStore } from '../store/doseStore';
-import { cancelAllNotifications } from '../services/notificationService';
 import { useMedicineStore } from '../store/medicineStore';
+import { useEntitlement } from '../purchase/EntitlementProvider';
+import {
+  loadReminderSettings,
+  saveReminderSettings,
+  syncNotifications,
+  type ReminderSettings,
+} from '../notifications/notifications';
+import { exportBackup, importBackup } from '../lib/backup';
+import { dateKey } from '../lib/schedule';
 import { checkAndApplyUpdate, getBuildInfo } from '../utils/updateUtils';
+import { useI18n } from '../i18n/I18nProvider';
+import type { LanguagePref } from '../i18n/core';
+import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
+import { cardShadow, type Scheme, type ThemeColors, type ThemeMode } from '../theme/theme';
+import ScreenHeader from '../components/ScreenHeader';
 
-const APP_VERSION = '1.0.0';
+type Nav = NativeStackNavigationProp<RootStackParamList>;
 
 function SettingRow({
   icon,
@@ -33,16 +46,18 @@ function SettingRow({
   subtitle,
   right,
   onPress,
-  dangerous,
+  danger,
 }: {
-  icon: string;
+  icon: React.ComponentProps<typeof Ionicons>['name'];
   iconColor: string;
   title: string;
   subtitle?: string;
   right?: React.ReactNode;
   onPress?: () => void;
-  dangerous?: boolean;
+  danger?: boolean;
 }) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   return (
     <TouchableOpacity
       style={styles.row}
@@ -51,331 +66,356 @@ function SettingRow({
       activeOpacity={onPress ? 0.7 : 1}
     >
       <View style={[styles.rowIcon, { backgroundColor: iconColor + '22' }]}>
-        <Ionicons name={icon as any} size={20} color={iconColor} />
+        <Ionicons name={icon} size={20} color={iconColor} />
       </View>
       <View style={styles.rowBody}>
-        <Text style={[styles.rowTitle, dangerous && styles.dangerTitle]}>
-          {title}
-        </Text>
+        <Text style={[styles.rowTitle, danger && { color: colors.danger }]}>{title}</Text>
         {subtitle ? <Text style={styles.rowSubtitle}>{subtitle}</Text> : null}
       </View>
-      {right ?? (
-        onPress ? <Ionicons name="chevron-forward" size={18} color="#CCC" /> : null
-      )}
+      {right ?? (onPress ? <Ionicons name="chevron-forward" size={18} color={colors.textFaint} /> : null)}
     </TouchableOpacity>
   );
 }
 
-export default function SettingsScreen() {
-  const [soundEnabled, setSoundEnabled] = useState(true);
-  const [vibrationEnabled, setVibrationEnabled] = useState(true);
-  const [adRemoved, setAdRemovedState] = useState(false);
-  const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
-  const buildInfo = getBuildInfo();
+function Segmented<T extends string>({
+  options,
+  value,
+  onChange,
+}: {
+  options: { value: T; label: string }[];
+  value: T;
+  onChange: (v: T) => void;
+}) {
+  const styles = useThemedStyles(makeStyles);
+  return (
+    <View style={styles.segment}>
+      {options.map((o) => (
+        <TouchableOpacity
+          key={o.value}
+          style={[styles.segmentItem, value === o.value && styles.segmentItemActive]}
+          onPress={() => onChange(o.value)}
+        >
+          <Text style={[styles.segmentText, value === o.value && styles.segmentTextActive]}>
+            {o.label}
+          </Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
+}
 
-  const { clearAllRecords } = useDoseStore();
-  const { medicines } = useMedicineStore();
+export default function SettingsScreen() {
+  const navigation = useNavigation<Nav>();
+  const { t, pref: langPref, setLanguage } = useI18n();
+  const { colors, mode, setMode } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+  const { status, trialDaysLeft, restore } = useEntitlement();
+
+  const [settings, setSettings] = useState<ReminderSettings>({ sound: true, vibration: true });
+  const [busy, setBusy] = useState<null | 'update' | 'export' | 'import' | 'restore'>(null);
+  const buildInfo = getBuildInfo();
+  const version = Constants.expoConfig?.version ?? '1.0.0';
+
+  const { clearAllRecords, syncDoses } = useDoseStore();
+  const { medicines, loadMedicines } = useMedicineStore();
 
   useEffect(() => {
-    getNotificationSettings().then((s) => {
-      setSoundEnabled(s.sound);
-      setVibrationEnabled(s.vibration);
-    });
-    getAdRemoved().then(setAdRemovedState);
+    loadReminderSettings().then(setSettings).catch(() => {});
   }, []);
 
-  const handleSoundToggle = async (val: boolean) => {
-    setSoundEnabled(val);
-    await saveNotificationSettings({ sound: val, vibration: vibrationEnabled });
-    Haptics.selectionAsync();
+  const updateSettings = async (next: ReminderSettings) => {
+    setSettings(next);
+    Haptics.selectionAsync().catch(() => {});
+    await saveReminderSettings(next);
+    await syncNotifications(useMedicineStore.getState().medicines);
   };
 
-  const handleVibrationToggle = async (val: boolean) => {
-    setVibrationEnabled(val);
-    await saveNotificationSettings({ sound: soundEnabled, vibration: val });
-    Haptics.selectionAsync();
+  const handleRestore = async () => {
+    setBusy('restore');
+    try {
+      const ok = await restore();
+      Alert.alert(
+        ok ? t('settings.restoreDoneTitle') : t('settings.restoreNoneTitle'),
+        ok ? t('settings.restoreDoneBody') : t('settings.restoreNoneBody')
+      );
+    } catch {
+      Alert.alert(t('common.error'), t('settings.restoreFail'));
+    } finally {
+      setBusy(null);
+    }
   };
 
-  const handleResetRecords = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-    Alert.alert(
-      '복용 기록 초기화',
-      '모든 복용 기록이 삭제됩니다.\n이 작업은 되돌릴 수 없어요.',
-      [
-        { text: '취소', style: 'cancel' },
-        {
-          text: '초기화',
-          style: 'destructive',
-          onPress: async () => {
-            await clearAllRecords();
-            Alert.alert('완료', '복용 기록이 초기화되었습니다.');
-          },
+  const handleExport = async () => {
+    setBusy('export');
+    try {
+      await exportBackup();
+    } catch (e) {
+      console.warn('[settings] export failed', e);
+      Alert.alert(t('common.error'), t('backup.exportFail'));
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const handleImport = () => {
+    Alert.alert(t('settings.importConfirmTitle'), t('settings.importConfirmBody'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('common.ok'),
+        onPress: async () => {
+          setBusy('import');
+          try {
+            const result = await importBackup();
+            if (result.cancelled) return;
+            await loadMedicines();
+            const meds = useMedicineStore.getState().medicines;
+            await syncDoses(meds, dateKey(new Date()));
+            await syncNotifications(meds);
+            Alert.alert(
+              t('common.done'),
+              t('settings.importDone', { m: result.medicines, r: result.doseRecords })
+            );
+          } catch (e) {
+            Alert.alert(t('common.error'), e instanceof Error ? e.message : t('backup.readError'));
+          } finally {
+            setBusy(null);
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
 
-  const handleRemoveAd = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    Alert.alert(
-      '광고 제거',
-      '이 기능은 인앱결제로 제공됩니다.\n(현재 버전에서는 테스트 목적으로 무료 적용됩니다)',
-      [
-        { text: '취소', style: 'cancel' },
-        {
-          text: '광고 제거',
-          onPress: async () => {
-            await setAdRemoved(true);
-            setAdRemovedState(true);
-            Alert.alert('감사합니다!', '광고가 제거되었습니다. 앱을 재시작하면 적용됩니다.');
-          },
+  const handleReset = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
+    Alert.alert(t('settings.resetTitle'), t('settings.resetBody'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('settings.resetConfirm'),
+        style: 'destructive',
+        onPress: async () => {
+          await clearAllRecords();
+          await syncDoses(useMedicineStore.getState().medicines, dateKey(new Date()));
+          Alert.alert(t('common.done'), t('settings.resetDone'));
         },
-      ]
-    );
+      },
+    ]);
   };
 
   const handleCheckUpdate = async () => {
     if (__DEV__) {
-      Alert.alert('업데이트', '개발 환경에서는 OTA 업데이트를 사용할 수 없습니다.');
+      Alert.alert(t('settings.sectionUpdate'), t('settings.updateDev'));
       return;
     }
-    setIsCheckingUpdate(true);
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setBusy('update');
     const result = await checkAndApplyUpdate();
-    setIsCheckingUpdate(false);
-    if (result.isError) {
-      Alert.alert('업데이트 확인 실패', '네트워크 연결을 확인해 주세요.');
-    } else if (!result.isAvailable) {
-      Alert.alert('최신 버전', '현재 최신 버전을 사용 중입니다.');
-    }
-    // isAvailable=true면 reloadAsync()로 앱이 자동 재시작됨
+    setBusy(null);
+    if (result.isError) Alert.alert(t('common.error'), t('settings.updateFail'));
+    else if (!result.isAvailable) Alert.alert(t('settings.sectionUpdate'), t('settings.updateLatest'));
   };
 
-  const handlePrivacyPolicy = () => {
-    Linking.openURL('https://example.com/privacy').catch(() => {
-      Alert.alert('오류', '개인정보처리방침을 열 수 없습니다.');
-    });
-  };
+  const spinner = (key: typeof busy) =>
+    busy === key ? <ActivityIndicator color={colors.brand} /> : undefined;
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.headerBar}>
-        <Text style={styles.headerTitle}>설정</Text>
-      </View>
+    <SafeAreaView style={styles.safe} edges={['top']}>
+      <ScreenHeader title={t('settings.title')} />
 
-      <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
-        {/* ─ 알림 ─ */}
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>알림</Text>
-          <View style={styles.card}>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        {/* ─ Plan ─ */}
+        <Text style={styles.sectionLabel}>{t('settings.sectionPlan')}</Text>
+        <View style={styles.card}>
+          {status === 'pro' ? (
+            <SettingRow icon="checkmark-done-circle" iconColor={colors.success} title={t('settings.planPro')} />
+          ) : (
             <SettingRow
-              icon="volume-high"
-              iconColor="#4A6CF7"
-              title="알림 소리"
-              right={
-                <Switch
-                  value={soundEnabled}
-                  onValueChange={handleSoundToggle}
-                  trackColor={{ false: '#CCC', true: '#4A6CF7' }}
-                  thumbColor="#FFF"
-                />
-              }
+              icon="sparkles"
+              iconColor={colors.brand}
+              title={t('settings.planTrial', { n: trialDaysLeft })}
+              subtitle={t('settings.planTrialSub')}
+              onPress={() => navigation.navigate('Paywall')}
             />
-            <View style={styles.divider} />
-            <SettingRow
-              icon="phone-portrait"
-              iconColor="#8B5CF6"
-              title="알림 진동"
-              right={
-                <Switch
-                  value={vibrationEnabled}
-                  onValueChange={handleVibrationToggle}
-                  trackColor={{ false: '#CCC', true: '#8B5CF6' }}
-                  thumbColor="#FFF"
-                />
-              }
-            />
-          </View>
+          )}
+          <View style={styles.divider} />
+          <SettingRow
+            icon="refresh"
+            iconColor={colors.textMuted}
+            title={t('settings.restore')}
+            onPress={busy ? undefined : handleRestore}
+            right={spinner('restore')}
+          />
         </View>
 
-        {/* ─ 데이터 ─ */}
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>데이터</Text>
-          <View style={styles.card}>
-            <SettingRow
-              icon="refresh-circle"
-              iconColor="#EF4444"
-              title="복용 기록 초기화"
-              subtitle={`${medicines.length}개 약 등록됨`}
-              onPress={handleResetRecords}
-              dangerous
-            />
-          </View>
+        {/* ─ Notifications ─ */}
+        <Text style={styles.sectionLabel}>{t('settings.sectionNotif')}</Text>
+        <View style={styles.card}>
+          <SettingRow
+            icon="volume-high"
+            iconColor={colors.brand}
+            title={t('settings.sound')}
+            right={
+              <Switch
+                value={settings.sound}
+                onValueChange={(v) => updateSettings({ ...settings, sound: v })}
+                trackColor={{ false: colors.surfaceMuted, true: colors.brand }}
+                thumbColor="#FFF"
+              />
+            }
+          />
+          <View style={styles.divider} />
+          <SettingRow
+            icon="phone-portrait"
+            iconColor="#8B5CF6"
+            title={t('settings.vibration')}
+            right={
+              <Switch
+                value={settings.vibration}
+                onValueChange={(v) => updateSettings({ ...settings, vibration: v })}
+                trackColor={{ false: colors.surfaceMuted, true: '#8B5CF6' }}
+                thumbColor="#FFF"
+              />
+            }
+          />
         </View>
 
-        {/* ─ 결제 ─ */}
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>구매</Text>
-          <View style={styles.card}>
-            <SettingRow
-              icon="ban"
-              iconColor="#F59E0B"
-              title="광고 제거"
-              subtitle={adRemoved ? '✓ 구매 완료' : '₩2,200 · 영구 제거'}
-              onPress={adRemoved ? undefined : handleRemoveAd}
-            />
-          </View>
+        {/* ─ Display ─ */}
+        <Text style={styles.sectionLabel}>{t('settings.sectionDisplay')}</Text>
+        <View style={[styles.card, styles.cardPadded]}>
+          <Text style={styles.inlineLabel}>{t('settings.theme')}</Text>
+          <Segmented<ThemeMode>
+            value={mode}
+            onChange={setMode}
+            options={[
+              { value: 'system', label: t('settings.themeSystem') },
+              { value: 'light', label: t('settings.themeLight') },
+              { value: 'dark', label: t('settings.themeDark') },
+            ]}
+          />
+          <Text style={[styles.inlineLabel, { marginTop: 16 }]}>{t('settings.language')}</Text>
+          <Segmented<LanguagePref>
+            value={langPref}
+            onChange={setLanguage}
+            options={[
+              { value: 'system', label: t('settings.langSystem') },
+              { value: 'ko', label: '한국어' },
+              { value: 'en', label: 'English' },
+            ]}
+          />
         </View>
 
-        {/* ─ 업데이트 ─ */}
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>업데이트</Text>
-          <View style={styles.card}>
-            <SettingRow
-              icon="cloud-download-outline"
-              iconColor="#4A6CF7"
-              title={isCheckingUpdate ? '확인 중…' : '업데이트 확인'}
-              subtitle={
-                buildInfo.channel
-                  ? `채널: ${buildInfo.channel}`
-                  : '최신 버전 여부를 확인합니다'
-              }
-              onPress={isCheckingUpdate ? undefined : handleCheckUpdate}
-            />
-          </View>
+        {/* ─ Data ─ */}
+        <Text style={styles.sectionLabel}>{t('settings.sectionData')}</Text>
+        <View style={styles.card}>
+          <SettingRow
+            icon="share-outline"
+            iconColor="#14B8A6"
+            title={t('settings.export')}
+            subtitle={t('settings.exportSub')}
+            onPress={busy ? undefined : handleExport}
+            right={spinner('export')}
+          />
+          <View style={styles.divider} />
+          <SettingRow
+            icon="download-outline"
+            iconColor={colors.brand}
+            title={t('settings.import')}
+            subtitle={t('settings.importSub')}
+            onPress={busy ? undefined : handleImport}
+            right={spinner('import')}
+          />
+          <View style={styles.divider} />
+          <SettingRow
+            icon="trash-outline"
+            iconColor={colors.danger}
+            title={t('settings.reset')}
+            subtitle={t('settings.resetSub', { n: medicines.length })}
+            onPress={handleReset}
+            danger
+          />
         </View>
 
-        {/* ─ 앱 정보 ─ */}
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>앱 정보</Text>
-          <View style={styles.card}>
-            <SettingRow
-              icon="shield-checkmark"
-              iconColor="#14B8A6"
-              title="개인정보처리방침"
-              onPress={handlePrivacyPolicy}
-            />
-            <View style={styles.divider} />
-            <SettingRow
-              icon="information-circle"
-              iconColor="#888"
-              title="앱 버전"
-              subtitle={`v${APP_VERSION}${buildInfo.runtimeVersion ? ` (${buildInfo.runtimeVersion})` : ''}`}
-            />
-            {buildInfo.updateId && (
-              <>
-                <View style={styles.divider} />
-                <SettingRow
-                  icon="git-commit-outline"
-                  iconColor="#AAA"
-                  title="업데이트 ID"
-                  subtitle={buildInfo.updateId.slice(0, 8) + '…'}
-                />
-              </>
-            )}
-          </View>
+        {/* ─ Updates ─ */}
+        <Text style={styles.sectionLabel}>{t('settings.sectionUpdate')}</Text>
+        <View style={styles.card}>
+          <SettingRow
+            icon="cloud-download-outline"
+            iconColor={colors.brand}
+            title={busy === 'update' ? t('settings.checking') : t('settings.checkUpdate')}
+            subtitle={
+              buildInfo.channel ? t('settings.channel', { c: buildInfo.channel }) : t('settings.updateSub')
+            }
+            onPress={busy ? undefined : handleCheckUpdate}
+          />
         </View>
 
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>
-            MediRemind © 2024{'\n'}
-            약 복용 알리미 앱
-          </Text>
+        {/* ─ About ─ */}
+        <Text style={styles.sectionLabel}>{t('settings.sectionInfo')}</Text>
+        <View style={styles.card}>
+          <SettingRow
+            icon="shield-checkmark"
+            iconColor="#14B8A6"
+            title={t('settings.privacy')}
+            onPress={() => Linking.openURL(PRIVACY_POLICY_URL).catch(() => {})}
+          />
+          <View style={styles.divider} />
+          <SettingRow
+            icon="information-circle"
+            iconColor={colors.textMuted}
+            title={t('settings.version')}
+            subtitle={`v${version}${buildInfo.updateId ? ` · ${buildInfo.updateId.slice(0, 8)}` : ''}`}
+          />
         </View>
 
-        <View style={{ height: 32 }} />
+        <Text style={styles.footer}>{t('settings.footer')}</Text>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: '#F4F6FB',
-  },
-  headerBar: {
-    backgroundColor: '#F4F6FB',
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 14,
-  },
-  headerTitle: {
-    fontSize: 27,
-    fontWeight: '800',
-    color: '#1A1D2B',
-    letterSpacing: -0.5,
-  },
-  scroll: {
-    flex: 1,
-  },
-  section: {
-    marginTop: 24,
-    paddingHorizontal: 16,
-  },
-  sectionLabel: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#999',
-    letterSpacing: 0.8,
-    textTransform: 'uppercase',
-    marginBottom: 8,
-    marginLeft: 4,
-  },
-  card: {
-    backgroundColor: '#FFF',
-    borderRadius: 18,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    minHeight: 56,
-  },
-  rowIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 14,
-  },
-  rowBody: {
-    flex: 1,
-  },
-  rowTitle: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: '#222',
-  },
-  dangerTitle: {
-    color: '#EF4444',
-  },
-  rowSubtitle: {
-    fontSize: 12,
-    color: '#999',
-    marginTop: 1,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: '#F3F4F6',
-    marginLeft: 66,
-  },
-  footer: {
-    alignItems: 'center',
-    paddingTop: 32,
-  },
-  footerText: {
-    fontSize: 12,
-    color: '#C0C0C0',
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-});
+const makeStyles = (c: ThemeColors, scheme: Scheme) =>
+  StyleSheet.create({
+    safe: { flex: 1, backgroundColor: c.bg },
+    scroll: { flex: 1 },
+    content: { paddingHorizontal: 16, paddingBottom: 40 },
+    sectionLabel: {
+      fontSize: 12,
+      fontWeight: '700',
+      color: c.textMuted,
+      letterSpacing: 0.6,
+      marginTop: 22,
+      marginBottom: 8,
+      marginLeft: 4,
+    },
+    card: {
+      backgroundColor: c.surface,
+      borderRadius: 18,
+      overflow: 'hidden',
+      ...cardShadow(c, scheme),
+    },
+    cardPadded: { padding: 16 },
+    row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, minHeight: 58 },
+    rowIcon: {
+      width: 36,
+      height: 36,
+      borderRadius: 10,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginRight: 14,
+    },
+    rowBody: { flex: 1 },
+    rowTitle: { fontSize: 15, fontWeight: '500', color: c.text },
+    rowSubtitle: { fontSize: 12, color: c.textMuted, marginTop: 2 },
+    divider: { height: StyleSheet.hairlineWidth, backgroundColor: c.line, marginLeft: 66 },
+    inlineLabel: { fontSize: 13, fontWeight: '600', color: c.textMuted, marginBottom: 8 },
+    segment: { flexDirection: 'row', backgroundColor: c.surfaceMuted, borderRadius: 12, padding: 3 },
+    segmentItem: { flex: 1, paddingVertical: 9, alignItems: 'center', borderRadius: 10 },
+    segmentItemActive: { backgroundColor: c.surface },
+    segmentText: { fontSize: 13, fontWeight: '600', color: c.textMuted },
+    segmentTextActive: { color: c.text },
+    footer: {
+      marginTop: 32,
+      fontSize: 12,
+      color: c.textFaint,
+      textAlign: 'center',
+      lineHeight: 20,
+    },
+  });

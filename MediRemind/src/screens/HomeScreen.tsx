@@ -1,258 +1,215 @@
-import React, { useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  RefreshControl,
-  TouchableOpacity,
-  SafeAreaView,
-} from 'react-native';
+import React, { useCallback, useMemo } from 'react';
+import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 
-import { RootStackParamList } from '../types';
-import { useTodayDoses } from '../hooks/useTodayDoses';
-import { useMedicines } from '../hooks/useMedicines';
+import type { DoseRecord, RootStackParamList } from '../types';
 import { useDoseStore } from '../store/doseStore';
 import { useMedicineStore } from '../store/medicineStore';
+import { useEntitlement } from '../purchase/EntitlementProvider';
+import { useToday } from '../hooks/useToday';
+import { useI18n } from '../i18n/I18nProvider';
+import { formatLongDate } from '../i18n/core';
+import { isPrescriptionExpiringSoon } from '../lib/prescription';
+import { parseDateKey } from '../lib/schedule';
+import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
+import { cardShadow, type Scheme, type ThemeColors } from '../theme/theme';
+import ScreenHeader from '../components/ScreenHeader';
 import ProgressBar from '../components/ProgressBar';
 import DoseItem from '../components/DoseItem';
 import PrescriptionBanner from '../components/PrescriptionBanner';
-import AdBanner from '../components/AdBanner';
-import { formatTodayDisplay } from '../utils/dateUtils';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
 export default function HomeScreen() {
   const navigation = useNavigation<Nav>();
-  const {
-    doseRecords,
-    isLoading,
-    takenCount,
-    totalCount,
-    completionRate,
-    markDose,
-    unmarkDose,
-    refresh,
-  } = useTodayDoses();
-  const { medicines, expiringSoonMedicines } = useMedicines();
-  const { getMedicineById } = useMedicineStore();
+  const { t } = useI18n();
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+  const today = useToday();
 
-  const handleToggleDose = useCallback(
-    async (record: (typeof doseRecords)[0]) => {
-      if (record.isTaken) {
-        await unmarkDose(record.id);
-      } else {
-        await markDose(record);
-      }
-    },
+  const medicines = useMedicineStore((s) => s.medicines);
+  const { doseRecords, isLoading, streak, markDose, unmarkDose, syncDoses } = useDoseStore();
+  const { status, trialDaysLeft } = useEntitlement();
+
+  // Re-sync when the date rolls over or the schedule changes.
+  const scheduleKey = medicines
+    .map((m) => `${m.id}:${m.isActive}:${m.times.join(',')}:${JSON.stringify(m.days)}`)
+    .join('|');
+  React.useEffect(() => {
+    syncDoses(medicines, today);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scheduleKey, today]);
+
+  const refresh = useCallback(() => syncDoses(medicines, today), [medicines, today, syncDoses]);
+
+  const todayRecords = useMemo(
+    () =>
+      doseRecords
+        .filter((r) => r.date === today)
+        .sort((a, b) => a.scheduledTime.localeCompare(b.scheduledTime)),
+    [doseRecords, today]
+  );
+  const takenCount = todayRecords.filter((r) => r.isTaken).length;
+  const totalCount = todayRecords.length;
+  const allDone = totalCount > 0 && takenCount === totalCount;
+
+  const expiringSoon = medicines.filter(
+    (m) => m.isActive && m.prescription && isPrescriptionExpiringSoon(m.prescription, 7)
+  );
+
+  const handleToggle = useCallback(
+    (record: DoseRecord) => (record.isTaken ? unmarkDose(record.id) : markDose(record)),
     [markDose, unmarkDose]
   );
 
-  const handlePressMedicine = (medicineId: string) => {
-    navigation.navigate('MedicineForm', { medicineId });
-  };
-
-  const today = formatTodayDisplay(new Date());
-
-  const sortedRecords = [...doseRecords].sort((a, b) =>
-    a.scheduledTime.localeCompare(b.scheduledTime)
-  );
-
-  const allDone = totalCount > 0 && takenCount === totalCount;
+  const byId = useMemo(() => new Map(medicines.map((m) => [m.id, m])), [medicines]);
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.dateText}>{today}</Text>
-          <Text style={styles.headerTitle}>오늘의 복용 현황</Text>
-        </View>
-        <TouchableOpacity
-          style={styles.addBtn}
-          onPress={() => navigation.navigate('MedicineForm', undefined)}
-          accessibilityLabel="약 추가"
-        >
-          <Ionicons name="add" size={26} color="#FFFFFF" />
-        </TouchableOpacity>
-      </View>
+    <SafeAreaView style={styles.safe} edges={['top']}>
+      <ScreenHeader
+        subtitle={formatLongDate(parseDateKey(today))}
+        title={t('home.title')}
+        right={
+          <TouchableOpacity
+            style={styles.addBtn}
+            onPress={() => navigation.navigate('MedicineForm')}
+            accessibilityLabel={t('home.addA11y')}
+          >
+            <Ionicons name="add" size={26} color={colors.onBrand} />
+          </TouchableOpacity>
+        }
+      />
 
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         refreshControl={
-          <RefreshControl refreshing={isLoading} onRefresh={refresh} tintColor="#4A6CF7" />
+          <RefreshControl refreshing={isLoading} onRefresh={refresh} tintColor={colors.brand} />
         }
         showsVerticalScrollIndicator={false}
       >
-        {/* Progress Card */}
+        {status === 'trial' && (
+          <TouchableOpacity style={styles.trialBanner} onPress={() => navigation.navigate('Paywall')}>
+            <Ionicons name="sparkles" size={16} color={colors.brand} />
+            <Text style={styles.trialText}>{t('home.trialBanner', { n: trialDaysLeft })}</Text>
+            <Ionicons name="chevron-forward" size={16} color={colors.brand} />
+          </TouchableOpacity>
+        )}
+
         <View style={styles.card}>
           <ProgressBar
-            progress={completionRate}
+            progress={totalCount > 0 ? takenCount / totalCount : 0}
             takenCount={takenCount}
             totalCount={totalCount}
           />
+          {streak > 0 && (
+            <View style={styles.streakChip}>
+              <Text style={styles.streakText}>{t('home.streak', { n: streak })}</Text>
+            </View>
+          )}
         </View>
 
-        {/* Prescription Expiry Banner */}
-        {expiringSoonMedicines.length > 0 && (
-          <PrescriptionBanner
-            medicines={expiringSoonMedicines}
-            onPressMedicine={handlePressMedicine}
-          />
-        )}
+        <PrescriptionBanner
+          medicines={expiringSoon}
+          onPressMedicine={(id) => navigation.navigate('MedicineForm', { medicineId: id })}
+        />
 
-        {/* Dose List */}
         {totalCount === 0 ? (
           <View style={styles.emptyState}>
-            <Ionicons name="medical-outline" size={60} color="#CCC" />
-            <Text style={styles.emptyTitle}>오늘 복용할 약이 없어요</Text>
-            <Text style={styles.emptyDesc}>
-              약을 등록하면 복용 알림을 받을 수 있어요
-            </Text>
-            <TouchableOpacity
-              style={styles.emptyBtn}
-              onPress={() => navigation.navigate('MedicineForm', undefined)}
-            >
-              <Text style={styles.emptyBtnText}>+ 약 등록하기</Text>
+            <Ionicons name="medical-outline" size={60} color={colors.textFaint} />
+            <Text style={styles.emptyTitle}>{t('home.emptyTitle')}</Text>
+            <Text style={styles.emptyDesc}>{t('home.emptyDesc')}</Text>
+            <TouchableOpacity style={styles.emptyBtn} onPress={() => navigation.navigate('MedicineForm')}>
+              <Text style={styles.emptyBtnText}>{t('home.emptyCta')}</Text>
             </TouchableOpacity>
           </View>
         ) : (
           <>
             {allDone && (
               <View style={styles.allDoneBanner}>
-                <Text style={styles.allDoneText}>🎉 오늘 약을 모두 드셨어요!</Text>
+                <Text style={styles.allDoneText}>{t('home.allDone')}</Text>
               </View>
             )}
-            {sortedRecords.map((record) => {
-              const medicine = getMedicineById(record.medicineId);
-              return (
-                <DoseItem
-                  key={record.id}
-                  record={record}
-                  medicine={medicine}
-                  onToggle={handleToggleDose}
-                />
-              );
-            })}
+            {todayRecords.map((record) => (
+              <DoseItem
+                key={record.id}
+                record={record}
+                medicine={byId.get(record.medicineId)}
+                onToggle={handleToggle}
+              />
+            ))}
           </>
         )}
-
-        <View style={styles.spacer} />
       </ScrollView>
-
-      <AdBanner />
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: '#F4F6FB',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    backgroundColor: '#F4F6FB',
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 14,
-  },
-  dateText: {
-    color: '#8A91A8',
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  headerTitle: {
-    color: '#1A1D2B',
-    fontSize: 27,
-    fontWeight: '800',
-    letterSpacing: -0.5,
-  },
-  addBtn: {
-    backgroundColor: '#4A6CF7',
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#4A6CF7',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 10,
-    elevation: 6,
-  },
-  scroll: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: 16,
-    paddingBottom: 24,
-  },
-  card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 20,
-    marginBottom: 12,
-    shadowColor: '#3F4A7E',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.07,
-    shadowRadius: 16,
-    elevation: 3,
-  },
-  allDoneBanner: {
-    backgroundColor: '#10B981',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-    alignItems: 'center',
-    shadowColor: '#10B981',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    elevation: 4,
-  },
-  allDoneText: {
-    color: '#FFF',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  emptyState: {
-    alignItems: 'center',
-    paddingTop: 48,
-    paddingBottom: 24,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#555',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptyDesc: {
-    fontSize: 14,
-    color: '#999',
-    textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: 24,
-  },
-  emptyBtn: {
-    backgroundColor: '#4A6CF7',
-    borderRadius: 24,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-  },
-  emptyBtnText: {
-    color: '#FFF',
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  spacer: {
-    height: 16,
-  },
-});
+const makeStyles = (c: ThemeColors, scheme: Scheme) =>
+  StyleSheet.create({
+    safe: { flex: 1, backgroundColor: c.bg },
+    addBtn: {
+      backgroundColor: c.brand,
+      width: 46,
+      height: 46,
+      borderRadius: 23,
+      alignItems: 'center',
+      justifyContent: 'center',
+      shadowColor: c.brand,
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.35,
+      shadowRadius: 10,
+      elevation: 6,
+    },
+    scroll: { flex: 1 },
+    scrollContent: { padding: 16, paddingBottom: 32 },
+    trialBanner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      backgroundColor: c.brandSoft,
+      borderRadius: 14,
+      paddingHorizontal: 14,
+      paddingVertical: 11,
+      marginBottom: 12,
+    },
+    trialText: { flex: 1, color: c.brand, fontSize: 13, fontWeight: '700' },
+    card: {
+      backgroundColor: c.surface,
+      borderRadius: 20,
+      padding: 20,
+      marginBottom: 12,
+      ...cardShadow(c, scheme),
+    },
+    streakChip: {
+      alignSelf: 'flex-start',
+      marginTop: 14,
+      backgroundColor: c.warningSoft,
+      borderRadius: 14,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+    },
+    streakText: { color: c.warningText, fontSize: 13, fontWeight: '800' },
+    allDoneBanner: {
+      backgroundColor: c.success,
+      borderRadius: 16,
+      padding: 16,
+      marginBottom: 6,
+      alignItems: 'center',
+    },
+    allDoneText: { color: '#FFF', fontSize: 15, fontWeight: '700' },
+    emptyState: { alignItems: 'center', paddingTop: 48, paddingBottom: 24 },
+    emptyTitle: { fontSize: 18, fontWeight: '700', color: c.text, marginTop: 16, marginBottom: 8 },
+    emptyDesc: {
+      fontSize: 14,
+      color: c.textMuted,
+      textAlign: 'center',
+      lineHeight: 20,
+      marginBottom: 24,
+    },
+    emptyBtn: { backgroundColor: c.brand, borderRadius: 24, paddingHorizontal: 24, paddingVertical: 12 },
+    emptyBtnText: { color: c.onBrand, fontSize: 15, fontWeight: '700' },
+  });

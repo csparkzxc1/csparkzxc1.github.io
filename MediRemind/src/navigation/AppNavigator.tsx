@@ -1,109 +1,111 @@
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import React, { useMemo } from 'react';
+import { Platform } from 'react-native';
+import { NavigationContainer, DarkTheme, DefaultTheme, type Theme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
-import { Platform, View } from 'react-native';
 
-import { RootStackParamList, BottomTabParamList } from '../types';
-
+import type { BottomTabParamList, RootStackParamList } from '../types';
+import { useI18n } from '../i18n/I18nProvider';
+import { useTheme } from '../theme/ThemeProvider';
 import HomeScreen from '../screens/HomeScreen';
 import MedicineListScreen from '../screens/MedicineListScreen';
 import CalendarScreen from '../screens/CalendarScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import MedicineFormScreen from '../screens/MedicineFormScreen';
+import PaywallScreen from '../screens/PaywallScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<BottomTabParamList>();
 
+const TAB_ICONS: Record<keyof BottomTabParamList, [string, string]> = {
+  Home: ['home', 'home-outline'],
+  MedicineList: ['medical', 'medical-outline'],
+  Calendar: ['calendar', 'calendar-outline'],
+  Settings: ['settings', 'settings-outline'],
+};
+
 function BottomTabNavigator() {
+  const { t } = useI18n();
+  const { colors, scheme } = useTheme();
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: '#4A6CF7',
-        tabBarInactiveTintColor: '#9AA1B5',
+        tabBarActiveTintColor: colors.brand,
+        tabBarInactiveTintColor: colors.textMuted,
         tabBarStyle: {
           height: Platform.OS === 'ios' ? 88 : 66,
           paddingBottom: Platform.OS === 'ios' ? 28 : 10,
           paddingTop: 10,
-          backgroundColor: '#FFFFFF',
-          borderTopWidth: 0,
+          backgroundColor: colors.surface,
+          borderTopWidth: scheme === 'dark' ? 1 : 0,
+          borderTopColor: colors.line,
           elevation: 12,
           shadowColor: '#1A2246',
           shadowOffset: { width: 0, height: -4 },
-          shadowOpacity: 0.06,
+          shadowOpacity: scheme === 'dark' ? 0 : 0.06,
           shadowRadius: 12,
         },
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '600',
-          letterSpacing: 0.2,
-        },
+        tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
         tabBarIcon: ({ color, size, focused }) => {
-          let iconName: keyof typeof Ionicons.glyphMap;
-          if (route.name === 'Home') {
-            iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === 'MedicineList') {
-            iconName = focused ? 'medical' : 'medical-outline';
-          } else if (route.name === 'Calendar') {
-            iconName = focused ? 'calendar' : 'calendar-outline';
-          } else {
-            iconName = focused ? 'settings' : 'settings-outline';
-          }
-          return <Ionicons name={iconName} size={size} color={color} />;
+          const [on, off] = TAB_ICONS[route.name];
+          return (
+            <Ionicons
+              name={(focused ? on : off) as React.ComponentProps<typeof Ionicons>['name']}
+              size={size}
+              color={color}
+            />
+          );
         },
       })}
     >
-      <Tab.Screen
-        name="Home"
-        component={HomeScreen}
-        options={{ tabBarLabel: '홈' }}
-      />
-      <Tab.Screen
-        name="MedicineList"
-        component={MedicineListScreen}
-        options={{ tabBarLabel: '내 약' }}
-      />
-      <Tab.Screen
-        name="Calendar"
-        component={CalendarScreen}
-        options={{ tabBarLabel: '달력' }}
-      />
-      <Tab.Screen
-        name="Settings"
-        component={SettingsScreen}
-        options={{ tabBarLabel: '설정' }}
-      />
+      <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: t('tab.home') }} />
+      <Tab.Screen name="MedicineList" component={MedicineListScreen} options={{ tabBarLabel: t('tab.medicines') }} />
+      <Tab.Screen name="Calendar" component={CalendarScreen} options={{ tabBarLabel: t('tab.calendar') }} />
+      <Tab.Screen name="Settings" component={SettingsScreen} options={{ tabBarLabel: t('tab.settings') }} />
     </Tab.Navigator>
   );
 }
 
 export default function AppNavigator() {
+  const { t } = useI18n();
+  const { colors, scheme } = useTheme();
+
+  const navTheme = useMemo<Theme>(() => {
+    const base = scheme === 'dark' ? DarkTheme : DefaultTheme;
+    return {
+      ...base,
+      colors: {
+        ...base.colors,
+        primary: colors.brand,
+        background: colors.bg,
+        card: colors.bg,
+        text: colors.text,
+        border: colors.line,
+      },
+    };
+  }, [scheme, colors]);
+
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={navTheme}>
       <Stack.Navigator
         screenOptions={{
-          headerStyle: { backgroundColor: '#F4F6FB' },
-          headerTintColor: '#1A1D2B',
+          headerStyle: { backgroundColor: colors.bg },
+          headerTintColor: colors.text,
           headerTitleStyle: { fontWeight: '700', fontSize: 18 },
           headerShadowVisible: false,
-          contentStyle: { backgroundColor: '#F4F6FB' },
+          headerBackTitle: t('nav.back'),
+          contentStyle: { backgroundColor: colors.bg },
         }}
       >
+        <Stack.Screen name="Main" component={BottomTabNavigator} options={{ headerShown: false }} />
+        <Stack.Screen name="MedicineForm" component={MedicineFormScreen} />
         <Stack.Screen
-          name="Main"
-          component={BottomTabNavigator}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="MedicineForm"
-          component={MedicineFormScreen}
-          options={({ route }) => ({
-            title:
-              route.params?.medicineId ? '약 수정' : '약 등록',
-            headerBackTitle: '뒤로',
-          })}
+          name="Paywall"
+          component={PaywallScreen}
+          options={{ presentation: 'modal', headerShown: false }}
         />
       </Stack.Navigator>
     </NavigationContainer>

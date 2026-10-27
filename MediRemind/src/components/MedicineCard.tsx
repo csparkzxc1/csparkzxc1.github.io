@@ -1,19 +1,16 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Switch,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet, Switch, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Medicine } from '../types';
-import { formatTimeDisplay, daysLabel } from '../utils/dateUtils';
+import type { Medicine } from '../types';
+import { daysLabel, formatTime } from '../i18n/core';
+import { useI18n } from '../i18n/I18nProvider';
 import {
-  prescriptionDDayLabel,
   isPrescriptionExpired,
   isPrescriptionExpiringSoon,
-} from '../utils/prescriptionUtils';
+  prescriptionDDayLabel,
+} from '../lib/prescription';
+import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
+import { cardShadow, type Scheme, type ThemeColors } from '../theme/theme';
 
 interface MedicineCardProps {
   medicine: Medicine;
@@ -21,21 +18,16 @@ interface MedicineCardProps {
   onToggleActive: () => void;
 }
 
-export default function MedicineCard({
-  medicine,
-  onPress,
-  onToggleActive,
-}: MedicineCardProps) {
-  const dday =
-    medicine.prescription ? prescriptionDDayLabel(medicine.prescription) : null;
-  const expired = medicine.prescription
-    ? isPrescriptionExpired(medicine.prescription)
-    : false;
-  const expiringSoon = medicine.prescription
-    ? isPrescriptionExpiringSoon(medicine.prescription, 7)
-    : false;
+export default function MedicineCard({ medicine, onPress, onToggleActive }: MedicineCardProps) {
+  const { t } = useI18n();
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
 
-  const ddayColor = expired ? '#EF4444' : expiringSoon ? '#F59E0B' : '#10B981';
+  const p = medicine.prescription;
+  const dday = p ? prescriptionDDayLabel(p) : null;
+  const expired = p ? isPrescriptionExpired(p) : false;
+  const soon = p ? isPrescriptionExpiringSoon(p, 7) : false;
+  const ddayColor = expired ? colors.danger : soon ? colors.warning : colors.success;
 
   return (
     <TouchableOpacity
@@ -43,15 +35,12 @@ export default function MedicineCard({
       onPress={onPress}
       activeOpacity={0.85}
     >
-      <View style={[styles.iconBox, { backgroundColor: medicine.color + '1F' }]}>
+      <View style={[styles.iconBox, { backgroundColor: medicine.color + '24' }]}>
         <Ionicons name="medical" size={20} color={medicine.color} />
       </View>
       <View style={styles.body}>
         <View style={styles.nameRow}>
-          <Text
-            style={[styles.name, !medicine.isActive && styles.nameInactive]}
-            numberOfLines={1}
-          >
+          <Text style={[styles.name, !medicine.isActive && styles.nameInactive]} numberOfLines={1}>
             {medicine.name}
           </Text>
           {dday && (
@@ -61,107 +50,58 @@ export default function MedicineCard({
           )}
         </View>
         <View style={styles.metaRow}>
-          <Ionicons name="time-outline" size={13} color="#888" />
-          <Text style={styles.meta}>
+          <Ionicons name="time-outline" size={13} color={colors.textMuted} />
+          <Text style={styles.meta} numberOfLines={2}>
             {' '}
-            {medicine.times.map(formatTimeDisplay).join(', ')}
+            {medicine.times.map(formatTime).join(', ')}
           </Text>
         </View>
         <View style={styles.metaRow}>
-          <Ionicons name="calendar-outline" size={13} color="#888" />
+          <Ionicons name="calendar-outline" size={13} color={colors.textMuted} />
           <Text style={styles.meta}> {daysLabel(medicine.days)}</Text>
           <Text style={styles.metaDot}>  ·  </Text>
           <Text style={styles.meta}>{medicine.dosage}</Text>
         </View>
-        {expired && (
-          <Text style={styles.expiredLabel}>⚠️ 재처방 기간이 만료되었습니다</Text>
-        )}
+        {expired && <Text style={styles.expiredLabel}>{t('presc.expired')}</Text>}
       </View>
       <Switch
         value={medicine.isActive}
         onValueChange={onToggleActive}
-        trackColor={{ false: '#CCC', true: '#4A6CF7' }}
+        trackColor={{ false: colors.surfaceMuted, true: colors.brand }}
         thumbColor="#FFFFFF"
       />
     </TouchableOpacity>
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    marginVertical: 6,
-    padding: 16,
-    shadowColor: '#3F4A7E',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    elevation: 2,
-    minHeight: 84,
-  },
-  cardInactive: {
-    opacity: 0.55,
-  },
-  iconBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 14,
-    flexShrink: 0,
-  },
-  body: {
-    flex: 1,
-    marginRight: 10,
-  },
-  nameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  name: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1A1D2B',
-    flex: 1,
-    letterSpacing: -0.2,
-  },
-  nameInactive: {
-    color: '#A9B0C5',
-  },
-  ddayBadge: {
-    borderRadius: 12,
-    paddingHorizontal: 9,
-    paddingVertical: 3,
-  },
-  ddayText: {
-    color: '#FFF',
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 2,
-  },
-  meta: {
-    fontSize: 13,
-    color: '#777',
-  },
-  metaDot: {
-    color: '#CCC',
-    fontSize: 13,
-  },
-  expiredLabel: {
-    marginTop: 6,
-    fontSize: 12,
-    color: '#EF4444',
-    fontWeight: '500',
-  },
-});
+const makeStyles = (c: ThemeColors, scheme: Scheme) =>
+  StyleSheet.create({
+    card: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: c.surface,
+      borderRadius: 18,
+      padding: 16,
+      minHeight: 84,
+      ...cardShadow(c, scheme),
+    },
+    cardInactive: { opacity: 0.55 },
+    iconBox: {
+      width: 44,
+      height: 44,
+      borderRadius: 14,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginRight: 14,
+    },
+    body: { flex: 1, marginRight: 10 },
+    nameRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 4, gap: 8 },
+    name: { fontSize: 16, fontWeight: '700', color: c.text, flexShrink: 1, letterSpacing: -0.2 },
+    nameInactive: { color: c.textFaint },
+    ddayBadge: { borderRadius: 12, paddingHorizontal: 9, paddingVertical: 3 },
+    ddayText: { color: '#FFF', fontSize: 11, fontWeight: '700' },
+    metaRow: { flexDirection: 'row', alignItems: 'center', marginTop: 2 },
+    meta: { fontSize: 13, color: c.textMuted, flexShrink: 1 },
+    metaDot: { color: c.line, fontSize: 13 },
+    expiredLabel: { marginTop: 6, fontSize: 12, color: c.danger, fontWeight: '500' },
+  });
