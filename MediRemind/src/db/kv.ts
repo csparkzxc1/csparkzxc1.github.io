@@ -2,7 +2,7 @@
  * Small key/value store backed by the `kv` table, for app-level state that
  * isn't a medicine or dose (settings, theme, language, purchase).
  */
-import { getDb } from './database';
+import { getDb, write } from './database';
 
 export async function kvGet(key: string): Promise<string | null> {
   const db = await getDb();
@@ -13,17 +13,17 @@ export async function kvGet(key: string): Promise<string | null> {
 }
 
 export async function kvSet(key: string, value: string): Promise<void> {
-  const db = await getDb();
-  await db.runAsync(
-    `INSERT INTO kv (key, value) VALUES (?, ?)
-     ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
-    [key, value]
+  await write((db) =>
+    db.runAsync(
+      `INSERT INTO kv (key, value) VALUES (?, ?)
+       ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
+      [key, value]
+    )
   );
 }
 
 export async function kvDelete(key: string): Promise<void> {
-  const db = await getDb();
-  await db.runAsync('DELETE FROM kv WHERE key = ?', [key]);
+  await write((db) => db.runAsync('DELETE FROM kv WHERE key = ?', [key]));
 }
 
 export const KV_KEYS = {

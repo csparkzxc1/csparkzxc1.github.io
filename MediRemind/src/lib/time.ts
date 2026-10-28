@@ -49,3 +49,8 @@ export function subtractMinutes(
   }
   return { hour: Math.floor(total / 60), minute: total % 60, dayShift };
 }
+
+/** iOS reports a notification's `date` in seconds since the epoch; Android in milliseconds. */
+export function notificationDateMs(date: number): number {
+  return date < 1e12 ? date * 1000 : date;
+}

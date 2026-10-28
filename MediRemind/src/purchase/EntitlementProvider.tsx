@@ -32,12 +32,16 @@ export function EntitlementProvider({ children }: { children: React.ReactNode })
     (async () => {
       try {
         await activeProvider.init();
-        await reload();
       } catch (e) {
         console.error('[entitlement] init failed', e);
-      } finally {
-        if (active) setLoading(false);
       }
+      // Read the saved purchase even if the store is unreachable or restricted.
+      try {
+        await reload();
+      } catch (e) {
+        console.error('[entitlement] reload failed', e);
+      }
+      if (active) setLoading(false);
       // The price is only needed on the paywall; don't block startup on it.
       activeProvider
         .getProduct()
@@ -48,6 +52,8 @@ export function EntitlementProvider({ children }: { children: React.ReactNode })
       active = false;
     };
   }, [reload]);
+
+  useEffect(() => activeProvider.subscribe?.(() => reload().catch(() => {})), [reload]);
 
   const purchase = useCallback(async () => {
     const ok = await activeProvider.purchase();

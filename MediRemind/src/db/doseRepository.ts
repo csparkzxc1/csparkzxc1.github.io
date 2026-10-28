@@ -1,4 +1,4 @@
-import { getDb } from './database';
+import { getDb, transaction, write } from './database';
 import type { DoseRecord } from '../types';
 
 export async function getDoseRecordsByDate(date: string): Promise<DoseRecord[]> {
@@ -32,8 +32,7 @@ export async function getAllDoseRecords(): Promise<DoseRecord[]> {
 
 export async function insertDoseRecords(records: DoseRecord[]): Promise<void> {
   if (records.length === 0) return;
-  const db = await getDb();
-  await db.withTransactionAsync(async () => {
+  await transaction(async (db) => {
     for (const r of records) {
       await db.runAsync(
         `INSERT OR IGNORE INTO dose_records (id, medicineId, scheduledTime, takenAt, date, isTaken)
@@ -46,8 +45,7 @@ export async function insertDoseRecords(records: DoseRecord[]): Promise<void> {
 
 export async function upsertDoseRecords(records: DoseRecord[]): Promise<void> {
   if (records.length === 0) return;
-  const db = await getDb();
-  await db.withTransactionAsync(async () => {
+  await transaction(async (db) => {
     for (const r of records) {
       await db.runAsync(
         `INSERT OR REPLACE INTO dose_records (id, medicineId, scheduledTime, takenAt, date, isTaken)
@@ -59,18 +57,30 @@ export async function upsertDoseRecords(records: DoseRecord[]): Promise<void> {
 }
 
 export async function updateDoseRecord(record: DoseRecord): Promise<void> {
-  const db = await getDb();
-  await db.runAsync('UPDATE dose_records SET takenAt=?, isTaken=? WHERE id=?', [
-    record.takenAt,
-    record.isTaken ? 1 : 0,
-    record.id,
-  ]);
+  await write((db) =>
+    db.runAsync('UPDATE dose_records SET takenAt=?, isTaken=? WHERE id=?', [
+      record.takenAt,
+      record.isTaken ? 1 : 0,
+      record.id,
+    ])
+  );
+}
+
+/** Inserts the record if missing and marks it taken, in one write. */
+export async function markDoseTaken(record: DoseRecord, takenAt: string): Promise<void> {
+  await transaction(async (db) => {
+    await db.runAsync(
+      `INSERT OR IGNORE INTO dose_records (id, medicineId, scheduledTime, takenAt, date, isTaken)
+       VALUES (?, ?, ?, NULL, ?, 0)`,
+      [record.id, record.medicineId, record.scheduledTime, record.date]
+    );
+    await db.runAsync('UPDATE dose_records SET takenAt=?, isTaken=1 WHERE id=?', [takenAt, record.id]);
+  });
 }
 
 export async function deleteDoseRecords(ids: string[]): Promise<void> {
   if (ids.length === 0) return;
-  const db = await getDb();
-  await db.withTransactionAsync(async () => {
+  await transaction(async (db) => {
     for (const id of ids) {
       await db.runAsync('DELETE FROM dose_records WHERE id=?', [id]);
     }
@@ -78,8 +88,7 @@ export async function deleteDoseRecords(ids: string[]): Promise<void> {
 }
 
 export async function clearAllDoseRecords(): Promise<void> {
-  const db = await getDb();
-  await db.runAsync('DELETE FROM dose_records');
+  await write((db) => db.runAsync('DELETE FROM dose_records'));
 }
 
 export function deserializeDoseRecord(row: Record<string, unknown>): DoseRecord {

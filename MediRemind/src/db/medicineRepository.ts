@@ -1,4 +1,4 @@
-import { getDb } from './database';
+import { getDb, transaction, write } from './database';
 import type { Medicine } from '../types';
 
 export async function getAllMedicines(): Promise<Medicine[]> {
@@ -9,40 +9,46 @@ export async function getAllMedicines(): Promise<Medicine[]> {
   return rows.map(deserializeMedicine);
 }
 
+// A plain REPLACE would delete the old row first, and ON DELETE CASCADE would
+// take the medicine's dose history with it, so upsert in place instead.
+export const UPSERT_MEDICINE_SQL = `
+  INSERT INTO medicines
+    (id, name, dosage, times, days, color, memo, isActive, createdAt, prescription, notificationOffset)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  ON CONFLICT(id) DO UPDATE SET
+    name=excluded.name, dosage=excluded.dosage, times=excluded.times, days=excluded.days,
+    color=excluded.color, memo=excluded.memo, isActive=excluded.isActive,
+    createdAt=excluded.createdAt, prescription=excluded.prescription,
+    notificationOffset=excluded.notificationOffset`;
+
 export async function insertMedicine(medicine: Medicine): Promise<void> {
-  const db = await getDb();
-  await db.runAsync(
-    `INSERT OR REPLACE INTO medicines
-       (id, name, dosage, times, days, color, memo, isActive, createdAt, prescription, notificationOffset)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    serializeMedicine(medicine)
-  );
+  await write((db) => db.runAsync(UPSERT_MEDICINE_SQL, serializeMedicine(medicine)));
 }
 
 export async function updateMedicine(medicine: Medicine): Promise<void> {
-  const db = await getDb();
-  await db.runAsync(
-    `UPDATE medicines
-     SET name=?, dosage=?, times=?, days=?, color=?, memo=?, isActive=?, prescription=?, notificationOffset=?
-     WHERE id=?`,
-    [
-      medicine.name,
-      medicine.dosage,
-      JSON.stringify(medicine.times),
-      JSON.stringify(medicine.days),
-      medicine.color,
-      medicine.memo,
-      medicine.isActive ? 1 : 0,
-      medicine.prescription ? JSON.stringify(medicine.prescription) : null,
-      medicine.notificationOffset ?? 0,
-      medicine.id,
-    ]
+  await write((db) =>
+    db.runAsync(
+      `UPDATE medicines
+       SET name=?, dosage=?, times=?, days=?, color=?, memo=?, isActive=?, prescription=?, notificationOffset=?
+       WHERE id=?`,
+      [
+        medicine.name,
+        medicine.dosage,
+        JSON.stringify(medicine.times),
+        JSON.stringify(medicine.days),
+        medicine.color,
+        medicine.memo,
+        medicine.isActive ? 1 : 0,
+        medicine.prescription ? JSON.stringify(medicine.prescription) : null,
+        medicine.notificationOffset ?? 0,
+        medicine.id,
+      ]
+    )
   );
 }
 
 export async function deleteMedicine(id: string): Promise<void> {
-  const db = await getDb();
-  await db.withTransactionAsync(async () => {
+  await transaction(async (db) => {
     await db.runAsync('DELETE FROM dose_records WHERE medicineId=?', [id]);
     await db.runAsync('DELETE FROM medicines WHERE id=?', [id]);
   });

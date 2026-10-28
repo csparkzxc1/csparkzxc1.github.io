@@ -55,4 +55,35 @@ describe('buildNotificationPlan', () => {
     );
     expect(buildNotificationPlan(meds)).toHaveLength(4);
   });
+
+  it('falls back to a compact plan when the merged one exceeds the budget', () => {
+    // An everyday and a weekday medicine at the same times: merged = 7 per time.
+    const meds = [
+      medicine({ id: 'a', name: 'A', times: ['08:00', '20:00'] }),
+      medicine({ id: 'b', name: 'B', times: ['08:00', '20:00'], days: 'weekday' }),
+    ];
+    expect(buildNotificationPlan(meds)).toHaveLength(14);
+
+    const compact = buildNotificationPlan(meds, 10);
+    // Per time: one DAILY for A, plus five weekday WEEKLY for B.
+    expect(compact).toHaveLength(12);
+    const daily = compact.filter((p) => p.weekday === null);
+    expect(daily.map((p) => p.doses.map((d) => d.medicineId))).toEqual([['a'], ['a']]);
+    expect(compact.filter((p) => p.weekday !== null).every((p) => p.doses[0].medicineId === 'b')).toBe(true);
+  });
+
+  it('covers every scheduled dose in the compact plan', () => {
+    const meds = [
+      medicine({ id: 'a', name: 'A', times: ['08:00'] }),
+      medicine({ id: 'b', name: 'B', times: ['08:00'], days: [1, 3] }),
+    ];
+    const plan = buildNotificationPlan(meds, 1);
+    const ringsOn = (id: string, weekday: number) =>
+      plan.some((p) => (p.weekday === null || p.weekday === weekday) && p.doses.some((d) => d.medicineId === id));
+    for (let w = 1; w <= 7; w++) expect(ringsOn('a', w)).toBe(true);
+    expect(ringsOn('b', 2)).toBe(true); // Monday
+    expect(ringsOn('b', 4)).toBe(true); // Wednesday
+    expect(ringsOn('b', 3)).toBe(false);
+  });
 });
+

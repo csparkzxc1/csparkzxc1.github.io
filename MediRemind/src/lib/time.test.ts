@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
-import { normalizeTime, subtractMinutes } from './time';
+import { normalizeTime, notificationDateMs, subtractMinutes } from './time';
 
 describe('normalizeTime', () => {
   it.each([
@@ -23,5 +23,15 @@ describe('subtractMinutes', () => {
 
   it('rolls back past midnight', () => {
     expect(subtractMinutes('00:10', 30)).toEqual({ hour: 23, minute: 40, dayShift: -1 });
+  });
+});
+
+describe('notificationDateMs', () => {
+  const ms = new Date(2026, 9, 28, 8, 0).getTime();
+  it('converts iOS seconds to milliseconds', () => {
+    expect(notificationDateMs(ms / 1000)).toBe(ms);
+  });
+  it('keeps milliseconds as-is', () => {
+    expect(notificationDateMs(ms)).toBe(ms);
   });
 });

@@ -24,7 +24,7 @@ Apple 심사는 보통 24~48시간입니다. **목요일 밤까지 제출**하�
 cd ~/mediremind-repo/MediRemind
 git pull
 npm install
-npm test                                        # "37 passed" 확인
+npm test                                        # "41 passed" 확인
 eas build --platform ios --profile production   # 20~40분
 eas submit --platform ios --profile production
 ```

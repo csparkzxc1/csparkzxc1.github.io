@@ -6,8 +6,8 @@
 import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import * as DocumentPicker from 'expo-document-picker';
-import { getDb } from '../db/database';
-import { getAllMedicines, serializeMedicine } from '../db/medicineRepository';
+import { transaction } from '../db/database';
+import { getAllMedicines, serializeMedicine, UPSERT_MEDICINE_SQL } from '../db/medicineRepository';
 import { getAllDoseRecords } from '../db/doseRepository';
 import { t } from '../i18n/core';
 import { pad } from './time';
@@ -64,15 +64,9 @@ export async function importBackup(): Promise<ImportResult> {
   }
   const bundle = parseBundle(parsed);
 
-  const db = await getDb();
-  await db.withTransactionAsync(async () => {
+  await transaction(async (db) => {
     for (const m of bundle.medicines) {
-      await db.runAsync(
-        `INSERT OR REPLACE INTO medicines
-           (id, name, dosage, times, days, color, memo, isActive, createdAt, prescription, notificationOffset)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        serializeMedicine(m)
-      );
+      await db.runAsync(UPSERT_MEDICINE_SQL, serializeMedicine(m));
     }
     const ids = new Set(bundle.medicines.map((m) => m.id));
     for (const r of bundle.doseRecords) {

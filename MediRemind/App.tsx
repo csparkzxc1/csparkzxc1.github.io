@@ -13,7 +13,8 @@ import {
   ensurePermission,
   setupNotificationCategories,
   syncNotifications,
-  takeResponseDoses,
+  readTakeResponse,
+  markResponseHandled,
 } from './src/notifications/notifications';
 import { dateKey } from './src/lib/schedule';
 import { EntitlementProvider, useEntitlement } from './src/purchase/EntitlementProvider';
@@ -37,9 +38,11 @@ export default function App() {
 }
 
 async function handleResponse(response: Notifications.NotificationResponse) {
-  const doses = await takeResponseDoses(response);
-  if (doses.length === 0) return;
-  await useDoseStore.getState().markFromNotification(useMedicineStore.getState().medicines, doses);
+  const take = await readTakeResponse(response);
+  if (!take) return;
+  // Marking is idempotent, so a duplicate delivery racing this one is harmless.
+  await useDoseStore.getState().markFromNotification(useMedicineStore.getState().medicines, take.doses);
+  await markResponseHandled(take.key);
 }
 
 function Root() {

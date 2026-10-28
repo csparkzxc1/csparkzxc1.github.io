@@ -34,8 +34,13 @@ export interface PlannedNotification {
 }
 
 export const IOS_PENDING_LIMIT = 64;
+/** Dose reminders get this many slots, leaving room for refill alerts. */
+export const SCHEDULE_BUDGET = IOS_PENDING_LIMIT - 4;
 
-export function buildNotificationPlan(medicines: Medicine[]): PlannedNotification[] {
+export function buildNotificationPlan(
+  medicines: Medicine[],
+  budget = SCHEDULE_BUDGET
+): PlannedNotification[] {
   // slot "HH:MM" → weekday 0..6 → doses ringing then
   const slots = new Map<string, Map<number, PlannedDose[]>>();
 
@@ -65,10 +70,28 @@ export function buildNotificationPlan(medicines: Medicine[]): PlannedNotificatio
     }
   }
 
+  const merged = mergedPlan(slots);
+  return merged.length <= budget ? merged : compactPlan(slots);
+}
+
+type Slots = Map<string, Map<number, PlannedDose[]>>;
+
+const doseKey = (d: PlannedDose) => `${d.medicineId}@${d.doseTime}+${d.dayShift}`;
+
+function slotTime(slot: string): { hour: number; minute: number } {
+  const [hour, minute] = slot.split(':').map(Number);
+  return { hour, minute };
+}
+
+/**
+ * One notification per slot per day it rings, listing everything due then.
+ * A slot that rings with the same doses all week collapses to one DAILY.
+ */
+function mergedPlan(slots: Slots): PlannedNotification[] {
   const plan: PlannedNotification[] = [];
   for (const slot of [...slots.keys()].sort()) {
     const byDay = slots.get(slot)!;
-    const [hour, minute] = slot.split(':').map(Number);
+    const { hour, minute } = slotTime(slot);
     const signatures = [0, 1, 2, 3, 4, 5, 6].map((d) => signature(byDay.get(d)));
     const sameEveryDay = byDay.size === 7 && signatures.every((s) => s === signatures[0]);
 
@@ -77,13 +100,37 @@ export function buildNotificationPlan(medicines: Medicine[]): PlannedNotificatio
       continue;
     }
     for (const day of [...byDay.keys()].sort()) {
-      plan.push({
-        key: `w${day + 1}|${slot}`,
-        weekday: day + 1,
-        hour,
-        minute,
-        doses: sortDoses(byDay.get(day)!),
-      });
+      plan.push({ key: `w${day + 1}|${slot}`, weekday: day + 1, hour, minute, doses: sortDoses(byDay.get(day)!) });
+    }
+  }
+  return plan;
+}
+
+/**
+ * Fewer notifications for large regimens: doses due every day of a slot share
+ * one DAILY, and only the day-specific extras get WEEKLY notifications. On
+ * those days two reminders ring at the same minute, which beats losing one.
+ */
+function compactPlan(slots: Slots): PlannedNotification[] {
+  const plan: PlannedNotification[] = [];
+  for (const slot of [...slots.keys()].sort()) {
+    const byDay = slots.get(slot)!;
+    const { hour, minute } = slotTime(slot);
+    const everyDay =
+      byDay.size === 7
+        ? (byDay.get(0) ?? []).filter((d) =>
+            [1, 2, 3, 4, 5, 6].every((day) => byDay.get(day)!.some((x) => doseKey(x) === doseKey(d)))
+          )
+        : [];
+    const common = new Set(everyDay.map(doseKey));
+    if (everyDay.length > 0) {
+      plan.push({ key: `daily|${slot}`, weekday: null, hour, minute, doses: sortDoses(everyDay) });
+    }
+    for (const day of [...byDay.keys()].sort()) {
+      const extras = byDay.get(day)!.filter((d) => !common.has(doseKey(d)));
+      if (extras.length > 0) {
+        plan.push({ key: `w${day + 1}|${slot}`, weekday: day + 1, hour, minute, doses: sortDoses(extras) });
+      }
     }
   }
   return plan;
@@ -96,8 +143,5 @@ function sortDoses(doses: PlannedDose[]): PlannedDose[] {
 }
 
 function signature(doses: PlannedDose[] | undefined): string {
-  if (!doses) return '';
-  return sortDoses(doses)
-    .map((d) => `${d.medicineId}@${d.doseTime}+${d.dayShift}`)
-    .join(',');
+  return doses ? sortDoses(doses).map(doseKey).join(',') : '';
 }

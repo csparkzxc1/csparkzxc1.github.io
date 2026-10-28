@@ -6,6 +6,7 @@ import {
   getDoseRecordsByDate,
   getDoseRecordsByDateRange,
   insertDoseRecords,
+  markDoseTaken,
   updateDoseRecord,
 } from '../db/doseRepository';
 import { kvGet, kvSet, KV_KEYS } from '../db/kv';
@@ -95,8 +96,7 @@ export const useDoseStore = create<DoseStoreState>((set, get) => ({
     const taken: DoseRecord = { ...record, isTaken: true, takenAt: new Date().toISOString() };
     set((s) => ({ doseRecords: s.doseRecords.map((r) => (r.id === record.id ? taken : r)) }));
     try {
-      await insertDoseRecords([record]);
-      await updateDoseRecord(taken);
+      await markDoseTaken(record, taken.takenAt!);
       await get().refreshStreak();
     } catch (error) {
       console.error('[DoseStore] markDose error:', error);
@@ -122,16 +122,17 @@ export const useDoseStore = create<DoseStoreState>((set, get) => ({
     const takenAt = new Date().toISOString();
     for (const d of doses) {
       if (!medicines.some((m) => m.id === d.medicineId)) continue;
-      const record: DoseRecord = {
-        id: doseRecordId(d.medicineId, d.date, d.time),
-        medicineId: d.medicineId,
-        scheduledTime: d.time,
-        date: d.date,
-        isTaken: true,
-        takenAt,
-      };
-      await insertDoseRecords([{ ...record, isTaken: false, takenAt: null }]);
-      await updateDoseRecord(record);
+      await markDoseTaken(
+        {
+          id: doseRecordId(d.medicineId, d.date, d.time),
+          medicineId: d.medicineId,
+          scheduledTime: d.time,
+          date: d.date,
+          isTaken: false,
+          takenAt: null,
+        },
+        takenAt
+      );
     }
     const today = dateKey(new Date());
     set({ doseRecords: await getDoseRecordsByDate(today) });

@@ -22,4 +22,6 @@ export interface PurchaseProvider {
   purchase(): Promise<boolean>;
   /** Restores the full version. True if a purchase was found. */
   restore(): Promise<boolean>;
+  /** Called when a purchase lands outside a purchase() call (late, Ask to Buy, family). */
+  subscribe?(listener: () => void): () => void;
 }

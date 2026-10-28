@@ -10,10 +10,11 @@ import { kvGet, kvSet, KV_KEYS } from '../db/kv';
 import { t } from '../i18n/core';
 import {
   buildNotificationPlan,
-  IOS_PENDING_LIMIT,
+  SCHEDULE_BUDGET,
   type PlannedNotification,
 } from '../lib/notificationPlan';
 import { addDays, dateKey } from '../lib/schedule';
+import { notificationDateMs } from '../lib/time';
 import { daysUntilPrescriptionEnd } from '../lib/prescription';
 
 const DOSE_CHANNEL = 'dose-reminder';
@@ -21,8 +22,6 @@ const REFILL_CHANNEL = 'prescription-reminder';
 const DOSE_CATEGORY = 'dose';
 export const TAKE_ACTION = 'TAKE';
 
-/** Leaves headroom under iOS's 64 pending notifications. */
-const SCHEDULE_BUDGET = IOS_PENDING_LIMIT - 4;
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -233,30 +232,45 @@ export interface DoseToMark {
   time: string;
 }
 
+export interface TakeResponse {
+  /** Identifies this delivery, for markResponseHandled. */
+  key: string;
+  doses: DoseToMark[];
+}
+
 /**
- * Doses a "Mark taken" response refers to, or [] for any other response or
- * one already handled (a cold start can deliver the same response twice).
+ * The doses a "Mark taken" response refers to, or null for any other response
+ * or one already handled (a cold start can deliver the same response twice).
+ * Call markResponseHandled once the doses are saved.
  */
-export async function takeResponseDoses(
+export async function readTakeResponse(
   response: Notifications.NotificationResponse
-): Promise<DoseToMark[]> {
-  if (response.actionIdentifier !== TAKE_ACTION) return [];
+): Promise<TakeResponse | null> {
+  if (response.actionIdentifier !== TAKE_ACTION) return null;
   const data = response.notification.request.content.data as
     | { type?: string; doses?: { medicineId: string; doseTime: string; dayShift: number }[] }
     | undefined;
-  if (data?.type !== 'dose' || !Array.isArray(data.doses)) return [];
+  if (data?.type !== 'dose' || !Array.isArray(data.doses)) return null;
 
-  const deliveredAt = new Date(response.notification.date);
-  const deliveredKey = dateKey(deliveredAt);
-  const responseKey = `${response.notification.request.identifier}@${deliveredAt.getTime()}`;
-
+  const deliveredAt = new Date(notificationDateMs(response.notification.date));
+  const key = `${response.notification.request.identifier}@${deliveredAt.getTime()}`;
   const handled: string[] = JSON.parse((await kvGet(KV_KEYS.handledResponses)) ?? '[]');
-  if (handled.includes(responseKey)) return [];
-  await kvSet(KV_KEYS.handledResponses, JSON.stringify([...handled, responseKey].slice(-50)));
+  if (handled.includes(key)) return null;
 
-  return data.doses.map((d) => ({
-    medicineId: d.medicineId,
-    date: addDays(deliveredKey, d.dayShift ?? 0),
-    time: d.doseTime,
-  }));
+  const deliveredKey = dateKey(deliveredAt);
+  return {
+    key,
+    doses: data.doses.map((d) => ({
+      medicineId: d.medicineId,
+      date: addDays(deliveredKey, d.dayShift ?? 0),
+      time: d.doseTime,
+    })),
+  };
+}
+
+export async function markResponseHandled(key: string): Promise<void> {
+  const handled: string[] = JSON.parse((await kvGet(KV_KEYS.handledResponses)) ?? '[]');
+  if (!handled.includes(key)) {
+    await kvSet(KV_KEYS.handledResponses, JSON.stringify([...handled, key].slice(-50)));
+  }
 }

@@ -46,9 +46,12 @@ async function ensureConnection(): Promise<void> {
   }
 }
 
+const changeListeners = new Set<() => void>();
+
 async function markPurchased(): Promise<void> {
   await kvSet(PURCHASE_KEYS.purchased, '1');
   await kvSet(PURCHASE_KEYS.purchasedAt, String(Date.now()));
+  changeListeners.forEach((l) => l());
 }
 
 async function applyHistory(purchases: Purchase[]): Promise<boolean> {
@@ -77,14 +80,15 @@ function bindListeners(): void {
 
   purchaseUpdatedListener(async (purchase: Purchase) => {
     if (purchase.productId !== FULL) return;
+    // Unlock first: the user has paid even if finishing the transaction fails
+    // (StoreKit redelivers unfinished transactions on the next launch).
+    await markPurchased().catch((e) => console.warn('[iap] saving purchase failed', e));
+    take(purchase.productId)?.resolve(true);
     try {
       // Non-consumable: finish without consuming so it stays owned.
       await finishTransaction({ purchase, isConsumable: false });
-      await markPurchased();
-      take(purchase.productId)?.resolve(true);
     } catch (e) {
       console.warn('[iap] finishTransaction failed', e);
-      take(purchase.productId)?.resolve(false);
     }
   });
 
@@ -105,11 +109,12 @@ async function buy(sku: string): Promise<boolean> {
   bindListeners();
   pending?.resolve(false);
   const result = new Promise<boolean>((resolve, reject) => {
-    // Guards against the store sheet never appearing (e.g. product unavailable).
+    // Stops the button spinning forever if the store never answers. Not a
+    // failure: a late purchase event still unlocks via the change listeners.
     const timer = setTimeout(() => {
       if (pending?.sku === sku) {
         pending = null;
-        reject(new Error('Purchase timed out'));
+        resolve(false);
       }
     }, 90_000);
     pending = { sku, resolve, reject, timer };
@@ -166,6 +171,13 @@ export const realPurchaseProvider: PurchaseProvider = {
   },
 
   purchase: () => buy(FULL),
+
+  subscribe(listener) {
+    changeListeners.add(listener);
+    return () => {
+      changeListeners.delete(listener);
+    };
+  },
 
   async restore() {
     await ensureConnection();
