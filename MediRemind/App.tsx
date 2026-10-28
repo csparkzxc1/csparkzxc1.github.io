@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, ActivityIndicator, StyleSheet, Text, Alert } from 'react-native';
+import { View, ActivityIndicator, StyleSheet, Text, Alert, AppState } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -77,7 +77,15 @@ function Root() {
     const sub = Notifications.addNotificationResponseReceivedListener((r) => {
       handleResponse(r).catch((e) => console.warn('[App] response failed', e));
     });
-    return () => sub.remove();
+    // Notifications may have been switched on in iOS Settings meanwhile; the
+    // schedule is skipped while permission is off, so rebuild it on return.
+    const appState = AppState.addEventListener('change', (state) => {
+      if (state === 'active') syncNotifications(useMedicineStore.getState().medicines);
+    });
+    return () => {
+      sub.remove();
+      appState.remove();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

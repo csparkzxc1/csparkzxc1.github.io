@@ -67,6 +67,18 @@ export async function ensurePermission(): Promise<boolean> {
   }
 }
 
+export type ReminderPermission = 'granted' | 'ask' | 'denied';
+
+export async function getReminderPermission(): Promise<ReminderPermission> {
+  try {
+    const p = await Notifications.getPermissionsAsync();
+    if (p.granted) return 'granted';
+    return p.canAskAgain ? 'ask' : 'denied';
+  } catch {
+    return 'denied';
+  }
+}
+
 export function openSystemSettings(): void {
   Linking.openSettings().catch(() => {});
 }

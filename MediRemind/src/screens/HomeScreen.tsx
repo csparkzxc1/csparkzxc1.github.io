@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity, AppState } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -20,6 +20,13 @@ import ScreenHeader from '../components/ScreenHeader';
 import ProgressBar from '../components/ProgressBar';
 import DoseItem from '../components/DoseItem';
 import PrescriptionBanner from '../components/PrescriptionBanner';
+import {
+  ensurePermission,
+  getReminderPermission,
+  openSystemSettings,
+  syncNotifications,
+  type ReminderPermission,
+} from '../notifications/notifications';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
@@ -33,6 +40,23 @@ export default function HomeScreen() {
   const medicines = useMedicineStore((s) => s.medicines);
   const { doseRecords, isLoading, streak, markDose, unmarkDose, syncDoses } = useDoseStore();
   const addMedicine = useAddMedicine();
+
+  const [permission, setPermission] = React.useState<ReminderPermission>('granted');
+  React.useEffect(() => {
+    const check = () => getReminderPermission().then(setPermission);
+    check();
+    const sub = AppState.addEventListener('change', (s) => s === 'active' && check());
+    return () => sub.remove();
+  }, []);
+
+  const enableReminders = async () => {
+    if (permission === 'ask' && (await ensurePermission())) {
+      setPermission('granted');
+      await syncNotifications(medicines);
+    } else {
+      openSystemSettings();
+    }
+  };
 
   // Re-sync when the date rolls over or the schedule changes.
   const scheduleKey = medicines
@@ -91,6 +115,16 @@ export default function HomeScreen() {
         }
         showsVerticalScrollIndicator={false}
       >
+        {permission !== 'granted' && medicines.length > 0 && (
+          <TouchableOpacity style={styles.permBanner} onPress={enableReminders} activeOpacity={0.85}>
+            <Ionicons name="notifications-off" size={22} color={colors.danger} />
+            <View style={styles.permBody}>
+              <Text style={styles.permTitle}>{t('notif.permTitle')}</Text>
+              <Text style={styles.permDesc}>{t('notif.permBody')}</Text>
+            </View>
+            <Text style={styles.permAction}>{t('home.permEnable')}</Text>
+          </TouchableOpacity>
+        )}
 
         <View style={styles.card}>
           <ProgressBar
@@ -166,6 +200,19 @@ const makeStyles = (c: ThemeColors, scheme: Scheme) =>
       marginBottom: 12,
       ...cardShadow(c, scheme),
     },
+    permBanner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      backgroundColor: c.dangerSoft,
+      borderRadius: 16,
+      padding: 14,
+      marginBottom: 12,
+    },
+    permBody: { flex: 1 },
+    permTitle: { fontSize: 15, fontWeight: '700', color: c.danger },
+    permDesc: { fontSize: 12, color: c.text, marginTop: 2, lineHeight: 17 },
+    permAction: { fontSize: 14, fontWeight: '800', color: c.danger },
     streakChip: {
       alignSelf: 'flex-start',
       marginTop: 14,

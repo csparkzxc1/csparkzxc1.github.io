@@ -45,6 +45,7 @@ export const STRINGS: Record<string, Entry> = {
   },
   'home.emptyCta': { ko: '+ 약 등록하기', en: '+ Add a medicine' },
   'home.allDone': { ko: '🎉 오늘 약을 모두 드셨어요!', en: "🎉 All done for today!" },
+  'home.permEnable': { ko: '켜기', en: 'Turn on' },
   'home.streak': { ko: '🔥 {n}일 연속 복용', en: '🔥 {n}-day streak' },
 
   // ── Progress ──────────────────────────────────────────────────────────
