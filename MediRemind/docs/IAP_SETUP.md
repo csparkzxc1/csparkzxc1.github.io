@@ -35,7 +35,7 @@
 | 설명 (한국어) | `약을 무제한으로 등록합니다. 1회 결제.` |
 | 표시 이름 (영어) | `MediRemind Full Version` |
 | 설명 (영어) | `Add unlimited medicines. One-time purchase.` |
-| 심사용 스크린샷 | 결제 화면 1장 (`docs/screenshots/ko-06.png` 사용 가능) |
+| 심사용 스크린샷 | 결제 화면 1장 (`docs/screenshots/iphone-6.9/ko-06.png` 사용 가능) |
 
 상태가 "제출 준비 완료"가 되면 **첫 앱 버전 제출 화면의 "앱 내 구입" 섹션에서 선택**해 함께 제출합니다.
 

@@ -19,7 +19,7 @@ Apple 심사는 보통 24~48시간입니다. **목요일 밤까지 제출**하�
 
 - [ ] 비소모성 `com.csparkzxc.mediremind.full`, 가격 **₩1,900**
 - [ ] **가족 공유 켜기** (결제 화면에 "가족 공유로 최대 6명"이 적혀 있음)
-- [ ] 한국어·영어 표시 이름/설명, 심사용 스크린샷 1장 (`docs/screenshots/ko-06.png`)
+- [ ] 한국어·영어 표시 이름/설명, 심사용 스크린샷 1장 (`docs/screenshots/iphone-6.9/ko-06.png`)
 - [ ] (예전에 만든 ₩0 체험 상품 `…trial7`이 있으면 삭제)
 
 ## 3. 빌드 & 업로드 (맥)
@@ -67,7 +67,7 @@ TestFlight 앱으로 설치 후:
 | 가격 및 사용 가능 여부 | 앱 가격 | **무료** (돈은 앱 내 구입으로 받음) |
 | 버전 | 프로모션 텍스트·설명·키워드 | `docs/STORE_LISTING.md` 복사 |
 | 버전 | 지원 URL | `https://csparkzxc1.github.io/MediRemind/legal/index.html` |
-| 버전 | 스크린샷 (6.9" 또는 6.7") | `docs/screenshots/ko-01~06.png` (영어는 `en-…`) |
+| 버전 | 스크린샷 | `docs/screenshots/<기기>/ko-01~06.png` — iPhone 6.9"는 `iphone-6.9/`, 6.5"는 `iphone-6.5/`, iPad 13"는 `ipad-13/` (영어는 `en-…`) |
 | 버전 | 빌드 | TestFlight에 올라온 빌드 선택 |
 | 버전 | 앱 내 구입 | `MediRemind Full` 선택 |
 | 버전 | 저작권 | `2026 csparkzxc1` |

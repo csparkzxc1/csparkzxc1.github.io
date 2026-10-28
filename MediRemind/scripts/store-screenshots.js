@@ -1,5 +1,5 @@
 /**
- * Builds 6.9" App Store screenshots (1290×2796) from mockup.html, each framed
+ * Builds App Store screenshots in every accepted iPhone/iPad size from mockup.html, each framed
  * under a headline, in Korean and English. Also writes docs/mockup-en.html.
  *   node scripts/store-screenshots.js
  * Replace with real device captures if the app UI drifts from the mockup.
@@ -10,8 +10,13 @@ const { chromium } = require('playwright');
 
 const ROOT = path.resolve(__dirname, '..');
 const OUT = path.join(ROOT, 'docs/screenshots');
-const W = 1290;
-const H = 2796;
+// App Store Connect only accepts exact sizes per device slot.
+const SIZES = [
+  { dir: 'iphone-6.9', w: 1320, h: 2868 },
+  { dir: 'iphone-6.7', w: 1290, h: 2796 },
+  { dir: 'iphone-6.5', w: 1242, h: 2688 },
+  { dir: 'ipad-13', w: 2064, h: 2752 },
+];
 
 // Index into the mockup's screens, plus the headline above it.
 const SHOTS = {
@@ -150,7 +155,11 @@ function translateInPage(map) {
 }
 
 (async () => {
-  fs.mkdirSync(OUT, { recursive: true });
+  for (const size of SIZES) {
+    const dir = path.join(OUT, size.dir);
+    fs.rmSync(dir, { recursive: true, force: true });
+    fs.mkdirSync(dir, { recursive: true });
+  }
   for (const f of fs.readdirSync(OUT)) if (f.endsWith('.png')) fs.unlinkSync(path.join(OUT, f));
 
   const browser = await chromium.launch();
@@ -164,29 +173,35 @@ function translateInPage(map) {
     }
     await mock.addStyleTag({ content: '.screen-label{display:none}.screen{border-radius:0}' });
     const screens = await mock.locator('.screen').all();
+    const shots = [];
+    for (const [idx] of SHOTS[lang]) shots.push((await screens[idx].screenshot()).toString('base64'));
 
-    const frame = await browser.newPage({ viewport: { width: W, height: H } });
-    for (const [n, [idx, l1, l2]] of SHOTS[lang].entries()) {
-      const shot = (await screens[idx].screenshot()).toString('base64');
-      await frame.setContent(`
-        <html><body style="margin:0;width:${W}px;height:${H}px;overflow:hidden;
-          background:linear-gradient(160deg,#5B7CFA,#3B55E0);
-          font-family:-apple-system,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;">
-          <div style="padding:190px 70px 0;color:#fff;text-align:center;">
-            <div style="font-size:${lang === 'en' ? 88 : 96}px;font-weight:800;letter-spacing:-2px;line-height:1.2">${l1}<br>${l2}</div>
-          </div>
-          <div style="position:absolute;left:50%;top:640px;transform:translateX(-50%);
-            width:1000px;border-radius:72px;overflow:hidden;
-            border:18px solid #0d0f17;box-shadow:0 40px 120px rgba(0,0,0,.45);">
-            <img src="data:image/png;base64,${shot}" style="display:block;width:100%">
-          </div>
-        </body></html>`);
-      const file = path.join(OUT, `${lang}-0${n + 1}.png`);
-      await frame.screenshot({ path: file });
-      console.log('wrote', path.relative(ROOT, file));
+    for (const { dir, w: W, h: H } of SIZES) {
+      // Layout is designed at 1290x2796 and scaled to fit; wide iPad canvases
+      // keep the phone centered.
+      const k = Math.min(W / 1290, H / 2796);
+      const frame = await browser.newPage({ viewport: { width: W, height: H } });
+      for (const [n, [, l1, l2]] of SHOTS[lang].entries()) {
+        await frame.setContent(`
+          <html><body style="margin:0;width:${W}px;height:${H}px;overflow:hidden;
+            background:linear-gradient(160deg,#5B7CFA,#3B55E0);
+            font-family:-apple-system,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;">
+            <div style="padding:${190 * k}px ${70 * k}px 0;color:#fff;text-align:center;">
+              <div style="font-size:${(lang === 'en' ? 88 : 96) * k}px;font-weight:800;letter-spacing:${-2 * k}px;line-height:1.2">${l1}<br>${l2}</div>
+            </div>
+            <div style="position:absolute;left:50%;top:${640 * k}px;transform:translateX(-50%);
+              width:${1000 * k}px;border-radius:${72 * k}px;overflow:hidden;
+              border:${18 * k}px solid #0d0f17;box-shadow:0 ${40 * k}px ${120 * k}px rgba(0,0,0,.45);">
+              <img src="data:image/png;base64,${shots[n]}" style="display:block;width:100%">
+            </div>
+          </body></html>`);
+        const file = path.join(OUT, dir, `${lang}-0${n + 1}.png`);
+        await frame.screenshot({ path: file });
+      }
+      await frame.close();
+      console.log('wrote', lang, dir);
     }
     await mock.close();
-    await frame.close();
   }
   await browser.close();
 })();
