@@ -75,3 +75,31 @@ MediRemind is not a medical device and does not replace advice from your doctor 
 - 카테고리: 의료(Medical) 또는 건강 및 피트니스
 - 연령 등급: 4+ (의학적 조언을 제공하지 않으므로 "의료/치료 정보" 항목은 "없음")
 - 저작권: `2026 csparkzxc1`
+
+## 이번 버전의 새로운 기능 (1.1.0 업데이트 노트)
+
+### 한국어
+```
+MediRemind가 새로워졌어요.
+
+• 알림이 더 안정적으로: 오래 써도 알림이 끊기지 않아요
+• 알림에서 바로 "복용 완료" 체크
+• 연속 복용 일수와 달력 복용 기록
+• 다크 모드, 영어 지원
+• 백업 & 복원으로 폰을 바꿔도 기록 유지
+• 광고 제거 — 약 2개까지 평생 무료, 1회 결제로 무제한
+• 새 디자인과 아이콘
+```
+
+### English
+```
+MediRemind, rebuilt.
+
+• More reliable reminders that keep working over time
+• Mark doses taken right from the notification
+• Streaks and a dose history calendar
+• Dark mode and English support
+• Backup and restore when you switch phones
+• No more ads — free forever for 2 medicines, unlimited with one purchase
+• Fresh design and icon
+```

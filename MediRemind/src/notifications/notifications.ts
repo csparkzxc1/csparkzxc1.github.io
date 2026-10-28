@@ -118,7 +118,8 @@ async function doSync(medicines: Medicine[]): Promise<void> {
   const scheduled = await Notifications.getAllScheduledNotificationsAsync();
   for (const n of scheduled) {
     const type = (n.content.data as { type?: string } | undefined)?.type;
-    if (type === 'dose' || type === 'refill') {
+    // 'prescription' is how version 1.0.0 tagged its refill alerts.
+    if (type === 'dose' || type === 'refill' || type === 'prescription') {
       await Notifications.cancelScheduledNotificationAsync(n.identifier);
     }
   }
