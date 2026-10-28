@@ -11,7 +11,7 @@ export const PURCHASE_CONFIG = {
   productTitle: 'MediRemind 정식 버전',
   trialProductId: 'com.csparkzxc.mediremind.trial7',
   /** Shown only when the store price can't be fetched (mock / offline). */
-  fallbackPriceLabel: '₩2,200',
+  fallbackPriceLabel: '₩1,900',
   trialDays: 7,
 } as const;
 

@@ -49,7 +49,7 @@
 | 유형 | **비소모성 (Non-Consumable)** |
 | 참조 이름 | `MediRemind Full` |
 | 제품 ID | **`com.csparkzxc.mediremind.full`** |
-| 가격 | 예: ₩2,200 (미국 $1.99) |
+| 가격 | **₩1,900** (다른 나라는 Apple 자동 환산, 미국 약 $1.49) |
 | 표시 이름 (한국어) | `MediRemind 정식 버전` |
 | 설명 (한국어) | `모든 기능을 평생 사용합니다. 1회 결제.` |
 | 표시 이름 (영어) | `MediRemind Full Version` |
