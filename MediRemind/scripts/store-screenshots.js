@@ -15,6 +15,8 @@ const SIZES = [
   { dir: 'iphone-6.9', w: 1320, h: 2868 },
   { dir: 'iphone-6.7', w: 1290, h: 2796 },
   { dir: 'iphone-6.5', w: 1242, h: 2688 },
+  { dir: 'iphone-6.3', w: 1206, h: 2622 },
+  { dir: 'iphone-6.1', w: 1179, h: 2556 },
   { dir: 'ipad-13', w: 2064, h: 2752 },
 ];
 
