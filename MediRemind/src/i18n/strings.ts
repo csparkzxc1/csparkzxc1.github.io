@@ -46,10 +46,6 @@ export const STRINGS: Record<string, Entry> = {
   'home.emptyCta': { ko: '+ 약 등록하기', en: '+ Add a medicine' },
   'home.allDone': { ko: '🎉 오늘 약을 모두 드셨어요!', en: "🎉 All done for today!" },
   'home.streak': { ko: '🔥 {n}일 연속 복용', en: '🔥 {n}-day streak' },
-  'home.trialBanner': {
-    ko: '무료 체험 {n}일 남음 · 정식 버전 보기',
-    en: '{n} days left in your free trial · See full version',
-  },
 
   // ── Progress ──────────────────────────────────────────────────────────
   'progress.label': { ko: '오늘 복용 현황', en: "Today's progress" },
@@ -144,8 +140,6 @@ export const STRINGS: Record<string, Entry> = {
   'settings.title': { ko: '설정', en: 'Settings' },
   'settings.sectionPlan': { ko: '이용권', en: 'Plan' },
   'settings.planPro': { ko: '정식 버전 이용 중', en: 'Full version active' },
-  'settings.planTrial': { ko: '무료 체험 {n}일 남음', en: '{n} days left in trial' },
-  'settings.planTrialSub': { ko: '탭하여 정식 버전 보기', en: 'Tap to see the full version' },
   'settings.restore': { ko: '구매 복원', en: 'Restore purchase' },
   'settings.restoreNoneTitle': { ko: '복원할 구매 없음', en: 'Nothing to restore' },
   'settings.restoreNoneBody': {
@@ -210,15 +204,15 @@ export const STRINGS: Record<string, Entry> = {
 
   // ── Paywall ───────────────────────────────────────────────────────────
   'paywall.title': { ko: 'MediRemind 정식 버전', en: 'MediRemind Full Version' },
-  'paywall.trialLeft': { ko: '무료 체험 {n}일 남음', en: '{n} days left in your free trial' },
-  'paywall.trialEnded': { ko: '7일 무료 체험이 끝났어요', en: 'Your 7-day free trial has ended' },
   'paywall.active': { ko: '정식 버전 이용 중', en: 'Full version active' },
-  'paywall.f1': { ko: '약 무제한 등록 · 시간별 복용 알림', en: 'Unlimited medicines and reminders' },
-  'paywall.f2': { ko: '알림에서 바로 "복용 완료" 체크', en: 'Mark doses taken right from the notification' },
-  'paywall.f3': { ko: '복용 달력 · 연속 복용 기록', en: 'Dose calendar and streaks' },
-  'paywall.f4': { ko: '재처방 D-Day 알림', en: 'Refill countdown reminders' },
-  'paywall.f5': { ko: '백업 & 복원 (기기 변경 안전)', en: 'Backup and restore across devices' },
-  'paywall.f6': { ko: '광고 없음 · 한 번 구매로 평생 사용', en: 'No ads, pay once and keep it forever' },
+  'paywall.f1': { ko: '약 무제한 등록 (무료 버전은 {n}개까지)', en: 'Unlimited medicines (free version: up to {n})' },
+  'paywall.f2': { ko: '한 번 결제로 평생 사용 · 자동 결제 없음', en: 'Pay once, keep it forever — never billed again' },
+  'paywall.f3': { ko: '가족 공유로 최대 6명이 함께 사용', en: 'Family Sharing: up to 6 family members' },
+  'paywall.f4': { ko: '앞으로 추가되는 기능도 모두 포함', en: 'Includes every future feature' },
+  'paywall.limitReached': { ko: '무료 버전은 약 {n}개까지 등록할 수 있어요', en: 'The free version holds up to {n} medicines' },
+  'paywall.freeUsage': { ko: '무료 버전 · 약 {n}/{max}개 사용 중', en: 'Free version · {n}/{max} medicines used' },
+  'settings.planFree': { ko: '무료 버전 · 약 {n}개까지', en: 'Free version · up to {n} medicines' },
+  'settings.planFreeSub': { ko: '{price} 한 번이면 무제한 · 탭하여 보기', en: 'Unlimited for {price}, once · Tap to see' },
   'paywall.oneTime': { ko: '1회 결제 · 구독 아님', en: 'One-time purchase, not a subscription' },
   'paywall.buy': { ko: '{price}에 정식 버전 구매', en: 'Unlock for {price}' },
   'paywall.later': { ko: '나중에', en: 'Not now' },
@@ -228,34 +222,7 @@ export const STRINGS: Record<string, Entry> = {
   },
   'paywall.failTitle': { ko: '구매 실패', en: 'Purchase failed' },
   'paywall.failBody': { ko: '결제를 완료하지 못했어요. 잠시 후 다시 시도해 주세요.', en: "The purchase didn't go through. Please try again." },
-  'paywall.footer': {
-    ko: '결제는 Apple ID로 처리됩니다. 복용 알림은 체험 종료 후에도 계속 울려요.',
-    en: 'Payment is handled by your Apple ID. Dose reminders keep ringing even after the trial ends.',
-  },
-
-  // ── Trial intro (shown before the trial starts) ───────────────────────
-  'intro.title': { ko: '7일 동안 무료로 써 보세요', en: 'Try everything free for 7 days' },
-  'intro.subtitle': {
-    ko: '약 복용 시간에 맞춰 알려 드리고, 복용 기록을 챙겨 드려요.',
-    en: 'Reminders right on time, and a record of every dose.',
-  },
-  'intro.termsTitle': { ko: '무료 체험 안내', en: 'How the free trial works' },
-  'intro.termLength': { ko: '체험 기간: 시작한 날부터 7일', en: 'Length: 7 days from the day you start' },
-  'intro.termLocked': {
-    ko: '체험이 끝나면 약 목록·복용 기록·달력 화면이 잠겨요. 이미 등록한 복용 알림은 계속 울립니다.',
-    en: 'After the trial, the medicine list, dose history and calendar lock. Reminders you already set keep ringing.',
-  },
-  'intro.termPrice': {
-    ko: '계속 쓰려면 {price} 1회 결제 (구독 아님, 자동 결제 없음)',
-    en: 'To keep using it: {price} once (not a subscription, never charged automatically)',
-  },
-  'intro.start': { ko: '7일 무료 체험 시작', en: 'Start 7-day free trial' },
-  'intro.buyNow': { ko: '{price}에 바로 구매', en: 'Buy now for {price}' },
-  'intro.footer': {
-    ko: '체험은 App Store의 무료(₩0) 상품으로 시작되며 요금이 청구되지 않습니다.',
-    en: 'The trial starts with a free (0) App Store item. You will not be charged.',
-  },
-  'intro.startFail': { ko: '체험을 시작하지 못했어요. 잠시 후 다시 시도해 주세요.', en: "Couldn't start the trial. Please try again." },
+  'paywall.footer': { ko: '결제는 Apple ID로 처리됩니다. 정식 버전을 사지 않아도 약 {n}개까지는 알림·기록을 평생 무료로 쓸 수 있어요.', en: 'Payment is handled by your Apple ID. Without it, reminders and history for up to {n} medicines stay free forever.' },
 
   // ── Notifications ─────────────────────────────────────────────────────
   'notif.channelDose': { ko: '약 복용 알림', en: 'Dose reminders' },

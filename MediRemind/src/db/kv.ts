@@ -1,6 +1,6 @@
 /**
  * Small key/value store backed by the `kv` table, for app-level state that
- * isn't a medicine or dose (settings, theme, language, purchase, trial start).
+ * isn't a medicine or dose (settings, theme, language, purchase).
  */
 import { getDb } from './database';
 

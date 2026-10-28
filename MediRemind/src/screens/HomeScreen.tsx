@@ -8,7 +8,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import type { DoseRecord, RootStackParamList } from '../types';
 import { useDoseStore } from '../store/doseStore';
 import { useMedicineStore } from '../store/medicineStore';
-import { useEntitlement } from '../purchase/EntitlementProvider';
+import { useAddMedicine } from '../hooks/useAddMedicine';
 import { useToday } from '../hooks/useToday';
 import { useI18n } from '../i18n/I18nProvider';
 import { formatLongDate } from '../i18n/core';
@@ -32,7 +32,7 @@ export default function HomeScreen() {
 
   const medicines = useMedicineStore((s) => s.medicines);
   const { doseRecords, isLoading, streak, markDose, unmarkDose, syncDoses } = useDoseStore();
-  const { status, trialDaysLeft } = useEntitlement();
+  const addMedicine = useAddMedicine();
 
   // Re-sync when the date rolls over or the schedule changes.
   const scheduleKey = medicines
@@ -75,7 +75,7 @@ export default function HomeScreen() {
         right={
           <TouchableOpacity
             style={styles.addBtn}
-            onPress={() => navigation.navigate('MedicineForm')}
+            onPress={addMedicine}
             accessibilityLabel={t('home.addA11y')}
           >
             <Ionicons name="add" size={26} color={colors.onBrand} />
@@ -91,13 +91,6 @@ export default function HomeScreen() {
         }
         showsVerticalScrollIndicator={false}
       >
-        {status === 'trial' && (
-          <TouchableOpacity style={styles.trialBanner} onPress={() => navigation.navigate('Paywall')}>
-            <Ionicons name="sparkles" size={16} color={colors.brand} />
-            <Text style={styles.trialText}>{t('home.trialBanner', { n: trialDaysLeft })}</Text>
-            <Ionicons name="chevron-forward" size={16} color={colors.brand} />
-          </TouchableOpacity>
-        )}
 
         <View style={styles.card}>
           <ProgressBar
@@ -122,7 +115,7 @@ export default function HomeScreen() {
             <MaterialCommunityIcons name="pill" size={60} color={colors.textFaint} />
             <Text style={styles.emptyTitle}>{t('home.emptyTitle')}</Text>
             <Text style={styles.emptyDesc}>{t('home.emptyDesc')}</Text>
-            <TouchableOpacity style={styles.emptyBtn} onPress={() => navigation.navigate('MedicineForm')}>
+            <TouchableOpacity style={styles.emptyBtn} onPress={addMedicine}>
               <Text style={styles.emptyBtnText}>{t('home.emptyCta')}</Text>
             </TouchableOpacity>
           </View>
@@ -166,17 +159,6 @@ const makeStyles = (c: ThemeColors, scheme: Scheme) =>
     },
     scroll: { flex: 1 },
     scrollContent: { padding: 16, paddingBottom: 32 },
-    trialBanner: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 8,
-      backgroundColor: c.brandSoft,
-      borderRadius: 14,
-      paddingHorizontal: 14,
-      paddingVertical: 11,
-      marginBottom: 12,
-    },
-    trialText: { flex: 1, color: c.brand, fontSize: 13, fontWeight: '700' },
     card: {
       backgroundColor: c.surface,
       borderRadius: 20,

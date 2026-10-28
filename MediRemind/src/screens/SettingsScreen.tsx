@@ -22,6 +22,7 @@ import { PRIVACY_POLICY_URL } from '../config';
 import { useDoseStore } from '../store/doseStore';
 import { useMedicineStore } from '../store/medicineStore';
 import { useEntitlement } from '../purchase/EntitlementProvider';
+import { FREE_MEDICINE_LIMIT, PURCHASE_CONFIG } from '../purchase/purchase.config';
 import {
   loadReminderSettings,
   saveReminderSettings,
@@ -109,7 +110,7 @@ export default function SettingsScreen() {
   const { t, pref: langPref, setLanguage } = useI18n();
   const { colors, mode, setMode } = useTheme();
   const styles = useThemedStyles(makeStyles);
-  const { status, trialDaysLeft, restore } = useEntitlement();
+  const { isPro, product, restore } = useEntitlement();
 
   const [settings, setSettings] = useState<ReminderSettings>({ sound: true, vibration: true });
   const [busy, setBusy] = useState<null | 'update' | 'export' | 'import' | 'restore'>(null);
@@ -224,14 +225,16 @@ export default function SettingsScreen() {
         {/* ─ Plan ─ */}
         <Text style={styles.sectionLabel}>{t('settings.sectionPlan')}</Text>
         <View style={styles.card}>
-          {status === 'pro' ? (
+          {isPro ? (
             <SettingRow icon="checkmark-done-circle" iconColor={colors.success} title={t('settings.planPro')} />
           ) : (
             <SettingRow
               icon="sparkles"
               iconColor={colors.brand}
-              title={t('settings.planTrial', { n: trialDaysLeft })}
-              subtitle={t('settings.planTrialSub')}
+              title={t('settings.planFree', { n: FREE_MEDICINE_LIMIT })}
+              subtitle={t('settings.planFreeSub', {
+                price: product?.priceLabel ?? PURCHASE_CONFIG.fallbackPriceLabel,
+              })}
               onPress={() => navigation.navigate('Paywall')}
             />
           )}

@@ -1,7 +1,7 @@
 # MediRemind — 약 복용 알리미
 
 React Native + Expo SDK 56 앱. 정해진 시간에 약 복용을 알리고, 복용 기록·연속 복용·재처방 일정을 관리합니다.
-서버 없이 모든 데이터를 기기(SQLite)에 저장합니다. 광고 없음, 7일 무료 체험 후 1회 인앱결제.
+서버 없이 모든 데이터를 기기(SQLite)에 저장합니다. 광고 없음. 약 2개까지 평생 무료, 1회 인앱결제(₩1,900)로 무제한.
 
 ## 실행
 
@@ -16,11 +16,11 @@ npm start         # Expo 개발 서버 (결제는 mock)
 
 | 경로 | 내용 |
 |------|------|
-| `App.tsx` | 초기화(DB·복용 기록·알림), 체험 종료 시 잠금 화면, 알림 "복용 완료" 처리 |
+| `App.tsx` | 초기화(DB·복용 기록·알림), 알림 "복용 완료" 처리 |
 | `src/db/` | SQLite 연결, 버전 기반 마이그레이션(`schema.ts`), 약/복용 기록 저장소, 설정용 kv |
 | `src/lib/` | 테스트되는 순수 로직: 알림 묶음 계획, 복용 일정, 연속 복용, 처방 D-Day, 시간 보정, 백업 형식 |
 | `src/notifications/` | 반복 알림 예약(DAILY/WEEKLY), 알림 액션 |
-| `src/purchase/` | 7일 체험 + 비소모성 인앱결제 (`react-native-iap`) |
+| `src/purchase/` | 무료 약 2개 제한 + 비소모성 인앱결제 (`react-native-iap`) |
 | `src/theme/`, `src/i18n/` | 라이트/다크 테마, 한국어/영어 |
 | `src/store/` | zustand 상태 (약, 복용 기록) |
 | `src/screens/`, `src/components/` | 화면 |

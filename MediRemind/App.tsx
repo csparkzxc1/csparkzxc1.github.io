@@ -6,8 +6,6 @@ import { StatusBar } from 'expo-status-bar';
 import * as Notifications from 'expo-notifications';
 
 import AppNavigator from './src/navigation/AppNavigator';
-import Paywall from './src/components/Paywall';
-import TrialIntro from './src/components/TrialIntro';
 import { getDb } from './src/db/database';
 import { useMedicineStore } from './src/store/medicineStore';
 import { useDoseStore } from './src/store/doseStore';
@@ -47,7 +45,7 @@ async function handleResponse(response: Notifications.NotificationResponse) {
 function Root() {
   const { t, language } = useI18n();
   const { scheme, colors } = useTheme();
-  const { loading: entitlementLoading, status } = useEntitlement();
+  const { loading: entitlementLoading } = useEntitlement();
   const [ready, setReady] = useState(false);
   const firstLanguage = useRef(language);
 
@@ -102,24 +100,6 @@ function Root() {
   }
 
   const statusBar = <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />;
-
-  if (status === 'new') {
-    return (
-      <>
-        {statusBar}
-        <TrialIntro />
-      </>
-    );
-  }
-
-  if (status === 'locked') {
-    return (
-      <>
-        {statusBar}
-        <Paywall />
-      </>
-    );
-  }
 
   return (
     <>

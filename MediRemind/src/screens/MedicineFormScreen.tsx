@@ -11,6 +11,7 @@ import {
   Platform,
 } from 'react-native';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 
@@ -19,6 +20,8 @@ import { useMedicineStore } from '../store/medicineStore';
 import { useI18n } from '../i18n/I18nProvider';
 import { weekdayLabels } from '../i18n/core';
 import { uid } from '../lib/id';
+import { useEntitlement } from '../purchase/EntitlementProvider';
+import { canAddMedicine } from '../purchase/limits';
 import { normalizeTime } from '../lib/time';
 import { dateKey } from '../lib/schedule';
 import { isValidDateKey } from '../lib/prescription';
@@ -62,14 +65,15 @@ function sortedTimes(times: string[]): string[] {
 // ─── Screen ──────────────────────────────────────────────────────────────────
 
 export default function MedicineFormScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<RouteParams>();
   const { t } = useI18n();
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
 
   const medicineId = route.params?.medicineId;
-  const { getMedicineById, addMedicine, updateMedicine } = useMedicineStore();
+  const { medicines, getMedicineById, addMedicine, updateMedicine } = useMedicineStore();
+  const { isPro } = useEntitlement();
   const existing = medicineId ? getMedicineById(medicineId) : undefined;
 
   useLayoutEffect(() => {
@@ -169,6 +173,10 @@ export default function MedicineFormScreen() {
   // ─── Save ────────────────────────────────────────────────────────────────
 
   const handleSave = async () => {
+    if (!existing && !canAddMedicine(isPro, medicines.length)) {
+      navigation.navigate('Paywall', { reason: 'limit' });
+      return;
+    }
     const finalTimes = sortedTimes([...new Set(times.map(normalizeTime))]);
     if (!name.trim()) return Alert.alert(t('form.errTitle'), t('form.errName'));
     if (!dosage.trim()) return Alert.alert(t('form.errTitle'), t('form.errDosage'));

@@ -1,23 +1,18 @@
 /**
- * App-wide entitlement context: loads purchase/trial state on mount and exposes
- * the status plus purchase, restore, and start-trial actions. App.tsx gates the
- * UI on it (trial intro → app → lock screen).
+ * App-wide entitlement context: whether the full version is owned, plus the
+ * purchase and restore actions.
  */
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { AppState } from 'react-native';
 import { activeProvider } from './provider';
-import { computeEntitlement } from './entitlement';
-import { PURCHASE_CONFIG } from './purchase.config';
 import type { EntitlementStatus, PurchaseProduct } from './types';
 
 interface EntitlementContextValue {
   loading: boolean;
   status: EntitlementStatus;
-  trialDaysLeft: number;
+  isPro: boolean;
   product: PurchaseProduct | null;
   purchase: () => Promise<boolean>;
   restore: () => Promise<boolean>;
-  startTrial: () => Promise<boolean>;
   reload: () => Promise<void>;
 }
 
@@ -25,18 +20,11 @@ const EntitlementContext = createContext<EntitlementContextValue | null>(null);
 
 export function EntitlementProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
-  const [status, setStatus] = useState<EntitlementStatus>('new');
-  const [trialDaysLeft, setTrialDaysLeft] = useState(0);
+  const [status, setStatus] = useState<EntitlementStatus>('free');
   const [product, setProduct] = useState<PurchaseProduct | null>(null);
 
   const reload = useCallback(async () => {
-    const [purchased, trialStartedAt] = await Promise.all([
-      activeProvider.isPurchased(),
-      activeProvider.getTrialStartedAt(),
-    ]);
-    const ent = computeEntitlement(purchased, trialStartedAt, Date.now(), PURCHASE_CONFIG.trialDays);
-    setStatus(ent.status);
-    setTrialDaysLeft(ent.trialDaysLeft);
+    setStatus((await activeProvider.isPurchased()) ? 'pro' : 'free');
   }, []);
 
   useEffect(() => {
@@ -50,7 +38,7 @@ export function EntitlementProvider({ children }: { children: React.ReactNode })
       } finally {
         if (active) setLoading(false);
       }
-      // The price isn't needed for the first screen; don't block startup on it.
+      // The price is only needed on the paywall; don't block startup on it.
       activeProvider
         .getProduct()
         .then((p) => active && setProduct(p))
@@ -59,14 +47,6 @@ export function EntitlementProvider({ children }: { children: React.ReactNode })
     return () => {
       active = false;
     };
-  }, [reload]);
-
-  // The trial can end while the app sits in the background.
-  useEffect(() => {
-    const sub = AppState.addEventListener('change', (s) => {
-      if (s === 'active') reload().catch(() => {});
-    });
-    return () => sub.remove();
   }, [reload]);
 
   const purchase = useCallback(async () => {
@@ -81,15 +61,9 @@ export function EntitlementProvider({ children }: { children: React.ReactNode })
     return ok;
   }, [reload]);
 
-  const startTrial = useCallback(async () => {
-    const ok = await activeProvider.startTrial();
-    if (ok) await reload();
-    return ok;
-  }, [reload]);
-
   const value = useMemo(
-    () => ({ loading, status, trialDaysLeft, product, purchase, restore, startTrial, reload }),
-    [loading, status, trialDaysLeft, product, purchase, restore, startTrial, reload]
+    () => ({ loading, status, isPro: status === 'pro', product, purchase, restore, reload }),
+    [loading, status, product, purchase, restore, reload]
   );
 
   return <EntitlementContext.Provider value={value}>{children}</EntitlementContext.Provider>;

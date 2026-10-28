@@ -34,7 +34,7 @@ export interface DoseRecord {
 export type RootStackParamList = {
   Main: undefined;
   MedicineForm: { medicineId?: string } | undefined;
-  Paywall: undefined;
+  Paywall: { reason?: 'limit' } | undefined;
 };
 
 export type BottomTabParamList = {

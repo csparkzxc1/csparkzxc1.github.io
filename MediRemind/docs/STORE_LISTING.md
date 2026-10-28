@@ -5,7 +5,7 @@
 - **이름 (30자)**: MediRemind - 약 복용 알리미
 - **부제 (30자)**: 복용 시간 알림과 복약 기록
 - **키워드 (100자)**: 약,복약,알림,알리미,복용,영양제,처방,재처방,건강,비타민,혈압약,리마인더,캘린더
-- **프로모션 텍스트**: 7일 무료 체험 · 광고 없음 · 한 번 구매로 평생 사용
+- **프로모션 텍스트**: 약 2개까지 평생 무료 · 광고 없음 · ₩1,900 한 번이면 무제한
 - **설명**:
 
 ```
@@ -36,7 +36,7 @@ MediRemind는 정해진 시간에 약 복용을 알려 주고, 오늘 먹은 약
 • 백업 파일로 폰을 바꿔도 기록 유지
 • 다크 모드, 한국어/영어 지원
 
-7일 동안 모든 기능을 무료로 써 보고, 마음에 들면 한 번만 결제하세요. 구독이 아닙니다.
+약 2개까지는 모든 기능을 평생 무료로 쓸 수 있어요. 더 많은 약을 관리하려면 한 번만 결제하세요. 구독이 아니며, 가족 공유로 가족과 함께 쓸 수 있습니다.
 
 ※ MediRemind는 의료 기기가 아니며 의사·약사의 지시를 대신하지 않습니다.
 ```
@@ -46,7 +46,7 @@ MediRemind는 정해진 시간에 약 복용을 알려 주고, 오늘 먹은 약
 - **Name**: MediRemind - Pill Reminder
 - **Subtitle**: Dose alerts and pill tracker
 - **Keywords**: pill,reminder,medication,medicine,dose,tracker,vitamin,refill,prescription,health,alarm
-- **Promotional text**: 7-day free trial · No ads · Pay once, keep it forever
+- **Promotional text**: Free forever for 2 medicines · No ads · Unlimited with one small purchase
 - **Description**:
 
 ```
@@ -65,7 +65,7 @@ MediRemind reminds you when it's time to take your medicine and shows what you'v
 • Backup and restore when you switch phones
 • Dark mode, Korean and English
 
-Try everything free for 7 days, then unlock with a one-time purchase. Not a subscription.
+Free forever for up to 2 medicines, with every feature. Need more? Unlock unlimited medicines with a one-time purchase — not a subscription, and shareable with your family.
 
 MediRemind is not a medical device and does not replace advice from your doctor or pharmacist.
 ```

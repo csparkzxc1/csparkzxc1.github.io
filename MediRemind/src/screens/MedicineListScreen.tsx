@@ -21,6 +21,7 @@ import { useI18n } from '../i18n/I18nProvider';
 import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
 import type { ThemeColors } from '../theme/theme';
 import MedicineCard from '../components/MedicineCard';
+import { useAddMedicine } from '../hooks/useAddMedicine';
 import ScreenHeader from '../components/ScreenHeader';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
@@ -97,6 +98,7 @@ export default function MedicineListScreen() {
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
   const { medicines, isLoading, deleteMedicine, toggleActive } = useMedicineStore();
+  const addMedicine = useAddMedicine();
 
   const handleDelete = (medicine: Medicine) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
@@ -118,7 +120,7 @@ export default function MedicineListScreen() {
   const addButton = (
     <TouchableOpacity
       style={styles.addFab}
-      onPress={() => navigation.navigate('MedicineForm')}
+      onPress={addMedicine}
       accessibilityLabel={t('home.addA11y')}
     >
       <Ionicons name="add" size={24} color={colors.onBrand} />
@@ -134,7 +136,7 @@ export default function MedicineListScreen() {
           <MaterialCommunityIcons name="pill" size={72} color={colors.textFaint} />
           <Text style={styles.emptyTitle}>{t('list.emptyTitle')}</Text>
           <Text style={styles.emptyDesc}>{t('list.emptyDesc')}</Text>
-          <TouchableOpacity style={styles.emptyBtn} onPress={() => navigation.navigate('MedicineForm')}>
+          <TouchableOpacity style={styles.emptyBtn} onPress={addMedicine}>
             <Ionicons name="add-circle" size={18} color={colors.onBrand} />
             <Text style={styles.emptyBtnText}>{t('list.emptyCta')}</Text>
           </TouchableOpacity>

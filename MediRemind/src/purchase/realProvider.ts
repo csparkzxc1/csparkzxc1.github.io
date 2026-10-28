@@ -1,14 +1,13 @@
 /**
- * App Store / Play purchases through `react-native-iap` v15. Two non-consumables:
- * the full version and a ₩0 "7-day Trial" whose transaction date anchors the
- * trial, so reinstalling doesn't restart it.
+ * App Store / Play purchases through `react-native-iap` v15: one non-consumable
+ * "full version" that lifts the free medicine limit.
  *
  * No server: the store's purchase history is the source of truth and is
  * mirrored into the local kv table for offline reads.
  *
  * v15 reports results through purchaseUpdatedListener/purchaseErrorListener,
  * not the return value of requestPurchase, so each request is bridged back to
- * a promise keyed by product id. Needs a dev/standalone build and a StoreKit
+ * a promise. Needs a dev/standalone build and a StoreKit
  * sandbox check before submission.
  */
 import {
@@ -24,11 +23,10 @@ import {
   type PurchaseError,
 } from 'react-native-iap';
 import { kvGet, kvSet } from '../db/kv';
-import { PURCHASE_CONFIG, PURCHASE_KEYS, startOfDay } from './purchase.config';
+import { PURCHASE_CONFIG, PURCHASE_KEYS } from './purchase.config';
 import type { PurchaseProduct, PurchaseProvider } from './types';
 
 const FULL = PURCHASE_CONFIG.productId;
-const TRIAL = PURCHASE_CONFIG.trialProductId;
 
 let connected = false;
 let listenersBound = false;
@@ -53,19 +51,8 @@ async function markPurchased(): Promise<void> {
   await kvSet(PURCHASE_KEYS.purchasedAt, String(Date.now()));
 }
 
-/** Records the trial start, keeping the earliest date seen. */
-async function markTrialStarted(at: number): Promise<void> {
-  const day = startOfDay(Number.isFinite(at) && at > 0 ? at : Date.now());
-  const raw = await kvGet(PURCHASE_KEYS.trialStartedAt);
-  if (raw == null || day < Number(raw)) await kvSet(PURCHASE_KEYS.trialStartedAt, String(day));
-}
-
 async function applyHistory(purchases: Purchase[]): Promise<boolean> {
-  let full = false;
-  for (const p of purchases) {
-    if (p.productId === FULL) full = true;
-    if (p.productId === TRIAL) await markTrialStarted(p.transactionDate);
-  }
+  const full = purchases.some((p) => p.productId === FULL);
   if (full) await markPurchased();
   return full;
 }
@@ -89,12 +76,11 @@ function bindListeners(): void {
   listenersBound = true;
 
   purchaseUpdatedListener(async (purchase: Purchase) => {
-    if (purchase.productId !== FULL && purchase.productId !== TRIAL) return;
+    if (purchase.productId !== FULL) return;
     try {
       // Non-consumable: finish without consuming so it stays owned.
       await finishTransaction({ purchase, isConsumable: false });
-      if (purchase.productId === FULL) await markPurchased();
-      else await markTrialStarted(purchase.transactionDate);
+      await markPurchased();
       take(purchase.productId)?.resolve(true);
     } catch (e) {
       console.warn('[iap] finishTransaction failed', e);
@@ -145,7 +131,7 @@ export const realPurchaseProvider: PurchaseProvider = {
   async init() {
     await ensureConnection();
     bindListeners();
-    // Recover state from the store (reinstall, new device).
+    // Recover state from the store (reinstall, new device, Family Sharing).
     try {
       await applyHistory(await getAvailablePurchases());
     } catch (e) {
@@ -184,23 +170,6 @@ export const realPurchaseProvider: PurchaseProvider = {
   async restore() {
     await ensureConnection();
     return applyHistory(await getAvailablePurchases());
-  },
-
-  async startTrial() {
-    try {
-      return await buy(TRIAL);
-    } catch (e) {
-      // If the trial product can't be bought (offline, not yet approved), the
-      // user shouldn't be stuck: start the trial locally instead.
-      console.warn('[iap] trial purchase failed; starting locally', e);
-      await markTrialStarted(Date.now());
-      return true;
-    }
-  },
-
-  async getTrialStartedAt() {
-    const raw = await kvGet(PURCHASE_KEYS.trialStartedAt);
-    return raw == null ? null : startOfDay(Number(raw));
   },
 };
 
