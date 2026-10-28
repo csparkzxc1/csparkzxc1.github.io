@@ -1,17 +1,15 @@
 /**
- * Real in-app purchase provider backed by `react-native-iap` (v15, StoreKit 2 /
- * Play Billing). Implements the same PurchaseProvider interface as the mock, so
- * nothing else in the app changes — `provider.ts` selects this in release builds.
+ * App Store / Play purchases through `react-native-iap` v15. Two non-consumables:
+ * the full version and a ₩0 "7-day Trial" whose transaction date anchors the
+ * trial, so reinstalling doesn't restart it.
  *
- * No backend: entitlement is the store's own purchase record. We mirror it into
- * the local `kv` table for fast offline reads, but `getAvailablePurchases()`
- * (restore) is always the source of truth on reinstall / device transfer.
- * No server is needed.
+ * No server: the store's purchase history is the source of truth and is
+ * mirrored into the local kv table for offline reads.
  *
- * NOTE: v15 delivers purchase results through `purchaseUpdatedListener`, NOT the
- * return value of `requestPurchase`. We bridge that event back to the
- * promise-based interface below. Requires a dev/standalone build (native module)
- * and MUST be verified against a StoreKit sandbox account before submission.
+ * v15 reports results through purchaseUpdatedListener/purchaseErrorListener,
+ * not the return value of requestPurchase, so each request is bridged back to
+ * a promise keyed by product id. Needs a dev/standalone build and a StoreKit
+ * sandbox check before submission.
  */
 import {
   initConnection,
@@ -27,15 +25,21 @@ import {
 } from 'react-native-iap';
 import { kvGet, kvSet } from '../db/kv';
 import { PURCHASE_CONFIG, PURCHASE_KEYS, startOfDay } from './purchase.config';
-import type { PurchaseProvider, PurchaseProduct } from './types';
+import type { PurchaseProduct, PurchaseProvider } from './types';
+
+const FULL = PURCHASE_CONFIG.productId;
+const TRIAL = PURCHASE_CONFIG.trialProductId;
 
 let connected = false;
 let listenersBound = false;
-/** In-flight purchase() call; the store listeners settle or fail it. */
-let pendingPurchase:
-  | { resolve: (ok: boolean) => void; reject: (e: unknown) => void }
-  | null = null;
-let purchaseTimer: ReturnType<typeof setTimeout> | null = null;
+
+interface Pending {
+  sku: string;
+  resolve: (ok: boolean) => void;
+  reject: (e: unknown) => void;
+  timer: ReturnType<typeof setTimeout>;
+}
+let pending: Pending | null = null;
 
 async function ensureConnection(): Promise<void> {
   if (!connected) {
@@ -49,104 +53,125 @@ async function markPurchased(): Promise<void> {
   await kvSet(PURCHASE_KEYS.purchasedAt, String(Date.now()));
 }
 
-function takePending() {
-  if (purchaseTimer) {
-    clearTimeout(purchaseTimer);
-    purchaseTimer = null;
+/** Records the trial start, keeping the earliest date seen. */
+async function markTrialStarted(at: number): Promise<void> {
+  const day = startOfDay(Number.isFinite(at) && at > 0 ? at : Date.now());
+  const raw = await kvGet(PURCHASE_KEYS.trialStartedAt);
+  if (raw == null || day < Number(raw)) await kvSet(PURCHASE_KEYS.trialStartedAt, String(day));
+}
+
+async function applyHistory(purchases: Purchase[]): Promise<boolean> {
+  let full = false;
+  for (const p of purchases) {
+    if (p.productId === FULL) full = true;
+    if (p.productId === TRIAL) await markTrialStarted(p.transactionDate);
   }
-  const p = pendingPurchase;
-  pendingPurchase = null;
+  if (full) await markPurchased();
+  return full;
+}
+
+function take(sku: string): Pending | null {
+  if (!pending || pending.sku !== sku) return null;
+  const p = pending;
+  pending = null;
+  clearTimeout(p.timer);
   return p;
 }
 
-/** Resolve the in-flight purchase (true=bought, false=cancelled/no-op). */
-function settlePending(ok: boolean): void {
-  takePending()?.resolve(ok);
-}
-
-/** Reject the in-flight purchase so the UI can show an error. */
-function failPending(e: unknown): void {
-  takePending()?.reject(e);
-}
-
-function isOurProduct(productId: string | null | undefined): boolean {
-  return productId === PURCHASE_CONFIG.productId;
-}
-
-/** StoreKit/Play "user cancelled" is a normal outcome, not an error. */
 function isUserCancel(error: PurchaseError | undefined): boolean {
   const code = (error as { code?: string } | undefined)?.code ?? '';
   const msg = (error as { message?: string } | undefined)?.message ?? '';
   return /cancel/i.test(code) || /cancel/i.test(msg);
 }
 
-/** Binds purchase/error listeners once; safe to call repeatedly. */
 function bindListeners(): void {
   if (listenersBound) return;
   listenersBound = true;
 
   purchaseUpdatedListener(async (purchase: Purchase) => {
-    if (!isOurProduct(purchase.productId)) return;
+    if (purchase.productId !== FULL && purchase.productId !== TRIAL) return;
     try {
-      // Non-consumable: finish (don't consume) so it stays owned.
+      // Non-consumable: finish without consuming so it stays owned.
       await finishTransaction({ purchase, isConsumable: false });
-      await markPurchased();
-      settlePending(true);
+      if (purchase.productId === FULL) await markPurchased();
+      else await markTrialStarted(purchase.transactionDate);
+      take(purchase.productId)?.resolve(true);
     } catch (e) {
-      console.error('finishTransaction failed', e);
-      settlePending(false);
+      console.warn('[iap] finishTransaction failed', e);
+      take(purchase.productId)?.resolve(false);
     }
   });
 
   purchaseErrorListener((error: PurchaseError) => {
-    console.warn('Purchase error', error?.code, error?.message);
-    // User cancellation → resolve(false) silently; real errors → reject so the
-    // paywall surfaces "구매 실패" instead of looking like a dead button.
-    if (isUserCancel(error)) settlePending(false);
-    else failPending(new Error(error?.message || 'Purchase failed'));
+    console.warn('[iap] purchase error', error?.code, error?.message);
+    const p = pending;
+    if (!p) return;
+    pending = null;
+    clearTimeout(p.timer);
+    // Cancelling is a normal outcome; real errors surface as "purchase failed".
+    if (isUserCancel(error)) p.resolve(false);
+    else p.reject(new Error(error?.message || 'Purchase failed'));
   });
+}
+
+async function buy(sku: string): Promise<boolean> {
+  await ensureConnection();
+  bindListeners();
+  pending?.resolve(false);
+  const result = new Promise<boolean>((resolve, reject) => {
+    // Guards against the store sheet never appearing (e.g. product unavailable).
+    const timer = setTimeout(() => {
+      if (pending?.sku === sku) {
+        pending = null;
+        reject(new Error('Purchase timed out'));
+      }
+    }, 90_000);
+    pending = { sku, resolve, reject, timer };
+  });
+  try {
+    await requestPurchase({
+      request: { apple: { sku }, google: { skus: [sku] } },
+      type: 'in-app',
+    });
+  } catch (e) {
+    const p = take(sku);
+    if (isUserCancel(e as PurchaseError)) p?.resolve(false);
+    else p?.reject(e);
+  }
+  return result;
 }
 
 export const realPurchaseProvider: PurchaseProvider = {
   async init() {
     await ensureConnection();
     bindListeners();
-    if ((await kvGet(PURCHASE_KEYS.firstLaunchAt)) == null) {
-      await kvSet(PURCHASE_KEYS.firstLaunchAt, String(Date.now()));
-    }
-    // Recover entitlement from the store (e.g. after reinstall).
+    // Recover state from the store (reinstall, new device).
     try {
-      const purchases = await getAvailablePurchases();
-      if (purchases.some((p) => isOurProduct(p.productId))) {
-        await markPurchased();
-      }
+      await applyHistory(await getAvailablePurchases());
     } catch (e) {
-      console.warn('getAvailablePurchases on init failed', e);
+      console.warn('[iap] getAvailablePurchases on init failed', e);
     }
   },
 
   async getProduct(): Promise<PurchaseProduct> {
-    await ensureConnection();
+    const fallback = {
+      id: FULL,
+      title: PURCHASE_CONFIG.productTitle,
+      priceLabel: PURCHASE_CONFIG.fallbackPriceLabel,
+    };
     try {
-      const products = await fetchProducts({
-        skus: [PURCHASE_CONFIG.productId],
-        type: 'in-app',
-      });
+      await ensureConnection();
+      const products = await fetchProducts({ skus: [FULL], type: 'in-app' });
       const p = products?.[0];
       return {
-        id: PURCHASE_CONFIG.productId,
-        title: p?.title ?? PURCHASE_CONFIG.productTitle,
-        priceLabel: p?.displayPrice ?? PURCHASE_CONFIG.fallbackPriceLabel,
+        id: FULL,
+        title: p?.title ?? fallback.title,
+        priceLabel: p?.displayPrice ?? fallback.priceLabel,
         available: !!p,
       };
     } catch (e) {
-      console.warn('fetchProducts failed; using fallback labels', e);
-      return {
-        id: PURCHASE_CONFIG.productId,
-        title: PURCHASE_CONFIG.productTitle,
-        priceLabel: PURCHASE_CONFIG.fallbackPriceLabel,
-        available: false,
-      };
+      console.warn('[iap] fetchProducts failed', e);
+      return { ...fallback, available: false };
     }
   },
 
@@ -154,56 +179,29 @@ export const realPurchaseProvider: PurchaseProvider = {
     return (await kvGet(PURCHASE_KEYS.purchased)) === '1';
   },
 
-  async purchase() {
-    await ensureConnection();
-    bindListeners();
-    // Bridge the event-based result back to this promise. A timeout guards
-    // against the native sheet never appearing (e.g. product unavailable) so
-    // the paywall button can never hang forever.
-    const result = new Promise<boolean>((resolve, reject) => {
-      pendingPurchase = { resolve, reject };
-      purchaseTimer = setTimeout(
-        () => failPending(new Error('Purchase timed out')),
-        90_000
-      );
-    });
-    try {
-      await requestPurchase({
-        request: {
-          apple: { sku: PURCHASE_CONFIG.productId },
-          google: { skus: [PURCHASE_CONFIG.productId] },
-        },
-        type: 'in-app',
-      });
-    } catch (e) {
-      console.warn('requestPurchase failed', e);
-      failPending(e);
-    }
-    return result;
-  },
+  purchase: () => buy(FULL),
 
   async restore() {
     await ensureConnection();
-    const purchases = await getAvailablePurchases();
-    const found = purchases.some((p) => isOurProduct(p.productId));
-    if (found) await markPurchased();
-    return found;
+    return applyHistory(await getAvailablePurchases());
   },
 
-  async getFirstLaunchAt() {
-    const raw = await kvGet(PURCHASE_KEYS.firstLaunchAt);
-    if (raw == null) {
-      // Anchor to local midnight so the trial countdown decrements by calendar
-      // day (7 → 6 on the next day), not by elapsed 24h windows.
-      const start = startOfDay(Date.now());
-      await kvSet(PURCHASE_KEYS.firstLaunchAt, String(start));
-      return start;
+  async startTrial() {
+    try {
+      return await buy(TRIAL);
+    } catch (e) {
+      // If the trial product can't be bought (offline, not yet approved), the
+      // user shouldn't be stuck: start the trial locally instead.
+      console.warn('[iap] trial purchase failed; starting locally', e);
+      await markTrialStarted(Date.now());
+      return true;
     }
-    // Normalize older values stored at a non-midnight time so the countdown is
-    // calendar-day based for existing installs too.
-    return startOfDay(Number(raw));
+  },
+
+  async getTrialStartedAt() {
+    const raw = await kvGet(PURCHASE_KEYS.trialStartedAt);
+    return raw == null ? null : startOfDay(Number(raw));
   },
 };
 
-// Optional: call on app teardown to release the store connection.
 export { endConnection };

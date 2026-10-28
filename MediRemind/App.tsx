@@ -7,6 +7,7 @@ import * as Notifications from 'expo-notifications';
 
 import AppNavigator from './src/navigation/AppNavigator';
 import Paywall from './src/components/Paywall';
+import TrialIntro from './src/components/TrialIntro';
 import { getDb } from './src/db/database';
 import { useMedicineStore } from './src/store/medicineStore';
 import { useDoseStore } from './src/store/doseStore';
@@ -17,7 +18,6 @@ import {
   takeResponseDoses,
 } from './src/notifications/notifications';
 import { dateKey } from './src/lib/schedule';
-import { checkAndApplyUpdate } from './src/utils/updateUtils';
 import { EntitlementProvider, useEntitlement } from './src/purchase/EntitlementProvider';
 import { I18nProvider, useI18n } from './src/i18n/I18nProvider';
 import { ThemeProvider, useTheme } from './src/theme/ThemeProvider';
@@ -54,7 +54,6 @@ function Root() {
   useEffect(() => {
     (async () => {
       try {
-        await checkAndApplyUpdate();
         await getDb();
         await useMedicineStore.getState().loadMedicines();
         const medicines = useMedicineStore.getState().medicines;
@@ -103,6 +102,15 @@ function Root() {
   }
 
   const statusBar = <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />;
+
+  if (status === 'new') {
+    return (
+      <>
+        {statusBar}
+        <TrialIntro />
+      </>
+    );
+  }
 
   if (status === 'locked') {
     return (

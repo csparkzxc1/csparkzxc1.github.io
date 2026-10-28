@@ -233,6 +233,30 @@ export const STRINGS: Record<string, Entry> = {
     en: 'Payment is handled by your Apple ID. Dose reminders keep ringing even after the trial ends.',
   },
 
+  // ── Trial intro (shown before the trial starts) ───────────────────────
+  'intro.title': { ko: '7일 동안 무료로 써 보세요', en: 'Try everything free for 7 days' },
+  'intro.subtitle': {
+    ko: '약 복용 시간에 맞춰 알려 드리고, 복용 기록을 챙겨 드려요.',
+    en: 'Reminders right on time, and a record of every dose.',
+  },
+  'intro.termsTitle': { ko: '무료 체험 안내', en: 'How the free trial works' },
+  'intro.termLength': { ko: '체험 기간: 시작한 날부터 7일', en: 'Length: 7 days from the day you start' },
+  'intro.termLocked': {
+    ko: '체험이 끝나면 약 목록·복용 기록·달력 화면이 잠겨요. 이미 등록한 복용 알림은 계속 울립니다.',
+    en: 'After the trial, the medicine list, dose history and calendar lock. Reminders you already set keep ringing.',
+  },
+  'intro.termPrice': {
+    ko: '계속 쓰려면 {price} 1회 결제 (구독 아님, 자동 결제 없음)',
+    en: 'To keep using it: {price} once (not a subscription, never charged automatically)',
+  },
+  'intro.start': { ko: '7일 무료 체험 시작', en: 'Start 7-day free trial' },
+  'intro.buyNow': { ko: '{price}에 바로 구매', en: 'Buy now for {price}' },
+  'intro.footer': {
+    ko: '체험은 App Store의 무료(₩0) 상품으로 시작되며 요금이 청구되지 않습니다.',
+    en: 'The trial starts with a free (0) App Store item. You will not be charged.',
+  },
+  'intro.startFail': { ko: '체험을 시작하지 못했어요. 잠시 후 다시 시도해 주세요.', en: "Couldn't start the trial. Please try again." },
+
   // ── Notifications ─────────────────────────────────────────────────────
   'notif.channelDose': { ko: '약 복용 알림', en: 'Dose reminders' },
   'notif.channelRefill': { ko: '재처방 알림', en: 'Refill reminders' },
