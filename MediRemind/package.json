@@ -16,7 +16,8 @@
     "submit:android": "eas submit --platform android --profile production",
     "build:preview:ios": "eas build --platform ios --profile preview",
     "icons": "NODE_PATH=$(npm root -g) node scripts/generate-icons.js",
-    "screenshots": "NODE_PATH=$(npm root -g) node scripts/store-screenshots.js"
+    "screenshots": "NODE_PATH=$(npm root -g) node scripts/store-screenshots.js",
+    "design-sheet": "node scripts/design-sheet.js"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
