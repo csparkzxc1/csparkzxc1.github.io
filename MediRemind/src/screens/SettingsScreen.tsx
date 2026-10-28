@@ -26,7 +26,9 @@ import { useEntitlement } from '../purchase/EntitlementProvider';
 import { FREE_MEDICINE_LIMIT, PURCHASE_CONFIG } from '../purchase/purchase.config';
 import {
   loadReminderSettings,
+  openSystemSettings,
   saveReminderSettings,
+  sendTestNotification,
   syncNotifications,
   type ReminderSettings,
 } from '../notifications/notifications';
@@ -130,6 +132,20 @@ export default function SettingsScreen() {
     Haptics.selectionAsync().catch(() => {});
     await saveReminderSettings(next);
     await syncNotifications(useMedicineStore.getState().medicines);
+  };
+
+  const handleTestNotification = async () => {
+    const result = await sendTestNotification();
+    if (result.status === 'denied') {
+      Alert.alert(t('notif.permTitle'), t('notif.permBody'), [
+        { text: t('common.cancel'), style: 'cancel' },
+        { text: t('notif.openSettings'), onPress: openSystemSettings },
+      ]);
+      return;
+    }
+    // Make sure the real schedule is in place too.
+    await syncNotifications(useMedicineStore.getState().medicines);
+    Alert.alert(t('settings.testSentTitle'), t('settings.testSentBody', { n: result.scheduledDoses }));
   };
 
   const handleRestore = async () => {
@@ -264,6 +280,14 @@ export default function SettingsScreen() {
                 thumbColor="#FFF"
               />
             }
+          />
+          <View style={styles.divider} />
+          <SettingRow
+            icon="notifications-outline"
+            iconColor={colors.success}
+            title={t('settings.testNotif')}
+            subtitle={t('settings.testNotifSub')}
+            onPress={handleTestNotification}
           />
           {/* iOS decides notification vibration itself; the toggle only works on Android. */}
           {Platform.OS === 'android' && (

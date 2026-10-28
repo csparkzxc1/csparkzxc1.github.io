@@ -18,7 +18,7 @@ import * as Haptics from 'expo-haptics';
 import { COLOR_TAGS, type ColorTag, type Medicine, type RootStackParamList } from '../types';
 import { useMedicineStore } from '../store/medicineStore';
 import { useI18n } from '../i18n/I18nProvider';
-import { weekdayLabels } from '../i18n/core';
+import { formatTime, weekdayLabels } from '../i18n/core';
 import { uid } from '../lib/id';
 import { useEntitlement } from '../purchase/EntitlementProvider';
 import { canAddMedicine } from '../purchase/limits';
@@ -382,6 +382,7 @@ export default function MedicineFormScreen() {
                   maxLength={5}
                   accessibilityLabel={`${t('form.times')} ${idx + 1}`}
                 />
+                {time.length > 0 && <Text style={styles.timeAmPm}>{formatTime(normalizeTime(time))}</Text>}
               </View>
               {times.length > 1 && (
                 <TouchableOpacity style={styles.removeTimeBtn} onPress={() => removeTime(idx)}>
@@ -633,6 +634,7 @@ const makeStyles = (c: ThemeColors, scheme: Scheme) =>
       borderColor: c.brandBorder,
     },
     timeInput: { flex: 1, fontSize: 18, fontWeight: '700', color: c.brand, paddingVertical: 10 },
+    timeAmPm: { fontSize: 14, fontWeight: '600', color: c.textMuted, marginLeft: 8 },
     removeTimeBtn: { padding: 4 },
     addTimeBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
     addTimeText: { color: c.brand, fontSize: 14, fontWeight: '600' },

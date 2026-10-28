@@ -221,6 +221,29 @@ async function scheduleRefillAlerts(
   return budget;
 }
 
+/**
+ * Schedules a one-off notification a few seconds out so users can check that
+ * reminders reach them. Reports how many dose reminders are scheduled.
+ */
+export async function sendTestNotification(): Promise<
+  { status: 'denied' } | { status: 'sent'; scheduledDoses: number }
+> {
+  if (!(await ensurePermission())) return { status: 'denied' };
+  await Notifications.scheduleNotificationAsync({
+    content: { title: t('notif.testTitle'), body: t('notif.testBody'), sound: 'default' },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+      seconds: 5,
+      channelId: DOSE_CHANNEL,
+    },
+  });
+  const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+  const scheduledDoses = scheduled.filter(
+    (n) => (n.content.data as { type?: string } | undefined)?.type === 'dose'
+  ).length;
+  return { status: 'sent', scheduledDoses };
+}
+
 export async function cancelAllReminders(): Promise<void> {
   await Notifications.cancelAllScheduledNotificationsAsync();
 }
