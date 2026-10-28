@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Switch, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import type { Medicine } from '../types';
 import { daysLabel, formatTime } from '../i18n/core';
 import { useI18n } from '../i18n/I18nProvider';
@@ -36,7 +36,7 @@ export default function MedicineCard({ medicine, onPress, onToggleActive }: Medi
       activeOpacity={0.85}
     >
       <View style={[styles.iconBox, { backgroundColor: medicine.color + '24' }]}>
-        <Ionicons name="medical" size={20} color={medicine.color} />
+        <MaterialCommunityIcons name="pill" size={22} color={medicine.color} />
       </View>
       <View style={styles.body}>
         <View style={styles.nameRow}>

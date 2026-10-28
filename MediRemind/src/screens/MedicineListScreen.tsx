@@ -12,7 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 
 import type { Medicine, RootStackParamList } from '../types';
@@ -131,7 +131,7 @@ export default function MedicineListScreen() {
 
       {medicines.length === 0 && !isLoading ? (
         <View style={styles.empty}>
-          <Ionicons name="medical-outline" size={72} color={colors.textFaint} />
+          <MaterialCommunityIcons name="pill" size={72} color={colors.textFaint} />
           <Text style={styles.emptyTitle}>{t('list.emptyTitle')}</Text>
           <Text style={styles.emptyDesc}>{t('list.emptyDesc')}</Text>
           <TouchableOpacity style={styles.emptyBtn} onPress={() => navigation.navigate('MedicineForm')}>

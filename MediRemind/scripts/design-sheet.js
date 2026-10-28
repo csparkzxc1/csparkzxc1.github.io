@@ -42,6 +42,10 @@ const TOKEN_NOTES = {
   danger: '삭제·미복용', dangerSoft: '위험 아이콘 배경', chipBorder: '칩 테두리',
 };
 
+// MaterialCommunityIcons "pill" (tab bar, medicine cards, empty states).
+const pill = (size = '1.15em') =>
+  `<svg viewBox="0 0 24 24" width="${size}" height="${size}" style="vertical-align:-.15em"><path fill="currentColor" d="M4.22,11.29L11.29,4.22C13.64,1.88 17.43,1.88 19.78,4.22C22.12,6.56 22.12,10.36 19.78,12.71L12.71,19.78C10.36,22.12 6.56,22.12 4.22,19.78C1.88,17.43 1.88,13.64 4.22,11.29M5.64,12.71C4.59,13.75 4.24,15.24 4.6,16.57L10.59,10.59L14.83,14.83L18.36,11.29C19.93,9.73 19.93,7.2 18.36,5.64C16.8,4.07 14.27,4.07 12.71,5.64L5.64,12.71Z"/></svg>`;
+
 const vars = (t) => Object.entries(t).map(([k, v]) => `--${k}:${v};`).join('');
 
 const tokenRows = Object.keys(LIGHT)
@@ -54,8 +58,7 @@ const tokenRows = Object.keys(LIGHT)
   .join('');
 
 const ICONS_USED = [
-  ['home', '탭: 홈'], ['home-outline', '탭: 홈(비활성)'], ['medical', '탭: 내 약 / 약 카드'],
-  ['medical-outline', '탭: 내 약(비활성)'], ['calendar', '탭: 달력'], ['calendar-outline', '요일 표시'],
+  ['home', '탭: 홈'], ['home-outline', '탭: 홈(비활성)'], ['calendar', '탭: 달력'], ['calendar-outline', '요일 표시'],
   ['settings', '탭: 설정'], ['settings-outline', '탭: 설정(비활성)'], ['add', '약 추가'],
   ['checkmark', '복용 체크'], ['checkmark-circle', '결제 혜택·저장'], ['checkmark-done-circle', '정식 버전'],
   ['time-outline', '복용 시간'], ['notifications-outline', '미리 알림'], ['alert-circle', '재처방 임박'],
@@ -107,14 +110,14 @@ const components = () => `
     </div>
     <div class="col">
       <div class="med">
-        <div class="mi" style="background:#4A6CF724;color:#4A6CF7">${ic('medical')}</div>
+        <div class="mi" style="background:#4A6CF724;color:#4A6CF7">${pill()}</div>
         <div class="info"><div class="nm">혈압약 <span class="badge" style="background:var(--danger)">D-2</span></div>
           <div class="meta">${ic('time-outline')} 오전 8:00, 오후 8:00</div>
           <div class="meta">${ic('calendar-outline')} 매일 · 1정</div></div>
         <span class="switch on"></span>
       </div>
       <div class="med" style="opacity:.55">
-        <div class="mi" style="background:#14B8A624;color:#14B8A6">${ic('medical')}</div>
+        <div class="mi" style="background:#14B8A624;color:#14B8A6">${pill()}</div>
         <div class="info"><div class="nm">수면유도제</div>
           <div class="meta">${ic('time-outline')} 오후 11:00 · 0.5정</div></div>
         <span class="switch"></span>
@@ -170,7 +173,7 @@ const components = () => `
       <div class="rec" style="border-left-color:var(--success)"><i class="sd" style="background:var(--success)"></i><span class="st">혈압약<small>오전 8:00 · 1정</small></span><b style="color:var(--success)">복용</b></div>
       <div class="rec" style="border-left-color:var(--danger)"><i class="sd" style="background:var(--danger)"></i><span class="st">종합비타민<small>오후 9:00 · 1정</small></span><b style="color:var(--danger)">미복용</b></div>
       <div class="tabbar">
-        <span class="on">${ic('home')}<small>홈</small></span><span>${ic('medical-outline')}<small>내 약</small></span>
+        <span class="on">${ic('home')}<small>홈</small></span><span>${pill()}<small>내 약</small></span>
         <span>${ic('calendar-outline')}<small>달력</small></span><span>${ic('settings-outline')}<small>설정</small></span>
       </div>
     </div>
@@ -355,8 +358,9 @@ td.note{color:#5D6479}
 <div class="theme dark"><div class="theme-title">DARK</div>${components()}</div>
 
 <h2><span class="n">05</span>아이콘 (Ionicons)</h2>
-<p class="desc"><code>@expo/vector-icons</code>의 Ionicons 중 앱에서 쓰는 ${ICONS_USED.length}개.</p>
+<p class="desc"><code>@expo/vector-icons</code>의 Ionicons ${ICONS_USED.length}개와 MaterialCommunityIcons의 pill 1개.</p>
 <div class="panel icons">
+  <div><span class="ion" style="font-family:inherit;color:#4A6CF7;font-size:28px;display:block;margin:0 auto 8px">${pill('28px')}</span><code>pill (MaterialCommunityIcons)</code><span>탭: 내 약 · 약 카드</span></div>
   ${ICONS_USED.map(([n, d]) => `<div>${ic(n)}<code>${n}</code><span>${d}</span></div>`).join('')}
 </div>
 

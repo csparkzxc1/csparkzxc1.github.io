@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity } 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
 import type { DoseRecord, RootStackParamList } from '../types';
 import { useDoseStore } from '../store/doseStore';
@@ -119,7 +119,7 @@ export default function HomeScreen() {
 
         {totalCount === 0 ? (
           <View style={styles.emptyState}>
-            <Ionicons name="medical-outline" size={60} color={colors.textFaint} />
+            <MaterialCommunityIcons name="pill" size={60} color={colors.textFaint} />
             <Text style={styles.emptyTitle}>{t('home.emptyTitle')}</Text>
             <Text style={styles.emptyDesc}>{t('home.emptyDesc')}</Text>
             <TouchableOpacity style={styles.emptyBtn} onPress={() => navigation.navigate('MedicineForm')}>

@@ -3,7 +3,7 @@ import { Platform } from 'react-native';
 import { NavigationContainer, DarkTheme, DefaultTheme, type Theme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
 import type { BottomTabParamList, RootStackParamList } from '../types';
 import { useI18n } from '../i18n/I18nProvider';
@@ -18,9 +18,8 @@ import PaywallScreen from '../screens/PaywallScreen';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<BottomTabParamList>();
 
-const TAB_ICONS: Record<keyof BottomTabParamList, [string, string]> = {
+const TAB_ICONS: Record<Exclude<keyof BottomTabParamList, 'MedicineList'>, [string, string]> = {
   Home: ['home', 'home-outline'],
-  MedicineList: ['medical', 'medical-outline'],
   Calendar: ['calendar', 'calendar-outline'],
   Settings: ['settings', 'settings-outline'],
 };
@@ -50,6 +49,9 @@ function BottomTabNavigator() {
         },
         tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
         tabBarIcon: ({ color, size, focused }) => {
+          if (route.name === 'MedicineList') {
+            return <MaterialCommunityIcons name="pill" size={size} color={color} />;
+          }
           const [on, off] = TAB_ICONS[route.name];
           return (
             <Ionicons

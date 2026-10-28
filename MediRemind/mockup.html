@@ -174,11 +174,49 @@
   .tab { flex:1; text-align:center; font-size:10px; font-weight:600; color:#9AA1B5; }
   .tab .ic { font-size:20px; display:block; margin-bottom:2px; }
   .tab.on { color:#4A6CF7; }
+
+  .segm { display:flex; background:#EBEEF6; border-radius:10px; padding:3px; }
+  .segm span { flex:1; text-align:center; padding:6px 0; border-radius:8px; font-size:11px; font-weight:600; color:#8A91A8; }
+  .segm span.on { background:#FFF; color:#1A1D2B; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+
+  /* ── Paywall ── */
+  .pw { padding:8px 22px 0; flex:1; display:flex; flex-direction:column; }
+  .pw-close { align-self:flex-end; color:#8A91A8; font-size:20px; }
+  .pw-hero { text-align:center; margin-top:4px; }
+  .pw-icon { width:72px; height:72px; border-radius:22px; background:#EDF1FE; display:inline-flex; align-items:center; justify-content:center; font-size:36px; }
+  .pw-title { font-size:20px; font-weight:800; margin-top:12px; letter-spacing:-.3px; }
+  .pw-status { font-size:12px; font-weight:700; color:#4A6CF7; margin-top:5px; }
+  .pw-feat { background:#FFF; border-radius:16px; padding:14px; margin-top:16px; box-shadow:0 6px 14px rgba(63,74,126,.07); }
+  .pw-feat div { display:flex; gap:9px; align-items:center; font-size:12.5px; padding:5px 0; }
+  .pw-feat i { font-style:normal; color:#FFF; background:#10B981; width:18px; height:18px; border-radius:9px; display:inline-flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0; }
+  .pw-price { text-align:center; margin-top:16px; font-size:28px; font-weight:800; }
+  .pw-price small { display:block; font-size:11px; color:#8A91A8; font-weight:500; margin-top:2px; }
+  .pw-buy { background:#4A6CF7; color:#FFF; border-radius:14px; text-align:center; padding:13px; font-weight:700; font-size:14px; margin-top:14px; box-shadow:0 8px 18px rgba(74,108,247,.35); }
+  .pw-restore { border:1px solid #E5E8F0; border-radius:14px; text-align:center; padding:11px; font-weight:600; font-size:13px; margin-top:9px; }
+  .pw-foot { text-align:center; font-size:10px; color:#8A91A8; margin-top:10px; line-height:1.5; }
+
+  /* ── Dark theme screen ── */
+  .screen.dark { background:#0B0D14; color:#F3F5FA; }
+  .dark .status, .dark .header .title, .dark .dose .name, .dark .prog-head, .dark .med .nm { color:#F3F5FA; }
+  .dark .card, .dark .dose, .dark .med { background:#161A26; box-shadow:none; border:1px solid #2A3042; }
+  .dark .track { background:#232838; }
+  .dark .fill, .dark .fab { background:#6B86FF; }
+  .dark .prog-pct, .dark .prog-count b, .dark .dose .meta .accent { color:#6B86FF; }
+  .dark .trial { background:rgba(107,134,255,.16); color:#8EA2FF; }
+  .dark .streak { background:rgba(251,191,36,.12); color:#FCD34D; }
+  .dark .banner { background:rgba(251,191,36,.10); border-left-color:#FBBF24; box-shadow:none; }
+  .dark .banner-title { color:#FCD34D; }
+  .dark .pill { background:#161A26; color:#F3F5FA; }
+  .dark .dose .name.done { color:#5D6479; }
+  .dark .check { background:#232838; border-color:#2A3042; color:#5D6479; }
+  .dark .check.done { background:#34D399; border-color:#34D399; color:#FFF; box-shadow:none; }
+  .dark .tabbar { background:#161A26; box-shadow:none; border-top:1px solid #2A3042; }
+  .dark .tab.on { color:#6B86FF; }
 </style>
 </head>
 <body>
-<h1>💊 MediRemind — 2025 Design Refresh</h1>
-<p class="sub">라이트 라지 타이틀 헤더 · 인디고 팔레트(#4A6CF7) · 소프트 뎁스 카드 · 원형 체크 버튼</p>
+<h1>💊 MediRemind — App Mockup</h1>
+<p class="sub">홈 · 내 약 · 약 등록 · 달력 · 설정 · 정식 버전 · 다크 모드</p>
 
 <div class="screens">
 
@@ -395,6 +433,19 @@
     <div class="screen-label">설정</div>
     <div class="header"><div><div class="title">설정</div></div></div>
     <div class="body">
+      <div class="set-lbl">이용권</div>
+      <div class="set-card">
+        <div class="set-row">
+          <div class="set-ic" style="background:rgba(74,108,247,.12)">✨</div>
+          <div class="set-tt">무료 체험 5일 남음<small>탭하여 정식 버전 보기</small></div>
+          <span class="chev">›</span>
+        </div>
+        <div class="set-row">
+          <div class="set-ic" style="background:rgba(136,136,136,.12)">🔄</div>
+          <div class="set-tt">구매 복원</div>
+          <span class="chev">›</span>
+        </div>
+      </div>
       <div class="set-lbl">알림</div>
       <div class="set-card">
         <div class="set-row">
@@ -402,38 +453,25 @@
           <div class="set-tt">알림 소리</div>
           <div class="switch"></div>
         </div>
-        <div class="set-row">
-          <div class="set-ic" style="background:rgba(139,92,246,.12)">📳</div>
-          <div class="set-tt">알림 진동</div>
-          <div class="switch"></div>
-        </div>
       </div>
-      <div class="set-lbl">업데이트</div>
-      <div class="set-card">
-        <div class="set-row">
-          <div class="set-ic" style="background:rgba(74,108,247,.12)">☁️</div>
-          <div class="set-tt">업데이트 확인<small>채널: production</small></div>
-          <span class="chev">›</span>
-        </div>
+      <div class="set-lbl">화면</div>
+      <div class="set-card" style="padding:12px 14px">
+        <div class="set-tt" style="font-size:11px;color:#8A91A8;font-weight:600;margin-bottom:6px">테마</div>
+        <div class="segm"><span class="on">시스템</span><span>라이트</span><span>다크</span></div>
+        <div class="set-tt" style="font-size:11px;color:#8A91A8;font-weight:600;margin:10px 0 6px">언어</div>
+        <div class="segm"><span>시스템</span><span class="on">한국어</span><span>English</span></div>
       </div>
       <div class="set-lbl">데이터</div>
       <div class="set-card">
         <div class="set-row">
-          <div class="set-ic" style="background:rgba(239,68,68,.12)">🔄</div>
-          <div class="set-tt" style="color:#EF4444">복용 기록 초기화<small>4개 약 등록됨</small></div>
-          <span class="chev">›</span>
-        </div>
-      </div>
-      <div class="set-lbl">앱 정보</div>
-      <div class="set-card">
-        <div class="set-row">
-          <div class="set-ic" style="background:rgba(20,184,166,.12)">🛡</div>
-          <div class="set-tt">개인정보처리방침</div>
+          <div class="set-ic" style="background:rgba(20,184,166,.12)">📤</div>
+          <div class="set-tt">백업 내보내기<small>파일로 저장 (iCloud·파일 앱)</small></div>
           <span class="chev">›</span>
         </div>
         <div class="set-row">
-          <div class="set-ic" style="background:rgba(136,136,136,.12)">ℹ️</div>
-          <div class="set-tt">앱 버전<small>v1.0.0 (1.0.0)</small></div>
+          <div class="set-ic" style="background:rgba(74,108,247,.12)">📥</div>
+          <div class="set-tt">백업 불러오기<small>기기 변경 시 복원</small></div>
+          <span class="chev">›</span>
         </div>
       </div>
     </div>
@@ -442,6 +480,98 @@
       <div class="tab"><span class="ic">💊</span>내 약</div>
       <div class="tab"><span class="ic">📅</span>달력</div>
       <div class="tab on"><span class="ic">⚙️</span>설정</div>
+    </div>
+  </div></div>
+
+  <!-- ═══ 6. PAYWALL ═══ -->
+  <div class="phone"><div class="screen">
+    <div class="notch"></div>
+    <div class="status"><span>9:41</span><span>📶 🔋</span></div>
+    <div class="screen-label">정식 버전</div>
+    <div class="pw">
+      <div class="pw-close">✕</div>
+      <div class="pw-hero">
+        <div class="pw-icon">💊</div>
+        <div class="pw-title">MediRemind 정식 버전</div>
+        <div class="pw-status">무료 체험 5일 남음</div>
+      </div>
+      <div class="pw-feat">
+        <div><i>✓</i>약 무제한 등록 · 시간별 복용 알림</div>
+        <div><i>✓</i>알림에서 바로 "복용 완료" 체크</div>
+        <div><i>✓</i>복용 달력 · 연속 복용 기록</div>
+        <div><i>✓</i>재처방 D-Day 알림</div>
+        <div><i>✓</i>백업 &amp; 복원 (기기 변경 안전)</div>
+        <div><i>✓</i>광고 없음 · 한 번 구매로 평생 사용</div>
+      </div>
+      <div class="pw-price">₩2,200<small>1회 결제 · 구독 아님</small></div>
+      <div class="pw-buy">₩2,200에 정식 버전 구매</div>
+      <div class="pw-restore">구매 복원</div>
+      <div class="pw-foot">결제는 Apple ID로 처리됩니다.<br>복용 알림은 체험 종료 후에도 계속 울려요.</div>
+    </div>
+  </div></div>
+
+  <!-- ═══ 7. DARK HOME ═══ -->
+  <div class="phone"><div class="screen dark">
+    <div class="notch"></div>
+    <div class="status"><span>9:41</span><span>📶 🔋</span></div>
+    <div class="screen-label">다크 모드</div>
+    <div class="header">
+      <div>
+        <div class="date">7월 6일 월요일</div>
+        <div class="title">오늘의 복용 현황</div>
+      </div>
+      <div class="fab">+</div>
+    </div>
+    <div class="body">
+      <div class="trial">✨ 무료 체험 5일 남음 · 정식 버전 보기 <span>›</span></div>
+      <div class="card">
+        <div class="prog-head">
+          <div>
+            <div class="prog-label">오늘 복용 현황</div>
+            <div class="prog-count"><b>2</b> / 3회 완료</div>
+          </div>
+          <div class="prog-pct">66<span>%</span></div>
+        </div>
+        <div class="track"><div class="fill"></div></div>
+        <div class="streak">🔥 12일 연속 복용</div>
+      </div>
+
+      <div class="banner">
+        <div class="banner-title">⚠️ 재처방 임박 알림</div>
+        <span class="pill urgent"><span class="dot" style="background:#EF4444"></span>혈압약 <span class="dday">D-2</span></span>
+        <span class="pill"><span class="dot"></span>오메가3 <span class="dday">D-6</span></span>
+      </div>
+
+      <div class="dose">
+        <div class="bar" style="background:#4A6CF7"></div>
+        <div class="info">
+          <div class="name done">혈압약</div>
+          <div class="meta">🕗 오전 8:00 · 1정 · <span class="accent">🔔 10분 전</span></div>
+        </div>
+        <div class="check done">✓</div>
+      </div>
+      <div class="dose">
+        <div class="bar" style="background:#10B981"></div>
+        <div class="info">
+          <div class="name done">오메가3</div>
+          <div class="meta">🕐 오후 1:00 · 2정</div>
+        </div>
+        <div class="check done">✓</div>
+      </div>
+      <div class="dose">
+        <div class="bar" style="background:#8B5CF6"></div>
+        <div class="info">
+          <div class="name">종합비타민</div>
+          <div class="meta">🕘 오후 9:00 · 1정 · <span class="accent">🔔 5분 전</span></div>
+        </div>
+        <div class="check">✓</div>
+      </div>
+    </div>
+    <div class="tabbar">
+      <div class="tab on"><span class="ic">🏠</span>홈</div>
+      <div class="tab"><span class="ic">💊</span>내 약</div>
+      <div class="tab"><span class="ic">📅</span>달력</div>
+      <div class="tab"><span class="ic">⚙️</span>설정</div>
     </div>
   </div></div>
 
