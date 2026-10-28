@@ -1,0 +1,575 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MediRemind — 2025 Design Mockup</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+    background:#1E2235; padding:40px 24px; color:#1A1D2B;
+  }
+  h1 { color:#FFF; text-align:center; font-size:22px; margin-bottom:6px; font-weight:800; }
+  .sub { color:#9AA1B5; text-align:center; font-size:13px; margin-bottom:36px; }
+  .screens { display:flex; gap:28px; justify-content:center; flex-wrap:wrap; }
+
+  /* ── Phone shell ── */
+  .phone {
+    width:340px; background:#000; border-radius:44px; padding:10px;
+    box-shadow:0 24px 60px rgba(0,0,0,.5);
+  }
+  .screen {
+    background:#F4F6FB; border-radius:36px; overflow:hidden; height:700px;
+    display:flex; flex-direction:column; position:relative;
+  }
+  .notch {
+    position:absolute; top:10px; left:50%; transform:translateX(-50%);
+    width:110px; height:26px; background:#000; border-radius:16px; z-index:50;
+  }
+  .status { display:flex; justify-content:space-between; padding:14px 26px 4px; font-size:12px; font-weight:700; color:#1A1D2B; }
+  .screen-label { color:#8A91A8; text-align:center; font-size:12px; font-weight:700; padding:10px 0 2px; letter-spacing:1px; text-transform:uppercase; }
+  .body { flex:1; overflow:hidden; padding:0 16px; }
+
+  /* ── Light large-title header ── */
+  .header { display:flex; justify-content:space-between; align-items:flex-end; padding:16px 20px 12px; }
+  .header .date { color:#8A91A8; font-size:12px; font-weight:600; margin-bottom:3px; }
+  .header .title { color:#1A1D2B; font-size:24px; font-weight:800; letter-spacing:-.5px; }
+  .fab {
+    width:42px; height:42px; border-radius:21px; background:#4A6CF7; color:#FFF;
+    display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:400;
+    box-shadow:0 6px 14px rgba(74,108,247,.4);
+  }
+
+  /* ── Cards ── */
+  .card {
+    background:#FFF; border-radius:20px; padding:18px; margin-bottom:12px;
+    box-shadow:0 8px 20px rgba(63,74,126,.08);
+  }
+
+  /* ── Progress ── */
+  .prog-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+  .prog-label { font-size:12px; color:#8A91A8; font-weight:600; margin-bottom:3px; }
+  .prog-count { font-size:13px; color:#8A91A8; font-weight:600; }
+  .prog-count b { color:#4A6CF7; font-size:16px; font-weight:800; }
+  .prog-pct { font-size:34px; font-weight:800; color:#4A6CF7; letter-spacing:-1px; }
+  .prog-pct span { font-size:17px; }
+  .track { height:12px; background:#EBEEF6; border-radius:6px; overflow:hidden; }
+  .fill { height:100%; width:66%; background:#4A6CF7; border-radius:6px; }
+
+  .trial { display:flex; align-items:center; gap:6px; background:#EDF1FE; color:#4A6CF7; border-radius:14px; padding:9px 12px; font-size:12px; font-weight:700; margin-bottom:10px; }
+  .trial span { margin-left:auto; }
+  .streak { display:inline-block; margin-top:12px; background:#FFFBEB; color:#92400E; border-radius:12px; padding:5px 11px; font-size:12px; font-weight:800; }
+
+  /* ── Banner ── */
+  .banner {
+    background:#FFFBEB; border-left:4px solid #F59E0B; border-radius:16px;
+    padding:12px 14px; margin-bottom:12px; box-shadow:0 4px 10px rgba(63,74,126,.05);
+  }
+  .banner-title { font-size:12px; font-weight:700; color:#92400E; margin-bottom:8px; }
+  .pill {
+    display:inline-flex; align-items:center; gap:6px; background:#FFF; border:1.5px solid #F59E0B;
+    border-radius:18px; padding:5px 11px; font-size:12px; font-weight:600; margin-right:6px;
+  }
+  .pill .dot { width:8px; height:8px; border-radius:4px; background:#F59E0B; }
+  .pill .dday { color:#F59E0B; font-weight:800; }
+  .pill.urgent { border-color:#EF4444; }
+  .pill.urgent .dday { color:#EF4444; }
+
+  /* ── Dose item ── */
+  .dose {
+    display:flex; align-items:center; background:#FFF; border-radius:18px; margin-bottom:10px;
+    box-shadow:0 6px 14px rgba(63,74,126,.07); overflow:hidden; min-height:70px;
+  }
+  .dose .bar { width:5px; align-self:stretch; }
+  .dose .info { flex:1; padding:13px 14px; }
+  .dose .name { font-size:15px; font-weight:700; color:#1A1D2B; margin-bottom:4px; letter-spacing:-.2px; }
+  .dose .name.done { text-decoration:line-through; color:#A9B0C5; }
+  .dose .meta { font-size:12px; color:#8A91A8; }
+  .dose .meta .accent { color:#4A6CF7; }
+  .check {
+    width:44px; height:44px; border-radius:22px; margin-right:14px; flex-shrink:0;
+    background:#F1F3F9; border:2px solid #E3E7F1;
+    display:flex; align-items:center; justify-content:center; font-size:22px; color:#C4CBDD;
+  }
+  .check.done {
+    background:#10B981; border-color:#10B981; color:#FFF;
+    box-shadow:0 4px 10px rgba(16,185,129,.35);
+  }
+
+  /* ── Medicine card ── */
+  .med { display:flex; align-items:center; gap:12px; background:#FFF; border-radius:18px; padding:14px 16px; margin-bottom:10px; box-shadow:0 6px 14px rgba(63,74,126,.07); }
+  .med .icon { width:42px; height:42px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:19px; flex-shrink:0; }
+  .med .icon.blue { background:rgba(74,108,247,.12); }
+  .med .icon.green { background:rgba(16,185,129,.12); }
+  .med .icon.purple { background:rgba(139,92,246,.12); }
+  .med .b { flex:1; min-width:0; }
+  .med .row1 { display:flex; align-items:center; gap:8px; margin-bottom:3px; }
+  .med .nm { font-size:15px; font-weight:700; color:#1A1D2B; letter-spacing:-.2px; }
+  .badge { border-radius:12px; padding:2px 9px; font-size:10px; font-weight:800; color:#FFF; }
+  .badge.g { background:#10B981; } .badge.o { background:#F59E0B; } .badge.r { background:#EF4444; }
+  .med .mt { font-size:12px; color:#8A91A8; }
+  .switch { width:44px; height:26px; border-radius:13px; background:#4A6CF7; position:relative; flex-shrink:0; }
+  .switch::after { content:''; position:absolute; right:3px; top:3px; width:20px; height:20px; background:#FFF; border-radius:10px; box-shadow:0 1px 3px rgba(0,0,0,.2); }
+  .switch.off { background:#CCD2E0; }
+  .switch.off::after { left:3px; right:auto; }
+  .med.swiped { transform:translateX(-64px); }
+  .swipe-wrap { position:relative; border-radius:18px; overflow:hidden; margin-bottom:10px; }
+  .swipe-wrap .med { margin-bottom:0; }
+  .del { position:absolute; right:0; top:0; bottom:0; width:64px; background:#EF4444; color:#FFF; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:11px; font-weight:700; gap:2px; border-radius:0 18px 18px 0; }
+
+  /* ── Form ── */
+  .sec-title { font-size:13px; font-weight:700; color:#4A6CF7; margin-bottom:11px; }
+  .lbl { font-size:12px; font-weight:600; color:#555; margin-bottom:7px; }
+  .input { background:#F4F6FB; border:1px solid #E5E7EB; border-radius:12px; padding:11px 13px; font-size:13px; color:#1A1D2B; margin-bottom:10px; }
+  .chips { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:10px; }
+  .chip { border:1.5px solid #DDD; background:#F4F6FB; border-radius:18px; padding:7px 12px; font-size:12px; font-weight:600; color:#888; }
+  .chip.on { border-color:#4A6CF7; background:#EDF1FE; color:#4A6CF7; }
+  .freq { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
+  .freq .f { flex:1; min-width:38px; text-align:center; border:1.5px solid #DDD; border-radius:10px; padding:9px 0; font-size:12px; font-weight:600; color:#888; }
+  .freq .f.on { border-color:#4A6CF7; background:#EDF1FE; color:#4A6CF7; }
+  .time-in { display:flex; align-items:center; gap:8px; background:#F0F3FF; border:1px solid #DCE3FD; border-radius:12px; padding:11px 13px; margin-bottom:8px; }
+  .time-in .t { font-size:16px; font-weight:700; color:#4A6CF7; flex:1; }
+  .time-in .cursor { display:inline-block; width:2px; height:18px; background:#4A6CF7; vertical-align:middle; animation:blink 1s infinite; }
+  @keyframes blink { 50% { opacity:0; } }
+  .minus { color:#EF4444; font-size:18px; }
+  .save { background:#4A6CF7; border-radius:16px; color:#FFF; text-align:center; padding:14px; font-size:15px; font-weight:700; box-shadow:0 8px 18px rgba(74,108,247,.35); margin-top:4px; }
+
+  /* ── Calendar ── */
+  .rate-badge { background:#EDF1FE; color:#4A6CF7; border-radius:16px; padding:6px 13px; font-size:12px; font-weight:800; }
+  .cal { background:#FFF; border-radius:20px; padding:14px; margin-bottom:12px; box-shadow:0 8px 20px rgba(63,74,126,.08); }
+  .cal .mon { text-align:center; font-weight:800; font-size:14px; margin-bottom:10px; color:#1A1D2B; }
+  .cal table { width:100%; border-collapse:collapse; font-size:11px; text-align:center; }
+  .cal th { color:#8A91A8; font-weight:600; padding:4px 0; }
+  .cal td { padding:6px 0; color:#333; position:relative; }
+  .cal td.dis { color:#CCD2E0; }
+  .cal td.sel { background:#4A6CF7; color:#FFF; border-radius:10px; font-weight:800; }
+  .d { position:absolute; bottom:1px; left:50%; transform:translateX(-50%); display:flex; gap:2px; }
+  .d i { width:4px; height:4px; border-radius:2px; display:block; }
+  .d .g { background:#10B981; } .d .r { background:#EF4444; }
+  .rec { display:flex; align-items:center; gap:10px; background:#FFF; border-radius:16px; padding:12px 14px; margin-bottom:8px; box-shadow:0 4px 10px rgba(63,74,126,.06); border-left:4px solid #10B981; }
+  .rec.miss { border-left-color:#EF4444; }
+  .rec .sd { width:9px; height:9px; border-radius:5px; background:#10B981; }
+  .rec.miss .sd { background:#EF4444; }
+  .rec .rn { flex:1; font-size:13px; font-weight:600; color:#1A1D2B; }
+  .rec .rt { font-size:11px; color:#8A91A8; }
+  .rec .st { font-size:12px; font-weight:800; color:#10B981; }
+  .rec.miss .st { color:#EF4444; }
+
+  /* ── Settings ── */
+  .set-lbl { font-size:10px; font-weight:700; color:#999; letter-spacing:.8px; text-transform:uppercase; margin:14px 4px 7px; }
+  .set-card { background:#FFF; border-radius:18px; overflow:hidden; box-shadow:0 4px 12px rgba(63,74,126,.06); }
+  .set-row { display:flex; align-items:center; gap:12px; padding:13px 14px; }
+  .set-row + .set-row { border-top:1px solid #F3F4F6; }
+  .set-ic { width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px; }
+  .set-tt { flex:1; font-size:13px; font-weight:500; color:#1A1D2B; }
+  .set-tt small { display:block; font-size:11px; color:#999; margin-top:1px; }
+  .chev { color:#CCC; font-size:14px; }
+
+  /* ── Tab bar ── */
+  .tabbar {
+    display:flex; background:#FFF; padding:10px 8px 22px;
+    box-shadow:0 -6px 20px rgba(26,34,70,.07);
+  }
+  .tab { flex:1; text-align:center; font-size:10px; font-weight:600; color:#9AA1B5; }
+  .tab .ic { font-size:20px; display:block; margin-bottom:2px; }
+  .tab.on { color:#4A6CF7; }
+
+  .segm { display:flex; background:#EBEEF6; border-radius:10px; padding:3px; }
+  .segm span { flex:1; text-align:center; padding:6px 0; border-radius:8px; font-size:11px; font-weight:600; color:#8A91A8; }
+  .segm span.on { background:#FFF; color:#1A1D2B; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+
+  /* ── Paywall ── */
+  .pw { padding:8px 22px 0; flex:1; display:flex; flex-direction:column; }
+  .pw-close { align-self:flex-end; color:#8A91A8; font-size:20px; }
+  .pw-hero { text-align:center; margin-top:4px; }
+  .pw-icon { width:72px; height:72px; border-radius:22px; background:#EDF1FE; display:inline-flex; align-items:center; justify-content:center; font-size:36px; }
+  .pw-title { font-size:20px; font-weight:800; margin-top:12px; letter-spacing:-.3px; }
+  .pw-status { font-size:12px; font-weight:700; color:#4A6CF7; margin-top:5px; }
+  .pw-feat { background:#FFF; border-radius:16px; padding:14px; margin-top:16px; box-shadow:0 6px 14px rgba(63,74,126,.07); }
+  .pw-feat div { display:flex; gap:9px; align-items:center; font-size:12.5px; padding:5px 0; }
+  .pw-feat i { font-style:normal; color:#FFF; background:#10B981; width:18px; height:18px; border-radius:9px; display:inline-flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0; }
+  .pw-price { text-align:center; margin-top:16px; font-size:28px; font-weight:800; }
+  .pw-price small { display:block; font-size:11px; color:#8A91A8; font-weight:500; margin-top:2px; }
+  .pw-buy { background:#4A6CF7; color:#FFF; border-radius:14px; text-align:center; padding:13px; font-weight:700; font-size:14px; margin-top:14px; box-shadow:0 8px 18px rgba(74,108,247,.35); }
+  .pw-restore { border:1px solid #E5E8F0; border-radius:14px; text-align:center; padding:11px; font-weight:600; font-size:13px; margin-top:9px; }
+  .pw-foot { text-align:center; font-size:10px; color:#8A91A8; margin-top:10px; line-height:1.5; }
+
+  /* ── Dark theme screen ── */
+  .screen.dark { background:#0B0D14; color:#F3F5FA; }
+  .dark .status, .dark .header .title, .dark .dose .name, .dark .prog-head, .dark .med .nm { color:#F3F5FA; }
+  .dark .card, .dark .dose, .dark .med { background:#161A26; box-shadow:none; border:1px solid #2A3042; }
+  .dark .track { background:#232838; }
+  .dark .fill, .dark .fab { background:#6B86FF; }
+  .dark .prog-pct, .dark .prog-count b, .dark .dose .meta .accent { color:#6B86FF; }
+  .dark .trial { background:rgba(107,134,255,.16); color:#8EA2FF; }
+  .dark .streak { background:rgba(251,191,36,.12); color:#FCD34D; }
+  .dark .banner { background:rgba(251,191,36,.10); border-left-color:#FBBF24; box-shadow:none; }
+  .dark .banner-title { color:#FCD34D; }
+  .dark .pill { background:#161A26; color:#F3F5FA; }
+  .dark .dose .name.done { color:#5D6479; }
+  .dark .check { background:#232838; border-color:#2A3042; color:#5D6479; }
+  .dark .check.done { background:#34D399; border-color:#34D399; color:#FFF; box-shadow:none; }
+  .dark .tabbar { background:#161A26; box-shadow:none; border-top:1px solid #2A3042; }
+  .dark .tab.on { color:#6B86FF; }
+</style>
+</head>
+<body>
+<h1>💊 MediRemind — App Mockup</h1>
+<p class="sub">Today · Medicines · Add · History · Settings · Full Version · Dark Mode</p>
+
+<div class="screens">
+
+  <!-- ═══ 1. HOME ═══ -->
+  <div class="phone"><div class="screen">
+    <div class="notch"></div>
+    <div class="status"><span>9:41</span><span>📶 🔋</span></div>
+    <div class="screen-label">Today</div>
+    <div class="header">
+      <div>
+        <div class="date">Monday, July 6</div>
+        <div class="title">Today's Doses</div>
+      </div>
+      <div class="fab">+</div>
+    </div>
+    <div class="body">
+      <div class="card">
+        <div class="prog-head">
+          <div>
+            <div class="prog-label">Today's progress</div>
+            <div class="prog-count"><b>2</b> / 3 taken</div>
+          </div>
+          <div class="prog-pct">66<span>%</span></div>
+        </div>
+        <div class="track"><div class="fill"></div></div>
+        <div class="streak">🔥 12-day streak</div>
+      </div>
+
+      <div class="banner">
+        <div class="banner-title">⚠️ Refill soon</div>
+        <span class="pill urgent"><span class="dot" style="background:#EF4444"></span>Blood pressure <span class="dday">D-2</span></span>
+        <span class="pill"><span class="dot"></span>Omega-3 <span class="dday">D-6</span></span>
+      </div>
+
+      <div class="dose">
+        <div class="bar" style="background:#4A6CF7"></div>
+        <div class="info">
+          <div class="name done">Blood pressure</div>
+          <div class="meta">🕗 8:00 AM · 1 tab · <span class="accent">🔔 10 min early</span></div>
+        </div>
+        <div class="check done">✓</div>
+      </div>
+      <div class="dose">
+        <div class="bar" style="background:#10B981"></div>
+        <div class="info">
+          <div class="name done">Omega-3</div>
+          <div class="meta">🕐 1:00 PM · 2 tab</div>
+        </div>
+        <div class="check done">✓</div>
+      </div>
+      <div class="dose">
+        <div class="bar" style="background:#8B5CF6"></div>
+        <div class="info">
+          <div class="name">Multivitamin</div>
+          <div class="meta">🕘 9:00 PM · 1 tab · <span class="accent">🔔 5 min early</span></div>
+        </div>
+        <div class="check">✓</div>
+      </div>
+    </div>
+    <div class="tabbar">
+      <div class="tab on"><span class="ic">🏠</span>Today</div>
+      <div class="tab"><span class="ic">💊</span>Meds</div>
+      <div class="tab"><span class="ic">📅</span>History</div>
+      <div class="tab"><span class="ic">⚙️</span>Settings</div>
+    </div>
+  </div></div>
+
+  <!-- ═══ 2. MEDICINE LIST ═══ -->
+  <div class="phone"><div class="screen">
+    <div class="notch"></div>
+    <div class="status"><span>9:41</span><span>📶 🔋</span></div>
+    <div class="screen-label">My Medicines</div>
+    <div class="header">
+      <div><div class="title">My Medicines</div></div>
+      <div class="fab">+</div>
+    </div>
+    <div class="body">
+      <div class="med">
+        <div class="icon blue">💊</div>
+        <div class="b">
+          <div class="row1"><span class="nm">Blood pressure</span><span class="badge r">D-2</span></div>
+          <div class="mt">🕗 8:00 AM · Every day · 1 tab</div>
+        </div>
+        <div class="switch"></div>
+      </div>
+      <div class="med">
+        <div class="icon green">💊</div>
+        <div class="b">
+          <div class="row1"><span class="nm">Omega-3</span><span class="badge o">D-6</span></div>
+          <div class="mt">🕐 1:00 PM · Every day · 2 tab</div>
+        </div>
+        <div class="switch"></div>
+      </div>
+      <div class="swipe-wrap">
+        <div class="del">🗑<br>Delete</div>
+        <div class="med swiped">
+          <div class="icon purple">💊</div>
+          <div class="b">
+            <div class="row1"><span class="nm">Multivitamin</span><span class="badge g">D-24</span></div>
+            <div class="mt">🕘 9:00 PM · Weekdays · 1 tab</div>
+          </div>
+          <div class="switch"></div>
+        </div>
+      </div>
+      <div class="med" style="opacity:.55">
+        <div class="icon blue">💊</div>
+        <div class="b">
+          <div class="row1"><span class="nm">Sleep aid</span></div>
+          <div class="mt">🕚 11:00 PM · Every day · 0.5 tab</div>
+        </div>
+        <div class="switch off"></div>
+      </div>
+      <p style="text-align:center; font-size:11px; color:#9AA1B5; margin-top:8px">← Swipe left to delete</p>
+    </div>
+    <div class="tabbar">
+      <div class="tab"><span class="ic">🏠</span>Today</div>
+      <div class="tab on"><span class="ic">💊</span>Meds</div>
+      <div class="tab"><span class="ic">📅</span>History</div>
+      <div class="tab"><span class="ic">⚙️</span>Settings</div>
+    </div>
+  </div></div>
+
+  <!-- ═══ 3. FORM ═══ -->
+  <div class="phone"><div class="screen">
+    <div class="notch"></div>
+    <div class="status"><span>9:41</span><span>📶 🔋</span></div>
+    <div class="screen-label">Add / Edit</div>
+    <div class="header"><div><div class="title" style="font-size:19px">Add Medicine</div></div></div>
+    <div class="body" style="overflow-y:hidden">
+      <div class="card" style="padding:15px">
+        <div class="sec-title">Basics</div>
+        <div class="lbl">Name *</div>
+        <div class="input">Tylenol</div>
+        <div class="lbl">Dose per intake *</div>
+        <div class="chips">
+          <span class="chip">0.5 tab</span><span class="chip">1 tab</span><span class="chip">1.5 tab</span>
+          <span class="chip on">2 tab</span><span class="chip">3 tab</span><span class="chip">5 tab</span>
+          <span class="chip">10 tab</span><span class="chip">Custom</span>
+        </div>
+      </div>
+      <div class="card" style="padding:15px">
+        <div class="sec-title">Schedule</div>
+        <div class="lbl">Times per day *</div>
+        <div class="freq">
+          <div class="f">1×</div><div class="f on">2×</div><div class="f">3×</div>
+          <div class="f">4×</div><div class="f">5×</div><div class="f">6×</div><div class="f">Custom</div>
+        </div>
+        <div class="lbl">Dose times — tap to type</div>
+        <div class="time-in"><span>🕐</span><span class="t">08:00</span></div>
+        <div class="time-in" style="border-color:#4A6CF7">
+          <span>🕐</span><span class="t">13:3<span class="cursor"></span></span><span class="minus">⊖</span>
+        </div>
+      </div>
+      <div class="card" style="padding:15px">
+        <div class="sec-title">Reminder timing</div>
+        <div class="chips" style="margin-bottom:4px">
+          <span class="chip">On time</span><span class="chip">5 min early</span><span class="chip on">10 min early</span>
+          <span class="chip">15 min early</span><span class="chip">30 min early</span>
+        </div>
+      </div>
+      <div class="save">💾 Add medicine</div>
+    </div>
+  </div></div>
+
+  <!-- ═══ 4. CALENDAR ═══ -->
+  <div class="phone"><div class="screen">
+    <div class="notch"></div>
+    <div class="status"><span>9:41</span><span>📶 🔋</span></div>
+    <div class="screen-label">History</div>
+    <div class="header">
+      <div><div class="title">History</div></div>
+      <div class="rate-badge">This month 87%</div>
+    </div>
+    <div class="body">
+      <div class="cal">
+        <div class="mon">‹&nbsp;&nbsp;July 2026&nbsp;&nbsp;›</div>
+        <table>
+          <tbody><tr><th>S</th><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th></tr>
+          <tr><td class="dis">28</td><td class="dis">29</td><td class="dis">30</td><td>1<span class="d"><i class="g"></i></span></td><td>2<span class="d"><i class="g"></i></span></td><td>3<span class="d"><i class="g"></i><i class="r"></i></span></td><td>4<span class="d"><i class="g"></i></span></td></tr>
+          <tr><td>5<span class="d"><i class="r"></i></span></td><td class="sel">6</td><td>7</td><td>8</td><td>9</td><td>10</td><td>11</td></tr>
+          <tr><td>12</td><td>13</td><td>14</td><td>15</td><td>16</td><td>17</td><td>18</td></tr>
+        </tbody></table>
+      </div>
+      <div style="font-size:13px; font-weight:700; margin:2px 4px 8px;">Today</div>
+      <div class="rec">
+        <span class="sd"></span>
+        <div class="rn">Blood pressure<div class="rt">8:00 AM · 1 tab</div></div>
+        <span class="st">Taken</span>
+      </div>
+      <div class="rec">
+        <span class="sd"></span>
+        <div class="rn">Omega-3<div class="rt">1:00 PM · 2 tab</div></div>
+        <span class="st">Taken</span>
+      </div>
+      <div class="rec miss">
+        <span class="sd"></span>
+        <div class="rn">Multivitamin<div class="rt">9:00 PM · 1 tab</div></div>
+        <span class="st">Missed</span>
+      </div>
+    </div>
+    <div class="tabbar">
+      <div class="tab"><span class="ic">🏠</span>Today</div>
+      <div class="tab"><span class="ic">💊</span>Meds</div>
+      <div class="tab on"><span class="ic">📅</span>History</div>
+      <div class="tab"><span class="ic">⚙️</span>Settings</div>
+    </div>
+  </div></div>
+
+  <!-- ═══ 5. SETTINGS ═══ -->
+  <div class="phone"><div class="screen">
+    <div class="notch"></div>
+    <div class="status"><span>9:41</span><span>📶 🔋</span></div>
+    <div class="screen-label">Settings</div>
+    <div class="header"><div><div class="title">Settings</div></div></div>
+    <div class="body">
+      <div class="set-lbl">Plan</div>
+      <div class="set-card">
+        <div class="set-row">
+          <div class="set-ic" style="background:rgba(74,108,247,.12)">✨</div>
+          <div class="set-tt">Free version · up to 2 medicines<small>Unlimited for $1.49, once · Tap to see</small></div>
+          <span class="chev">›</span>
+        </div>
+        <div class="set-row">
+          <div class="set-ic" style="background:rgba(136,136,136,.12)">🔄</div>
+          <div class="set-tt">Restore purchase</div>
+          <span class="chev">›</span>
+        </div>
+      </div>
+      <div class="set-lbl">Notifications</div>
+      <div class="set-card">
+        <div class="set-row">
+          <div class="set-ic" style="background:rgba(74,108,247,.12)">🔊</div>
+          <div class="set-tt">Sound</div>
+          <div class="switch"></div>
+        </div>
+      </div>
+      <div class="set-lbl">Display</div>
+      <div class="set-card" style="padding:12px 14px">
+        <div class="set-tt" style="font-size:11px;color:#8A91A8;font-weight:600;margin-bottom:6px">Theme</div>
+        <div class="segm"><span class="on">System</span><span>Light</span><span>Dark</span></div>
+        <div class="set-tt" style="font-size:11px;color:#8A91A8;font-weight:600;margin:10px 0 6px">Language</div>
+        <div class="segm"><span>System</span><span class="on">한국어</span><span>English</span></div>
+      </div>
+      <div class="set-lbl">Data</div>
+      <div class="set-card">
+        <div class="set-row">
+          <div class="set-ic" style="background:rgba(20,184,166,.12)">📤</div>
+          <div class="set-tt">Export backup<small>Save as a file (iCloud, Files)</small></div>
+          <span class="chev">›</span>
+        </div>
+        <div class="set-row">
+          <div class="set-ic" style="background:rgba(74,108,247,.12)">📥</div>
+          <div class="set-tt">Import backup<small>Restore on a new device</small></div>
+          <span class="chev">›</span>
+        </div>
+      </div>
+    </div>
+    <div class="tabbar">
+      <div class="tab"><span class="ic">🏠</span>Today</div>
+      <div class="tab"><span class="ic">💊</span>Meds</div>
+      <div class="tab"><span class="ic">📅</span>History</div>
+      <div class="tab on"><span class="ic">⚙️</span>Settings</div>
+    </div>
+  </div></div>
+
+  <!-- ═══ 6. PAYWALL ═══ -->
+  <div class="phone"><div class="screen">
+    <div class="notch"></div>
+    <div class="status"><span>9:41</span><span>📶 🔋</span></div>
+    <div class="screen-label">Full Version</div>
+    <div class="pw">
+      <div class="pw-close">✕</div>
+      <div class="pw-hero">
+        <div class="pw-icon">💊</div>
+        <div class="pw-title">MediRemind Full Version</div>
+        <div class="pw-status">The free version holds up to 2 medicines</div>
+      </div>
+      <div class="pw-feat">
+        <div><i>✓</i>Unlimited medicines (free version: up to 2)</div>
+        <div><i>✓</i>Pay once, keep it forever, never billed again</div>
+        <div><i>✓</i>Family Sharing: up to 6 family members</div>
+        <div><i>✓</i>Includes every future feature</div>
+      </div>
+      <div class="pw-price">$1.49<small>One-time purchase, not a subscription</small></div>
+      <div class="pw-buy">Unlock for $1.49</div>
+      <div class="pw-restore">Restore purchase</div>
+      <div class="pw-foot">Payment is handled by your Apple ID.<br>Up to 2 medicines stay free forever.</div>
+    </div>
+  </div></div>
+
+  <!-- ═══ 7. DARK HOME ═══ -->
+  <div class="phone"><div class="screen dark">
+    <div class="notch"></div>
+    <div class="status"><span>9:41</span><span>📶 🔋</span></div>
+    <div class="screen-label">Dark mode</div>
+    <div class="header">
+      <div>
+        <div class="date">Monday, July 6</div>
+        <div class="title">Today's Doses</div>
+      </div>
+      <div class="fab">+</div>
+    </div>
+    <div class="body">
+      <div class="card">
+        <div class="prog-head">
+          <div>
+            <div class="prog-label">Today's progress</div>
+            <div class="prog-count"><b>2</b> / 3 taken</div>
+          </div>
+          <div class="prog-pct">66<span>%</span></div>
+        </div>
+        <div class="track"><div class="fill"></div></div>
+        <div class="streak">🔥 12-day streak</div>
+      </div>
+
+      <div class="banner">
+        <div class="banner-title">⚠️ Refill soon</div>
+        <span class="pill urgent"><span class="dot" style="background:#EF4444"></span>Blood pressure <span class="dday">D-2</span></span>
+        <span class="pill"><span class="dot"></span>Omega-3 <span class="dday">D-6</span></span>
+      </div>
+
+      <div class="dose">
+        <div class="bar" style="background:#4A6CF7"></div>
+        <div class="info">
+          <div class="name done">Blood pressure</div>
+          <div class="meta">🕗 8:00 AM · 1 tab · <span class="accent">🔔 10 min early</span></div>
+        </div>
+        <div class="check done">✓</div>
+      </div>
+      <div class="dose">
+        <div class="bar" style="background:#10B981"></div>
+        <div class="info">
+          <div class="name done">Omega-3</div>
+          <div class="meta">🕐 1:00 PM · 2 tab</div>
+        </div>
+        <div class="check done">✓</div>
+      </div>
+      <div class="dose">
+        <div class="bar" style="background:#8B5CF6"></div>
+        <div class="info">
+          <div class="name">Multivitamin</div>
+          <div class="meta">🕘 9:00 PM · 1 tab · <span class="accent">🔔 5 min early</span></div>
+        </div>
+        <div class="check">✓</div>
+      </div>
+    </div>
+    <div class="tabbar">
+      <div class="tab on"><span class="ic">🏠</span>Today</div>
+      <div class="tab"><span class="ic">💊</span>Meds</div>
+      <div class="tab"><span class="ic">📅</span>History</div>
+      <div class="tab"><span class="ic">⚙️</span>Settings</div>
+    </div>
+  </div></div>
+
+</div>
+
+
+</body></html>
