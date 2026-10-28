@@ -117,7 +117,10 @@ export default function CalendarScreen() {
           <Calendar
             key={`${scheme}-${language}`}
             current={`${month}-01`}
-            onDayPress={(day: DateData) => setSelectedDate(day.dateString)}
+            onDayPress={(day: DateData) => {
+              setSelectedDate(day.dateString);
+              setMonth(day.dateString.slice(0, 7));
+            }}
             onMonthChange={(m: DateData) =>
               setMonth(`${m.year}-${String(m.month).padStart(2, '0')}`)
             }

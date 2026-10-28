@@ -151,7 +151,7 @@ export const STRINGS: Record<string, Entry> = {
   'settings.restoreFail': { ko: '구매 복원에 실패했어요. 잠시 후 다시 시도해 주세요.', en: "Couldn't restore. Please try again later." },
   'settings.sectionNotif': { ko: '알림', en: 'Notifications' },
   'settings.sound': { ko: '알림 소리', en: 'Sound' },
-  'settings.vibration': { ko: '알림 진동 (Android)', en: 'Vibration (Android)' },
+  'settings.vibration': { ko: '알림 진동', en: 'Vibration' },
   'settings.sectionDisplay': { ko: '화면', en: 'Display' },
   'settings.theme': { ko: '테마', en: 'Theme' },
   'settings.themeSystem': { ko: '시스템', en: 'System' },

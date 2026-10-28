@@ -8,6 +8,7 @@ import {
   ScrollView,
   Alert,
   Linking,
+  Platform,
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -264,20 +265,25 @@ export default function SettingsScreen() {
               />
             }
           />
-          <View style={styles.divider} />
-          <SettingRow
-            icon="phone-portrait"
-            iconColor="#8B5CF6"
-            title={t('settings.vibration')}
-            right={
-              <Switch
-                value={settings.vibration}
-                onValueChange={(v) => updateSettings({ ...settings, vibration: v })}
-                trackColor={{ false: colors.surfaceMuted, true: '#8B5CF6' }}
-                thumbColor="#FFF"
+          {/* iOS decides notification vibration itself; the toggle only works on Android. */}
+          {Platform.OS === 'android' && (
+            <>
+              <View style={styles.divider} />
+              <SettingRow
+                icon="phone-portrait"
+                iconColor="#8B5CF6"
+                title={t('settings.vibration')}
+                right={
+                  <Switch
+                    value={settings.vibration}
+                    onValueChange={(v) => updateSettings({ ...settings, vibration: v })}
+                    trackColor={{ false: colors.surfaceMuted, true: '#8B5CF6' }}
+                    thumbColor="#FFF"
+                  />
+                }
               />
-            }
-          />
+            </>
+          )}
         </View>
 
         {/* ─ Display ─ */}
