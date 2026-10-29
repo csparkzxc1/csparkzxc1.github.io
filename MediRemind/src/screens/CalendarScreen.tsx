@@ -163,10 +163,10 @@ export default function CalendarScreen() {
           selectedRecords.map((record) => {
             const medicine = getMedicineById(record.medicineId);
             const pending = !record.isTaken && isToday;
-            // The bar and dot carry the medicine's color, as on the home screen;
-            // only the status label is colored by taken / missed.
+            // Taken doses show the medicine's color, as on the home screen; doses
+            // not taken are grey. The status label says taken / missed.
             const accent = record.isTaken ? colors.success : pending ? colors.textFaint : colors.danger;
-            const tag = medicine?.color ?? colors.brand;
+            const tag = record.isTaken ? (medicine?.color ?? colors.brand) : colors.textFaint;
             return (
               <View key={record.id} style={[styles.recordRow, { borderLeftColor: tag }]}>
                 <View style={[styles.statusDot, { backgroundColor: tag }]} />
