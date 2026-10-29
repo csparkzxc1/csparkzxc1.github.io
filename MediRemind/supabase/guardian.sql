@@ -109,14 +109,15 @@ create policy slots_guardian_read on public.dose_slots for select to authenticat
 
 -- ─── Functions called by the app ─────────────────────────────────────────────
 
--- A fresh 6-digit code, valid for 30 minutes, replacing the caller's older ones.
+-- A fresh 6-digit code, valid for 30 minutes. Earlier codes stay valid, so a
+-- parent can hand one code to each child without invalidating the first.
 create or replace function public.create_invite() returns text
 language plpgsql security definer set search_path = public as $$
 declare
   new_code text;
 begin
   if auth.uid() is null then raise exception 'not signed in'; end if;
-  delete from invites where patient_id = auth.uid() or expires_at < now();
+  delete from invites where expires_at < now();
   loop
     new_code := lpad((floor(random() * 1000000))::int::text, 6, '0');
     begin
