@@ -11,6 +11,7 @@ const { chromium } = require('playwright');
 
 const ROOT = path.resolve(__dirname, '..');
 const OUT = path.join(ROOT, 'docs/screenshots');
+const ICON = fs.readFileSync(path.join(ROOT, 'assets/icon.png')).toString('base64');
 // App Store Connect only accepts exact sizes per device slot.
 const SIZES = [
   { dir: 'iphone-6.9', w: 1320, h: 2868 },
@@ -268,30 +269,49 @@ function translateInPage([map, lang]) {
     for (const [idx] of SHOTS[lang]) shots.push((await screens[idx].screenshot()).toString('base64'));
 
     for (const { dir, w: W, h: H } of SIZES) {
-      // Layout is designed at 1290x2796 and scaled to fit; wide iPad canvases
-      // keep the phone centered.
+      // All shots are drawn on one wide canvas and cut into panels, so each
+      // tilted phone runs across into the next screenshot when swiping.
+      const N = SHOTS[lang].length;
       const k = Math.min(W / 1290, H / 2796);
-      const size = (LATIN.has(lang) ? 80 : 96) * k;
-      const frame = await browser.newPage({ viewport: { width: W, height: H } });
-      for (const [n, [, l1, l2]] of SHOTS[lang].entries()) {
-        await frame.setContent(`
-          <html><head><link rel="stylesheet" href="${fontLink(lang)}"></head>
-          <body style="margin:0;width:${W}px;height:${H}px;overflow:hidden;
-            background:linear-gradient(160deg,#5B7CFA,#3B55E0);
-            font-family:'${fontFor(lang)}',sans-serif;">
-            <div style="padding:${190 * k}px ${70 * k}px 0;color:#fff;text-align:center;">
-              <div style="font-size:${size}px;font-weight:800;letter-spacing:${-2 * k}px;line-height:1.2">${l1}<br>${l2}</div>
-            </div>
-            <div style="position:absolute;left:50%;top:${640 * k}px;transform:translateX(-50%);
-              width:${1000 * k}px;border-radius:${72 * k}px;overflow:hidden;
-              border:${18 * k}px solid #0d0f17;box-shadow:0 ${40 * k}px ${120 * k}px rgba(0,0,0,.45);">
-              <img src="data:image/png;base64,${shots[n]}" style="display:block;width:100%">
-            </div>
-          </body></html>`);
-        await frame.waitForLoadState('networkidle');
-        await frame.evaluate(() => document.fonts.ready);
+      const phoneW = 1060 * k;
+      const size = (LATIN.has(lang) ? 92 : 104) * k;
+      const panels = SHOTS[lang]
+        .map(([, l1, l2], n) => {
+          const left = n * W + (n === N - 1 ? (W - phoneW) / 2 + 60 * k : W - phoneW * 0.62);
+          return `
+            <div style="position:absolute;left:${n * W + 96 * k}px;top:${200 * k}px;width:${W - 192 * k}px;
+              font-size:${size}px;font-weight:800;letter-spacing:${-2 * k}px;line-height:1.28;color:#1A1D2B;
+              text-wrap:balance">${l1}<br><span style="color:#4A6CF7">${l2}</span></div>
+            <div style="position:absolute;left:${left}px;top:${H * 0.33}px;width:${phoneW}px;
+              transform:rotate(-8deg);transform-origin:50% 0;
+              border-radius:${80 * k}px;overflow:hidden;background:#0d0f17;padding:${16 * k}px;
+              box-shadow:0 ${50 * k}px ${140 * k}px rgba(40,52,120,.28),0 ${10 * k}px ${30 * k}px rgba(40,52,120,.12);">
+              <img src="data:image/png;base64,${shots[n]}" style="display:block;width:100%;border-radius:${64 * k}px">
+            </div>`;
+        })
+        .join('');
+      // Soft blobs centred on the cuts tie the panels together.
+      const blobs = Array.from({ length: N }, (_, n) =>
+        `radial-gradient(${W * 0.7}px ${H * 0.45}px at ${(n + 1) * W}px ${H * (n % 2 ? 0.35 : 0.7)}px,rgba(91,124,250,.16),transparent 70%)`
+      ).join(',');
+      const frame = await browser.newPage({ viewport: { width: W * N, height: H } });
+      await frame.setContent(`
+        <html><head><link rel="stylesheet" href="${fontLink(lang)}"></head>
+        <body style="margin:0;width:${W * N}px;height:${H}px;overflow:hidden;position:relative;
+          background:${blobs},linear-gradient(180deg,#F7F8FD,#E9EDFB);
+          font-family:'${fontFor(lang)}',sans-serif;">
+          ${panels}
+          <div style="position:absolute;left:${96 * k}px;bottom:${150 * k}px;display:flex;align-items:center;gap:${24 * k}px">
+            <img src="data:image/png;base64,${ICON}" style="width:${110 * k}px;height:${110 * k}px;border-radius:${26 * k}px;
+              box-shadow:0 ${8 * k}px ${24 * k}px rgba(40,52,120,.2)">
+            <span style="font-size:${64 * k}px;font-weight:800;color:#1A1D2B;letter-spacing:${-1 * k}px">MediRemind</span>
+          </div>
+        </body></html>`);
+      await frame.waitForLoadState('networkidle');
+      await frame.evaluate(() => document.fonts.ready);
+      for (let n = 0; n < N; n++) {
         const file = path.join(OUT, dir, `${lang}-0${n + 1}.png`);
-        await frame.screenshot({ path: file });
+        await frame.screenshot({ path: file, clip: { x: n * W, y: 0, width: W, height: H } });
       }
       await frame.close();
       console.log('wrote', lang, dir);
