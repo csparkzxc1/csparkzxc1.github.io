@@ -3,7 +3,7 @@
 -- to run again after edits (everything is create-or-replace / if-not-exists).
 --
 -- Model: the patient's app uploads its upcoming dose slots (next 7 days, with
--- taken state). Every 5 minutes a cron job finds slots still untaken after
+-- taken state). Every 15 seconds a cron job finds slots still untaken after
 -- each guardian's chosen delay (5 minutes to 2 hours, default 30) and pushes
 -- an alert to that guardian through the Expo push service. Users are Supabase
 -- anonymous users.
@@ -270,6 +270,12 @@ end;
 $$;
 revoke all on function public.check_missed_doses() from public, anon, authenticated;
 
-select cron.unschedule('mediremind-missed-doses')
-where exists (select 1 from cron.job where jobname = 'mediremind-missed-doses');
-select cron.schedule('mediremind-missed-doses', '*/5 * * * *', 'select public.check_missed_doses()');
+-- Every 15 seconds, so an alert goes out within 15 s of the guardian's chosen
+-- time (pg_cron 1.5+ accepts '<n> seconds'; Supabase ships it).
+select cron.unschedule(jobname) from cron.job
+where jobname in ('mediremind-missed-doses', 'mediremind-cron-cleanup');
+select cron.schedule('mediremind-missed-doses', '15 seconds', 'select public.check_missed_doses()');
+
+-- A 15-second job logs ~5,800 runs a day; keep only the last day of history.
+select cron.schedule('mediremind-cron-cleanup', '17 3 * * *',
+  $$delete from cron.job_run_details where end_time < now() - interval '1 day'$$);
