@@ -269,20 +269,26 @@ function translateInPage([map, lang]) {
     for (const [idx] of SHOTS[lang]) shots.push((await screens[idx].screenshot()).toString('base64'));
 
     for (const { dir, w: W, h: H } of SIZES) {
+      if (process.env.SIZE && process.env.SIZE !== dir) continue;
       // All shots are drawn on one wide canvas and cut into panels, so each
       // tilted phone runs across into the next screenshot when swiping.
       const N = SHOTS[lang].length;
       const k = Math.min(W / 1290, H / 2796);
-      const phoneW = 1060 * k;
-      const size = (LATIN.has(lang) ? 92 : 104) * k;
+      // iPad canvases are much wider than tall: bigger type and phone, and the
+      // phone sits further inside its panel.
+      const tablet = W / H > 0.6;
+      const tk = tablet ? W / 1290 : k;
+      const phoneW = (tablet ? 1180 : 1060) * k;
+      const overhang = tablet ? 0.35 : 0.62;
+      const size = (LATIN.has(lang) ? 92 : 104) * tk;
       const panels = SHOTS[lang]
         .map(([, l1, l2], n) => {
-          const left = n * W + (n === N - 1 ? (W - phoneW) / 2 + 60 * k : W - phoneW * 0.62);
+          const left = n * W + (n === N - 1 ? (W - phoneW) / 2 + 60 * k : W - phoneW * (1 - overhang) - (tablet ? 160 * k : 0));
           return `
-            <div style="position:absolute;left:${n * W + 96 * k}px;top:${200 * k}px;width:${W - 192 * k}px;
+            <div style="position:absolute;left:${n * W + 96 * tk}px;top:${200 * k}px;width:${W - 192 * tk}px;
               font-size:${size}px;font-weight:800;letter-spacing:${-2 * k}px;line-height:1.28;color:#1A1D2B;
               text-wrap:balance">${l1}<br><span style="color:#4A6CF7">${l2}</span></div>
-            <div style="position:absolute;left:${left}px;top:${H * 0.33}px;width:${phoneW}px;
+            <div style="position:absolute;left:${left}px;top:${H * (tablet ? 0.3 : 0.33)}px;width:${phoneW}px;
               transform:rotate(-8deg);transform-origin:50% 0;
               border-radius:${80 * k}px;overflow:hidden;background:#0d0f17;padding:${16 * k}px;
               box-shadow:0 ${50 * k}px ${140 * k}px rgba(40,52,120,.28),0 ${10 * k}px ${30 * k}px rgba(40,52,120,.12);">
@@ -301,10 +307,10 @@ function translateInPage([map, lang]) {
           background:${blobs},linear-gradient(180deg,#F7F8FD,#E9EDFB);
           font-family:'${fontFor(lang)}',sans-serif;">
           ${panels}
-          <div style="position:absolute;left:${96 * k}px;bottom:${150 * k}px;display:flex;align-items:center;gap:${24 * k}px">
-            <img src="data:image/png;base64,${ICON}" style="width:${110 * k}px;height:${110 * k}px;border-radius:${26 * k}px;
-              box-shadow:0 ${8 * k}px ${24 * k}px rgba(40,52,120,.2)">
-            <span style="font-size:${64 * k}px;font-weight:800;color:#1A1D2B;letter-spacing:${-1 * k}px">MediRemind</span>
+          <div style="position:absolute;left:${96 * tk}px;bottom:${150 * tk}px;display:flex;align-items:center;gap:${24 * tk}px">
+            <img src="data:image/png;base64,${ICON}" style="width:${110 * tk}px;height:${110 * tk}px;border-radius:${26 * tk}px;
+              box-shadow:0 ${8 * tk}px ${24 * tk}px rgba(40,52,120,.2)">
+            <span style="font-size:${64 * tk}px;font-weight:800;color:#1A1D2B;letter-spacing:${-1 * tk}px">MediRemind</span>
           </div>
         </body></html>`);
       await frame.waitForLoadState('networkidle');
