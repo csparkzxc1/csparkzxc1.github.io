@@ -223,7 +223,7 @@ export default function GuardianScreen() {
         )}
         <View style={styles.inline}>
           <TextInput
-            style={[styles.input, styles.flex, styles.codeInput]}
+            style={[styles.input, styles.flex, code !== '' && styles.codeInput]}
             value={code}
             onChangeText={setCode}
             placeholder={t('guardian.codePlaceholder')}
@@ -354,9 +354,9 @@ const makeStyles = (c: ThemeColors, scheme: Scheme) =>
       minWidth: 64,
     },
     primaryText: { color: c.onBrand, fontSize: 15, fontWeight: '700' },
-    inviteBox: { backgroundColor: c.brandSoft, borderRadius: 14, padding: 16, gap: 10, alignItems: 'center' },
-    inviteLabel: { fontSize: 13, fontWeight: '700', color: c.brand },
-    inviteCode: { fontSize: 40, fontWeight: '800', letterSpacing: 6, color: c.text },
+    inviteBox: { backgroundColor: c.brandSoft, borderRadius: 14, padding: 16, gap: 10 },
+    inviteLabel: { fontSize: 13, fontWeight: '700', color: c.brand, textAlign: 'center' },
+    inviteCode: { fontSize: 40, fontWeight: '800', letterSpacing: 6, color: c.text, textAlign: 'center' },
     personRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
     personName: { flex: 1, fontSize: 16, fontWeight: '700', color: c.text },
     unlink: { fontSize: 13, color: c.danger, fontWeight: '600' },
