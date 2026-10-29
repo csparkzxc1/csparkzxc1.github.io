@@ -37,6 +37,8 @@ export interface Person {
 export interface Patient extends Person {
   /** Minutes after a dose's time I'm alerted about it. */
   alertDelay: number;
+  /** When I linked to this family member (ISO). */
+  linkedAt: string;
 }
 
 export interface Links {
@@ -213,7 +215,7 @@ export async function getLinks(): Promise<Links | null> {
   if (!(await isActive())) return null;
   const me = await ensureSession();
   const sb = getClient();
-  const { data: links, error } = await sb.from('guardian_links').select('patient_id, guardian_id, alert_delay_min');
+  const { data: links, error } = await sb.from('guardian_links').select('patient_id, guardian_id, alert_delay_min, created_at');
   if (error) throw error;
   const ids = [...new Set((links ?? []).flatMap((l) => [l.patient_id, l.guardian_id]))].filter(
     (id) => id !== me
@@ -233,7 +235,11 @@ export async function getLinks(): Promise<Links | null> {
     guardians: (links ?? []).filter((l) => l.patient_id === me).map((l) => person(l.guardian_id)),
     patients: (links ?? [])
       .filter((l) => l.guardian_id === me)
-      .map((l) => ({ ...person(l.patient_id), alertDelay: l.alert_delay_min ?? DEFAULT_ALERT_DELAY })),
+      .map((l) => ({
+        ...person(l.patient_id),
+        alertDelay: l.alert_delay_min ?? DEFAULT_ALERT_DELAY,
+        linkedAt: l.created_at,
+      })),
   };
 }
 

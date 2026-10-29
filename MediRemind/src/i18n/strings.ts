@@ -261,6 +261,11 @@ export const STRINGS: Record<string, Entry> = {
   'guardian.state.late': { ko: '확인 중', en: 'Pending' },
   'guardian.state.missed': { ko: '안 먹음', en: 'Missed' },
   'guardian.unlink': { ko: '연결 끊기', en: 'Unlink' },
+  'guardian.details': { ko: '연결 정보', en: 'Link details' },
+  'guardian.close': { ko: '닫기', en: 'Close' },
+  'guardian.linkedSince': { ko: '{date}부터 연결됨', en: 'Linked since {date}' },
+  'guardian.unlinkNamed': { ko: '{name} 님과 연결 끊기', en: 'Unlink {name}' },
+  'guardian.swipeHint': { ko: '← 밀어서 연결 끊기', en: '← Swipe to unlink' },
   'guardian.unlinkConfirm': { ko: '{name} 님과의 연결을 끊을까요?', en: 'Unlink {name}?' },
   'guardian.deleteAll': { ko: '연결 해제 및 서버 데이터 삭제', en: 'Unlink all & delete server data' },
   'guardian.deleteConfirm': {

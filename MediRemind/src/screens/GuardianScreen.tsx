@@ -2,7 +2,7 @@
  * Family alerts: share my doses with family (invite code), watch a family
  * member's doses (enter code), and see their doses for today.
  */
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -14,7 +14,9 @@ import {
   Alert,
   Share,
   RefreshControl,
+  Animated,
 } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -33,9 +35,12 @@ import {
   setDisplayName,
   unlink,
   type Links,
+  type Patient,
   type Person,
 } from '../guardian/guardian';
 import { ALERT_DELAYS, slotState, type DoseSlot, type SlotState } from '../guardian/slots';
+import { formatShortDate } from '../i18n/core';
+import { dateKey } from '../lib/schedule';
 
 export default function GuardianScreen() {
   const { t } = useI18n();
@@ -198,9 +203,12 @@ export default function GuardianScreen() {
       <Text style={styles.section}>{t('guardian.sectionMine')}</Text>
       <View style={styles.card}>
         {links?.guardians.length ? (
-          links.guardians.map((g) => (
-            <PersonRow key={g.id} person={g} onUnlink={() => confirmUnlink(g, links.me, g.id)} />
-          ))
+          <>
+            {links.guardians.map((g) => (
+              <SwipeToUnlink key={g.id} person={g} onUnlink={() => confirmUnlink(g, links.me, g.id)} />
+            ))}
+            <Text style={styles.swipeHint}>{t('guardian.swipeHint')}</Text>
+          </>
         ) : (
           <Text style={styles.muted}>{t('guardian.noGuardians')}</Text>
         )}
@@ -223,18 +231,17 @@ export default function GuardianScreen() {
       </View>
 
       <Text style={styles.section}>{t('guardian.sectionWatching')}</Text>
+      {links?.patients.map((p) => (
+        <PatientCard
+          key={p.id}
+          patient={p}
+          slots={today[p.id] ?? []}
+          onDelay={(m) => onDelay(p.id, m)}
+          onUnlink={() => confirmUnlink(p, p.id, links.me)}
+        />
+      ))}
       <View style={styles.card}>
-        {links?.patients.length ? (
-          links.patients.map((p) => (
-            <View key={p.id} style={styles.patient}>
-              <PersonRow person={p} onUnlink={() => confirmUnlink(p, p.id, links.me)} />
-              <DelayPicker value={p.alertDelay} onChange={(m) => onDelay(p.id, m)} />
-              <TodayList slots={today[p.id] ?? []} delay={p.alertDelay} />
-            </View>
-          ))
-        ) : (
-          <Text style={styles.muted}>{t('guardian.noPatients')}</Text>
-        )}
+        {!links?.patients.length && <Text style={styles.muted}>{t('guardian.noPatients')}</Text>}
         <View style={styles.inline}>
           <TextInput
             style={[styles.input, styles.flex, code !== '' && styles.codeInput]}
@@ -257,17 +264,122 @@ export default function GuardianScreen() {
   );
 }
 
-function PersonRow({ person, onUnlink }: { person: Person; onUnlink: () => void }) {
+function Avatar({ color }: { color: string }) {
+  return <Ionicons name="person-circle" size={30} color={color} />;
+}
+
+/** A family member watching me. Unlinking sits behind a swipe so it isn't hit by accident. */
+function SwipeToUnlink({ person, onUnlink }: { person: Person; onUnlink: () => void }) {
   const { t } = useI18n();
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
+  const ref = useRef<Swipeable>(null);
   return (
-    <View style={styles.personRow}>
-      <Ionicons name="person-circle" size={28} color={colors.brand} />
-      <Text style={styles.personName}>{person.name || t('guardian.unnamed')}</Text>
-      <TouchableOpacity onPress={onUnlink} hitSlop={8}>
-        <Text style={styles.unlink}>{t('guardian.unlink')}</Text>
-      </TouchableOpacity>
+    <Swipeable
+      ref={ref}
+      friction={1.6}
+      overshootRight={false}
+      childrenContainerStyle={styles.swipeBacking}
+      renderRightActions={() => (
+        <TouchableOpacity
+          style={styles.unlinkAction}
+          onPress={() => {
+            ref.current?.close();
+            onUnlink();
+          }}
+        >
+          <Ionicons name="link-outline" size={18} color="#FFF" />
+          <Text style={styles.unlinkActionText}>{t('guardian.unlink')}</Text>
+        </TouchableOpacity>
+      )}
+    >
+      <View style={styles.personRow}>
+        <Avatar color={colors.brand} />
+        <Text style={styles.personName}>{person.name || t('guardian.unnamed')}</Text>
+      </View>
+    </Swipeable>
+  );
+}
+
+/**
+ * A family member I watch. The front shows today's doses; the menu button
+ * flips the card to its back, which holds the alert timing, the link date and
+ * the unlink button.
+ */
+function PatientCard({
+  patient,
+  slots,
+  onDelay,
+  onUnlink,
+}: {
+  patient: Patient;
+  slots: DoseSlot[];
+  onDelay: (minutes: number) => void;
+  onUnlink: () => void;
+}) {
+  const { t } = useI18n();
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+  const flip = useRef(new Animated.Value(0)).current;
+  const [showBack, setShowBack] = useState(false);
+  const [heights, setHeights] = useState({ front: 0, back: 0 });
+  const height = Math.max(heights.front, heights.back);
+
+  const turn = (toBack: boolean) => {
+    setShowBack(toBack);
+    Animated.spring(flip, { toValue: toBack ? 1 : 0, friction: 8, tension: 40, useNativeDriver: true }).start();
+  };
+  const front = flip.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] });
+  const back = flip.interpolate({ inputRange: [0, 1], outputRange: ['180deg', '360deg'] });
+  const name = patient.name || t('guardian.unnamed');
+  const faceHeight = height ? { minHeight: height } : null;
+
+  return (
+    <View style={[styles.flipWrap, height ? { height } : null]}>
+      <Animated.View
+        pointerEvents={showBack ? 'none' : 'auto'}
+        onLayout={(e) => {
+          const h = e.nativeEvent.layout.height;
+          setHeights((x) => (x.front === h ? x : { ...x, front: h }));
+        }}
+        style={[styles.card, styles.face, faceHeight, { transform: [{ perspective: 1200 }, { rotateY: front }] }]}
+      >
+        <View style={styles.personRow}>
+          <Avatar color={colors.brand} />
+          <Text style={styles.personName}>{name}</Text>
+          <TouchableOpacity onPress={() => turn(true)} hitSlop={10} accessibilityLabel={t('guardian.details')}>
+            <Ionicons name="menu" size={24} color={colors.textMuted} />
+          </TouchableOpacity>
+        </View>
+        <TodayList slots={slots} delay={patient.alertDelay} />
+      </Animated.View>
+
+      <Animated.View
+        pointerEvents={showBack ? 'auto' : 'none'}
+        onLayout={(e) => {
+          const h = e.nativeEvent.layout.height;
+          setHeights((x) => (x.back === h ? x : { ...x, back: h }));
+        }}
+        style={[styles.card, styles.face, faceHeight, { transform: [{ perspective: 1200 }, { rotateY: back }] }]}
+      >
+        <View style={styles.personRow}>
+          <Avatar color={colors.brand} />
+          <View style={styles.flex}>
+            <Text style={styles.personName}>{name}</Text>
+            <Text style={styles.linkedSince}>
+              {t('guardian.linkedSince', { date: formatShortDate(dateKey(new Date(patient.linkedAt))) })}
+            </Text>
+          </View>
+          <TouchableOpacity onPress={() => turn(false)} hitSlop={10} accessibilityLabel={t('guardian.close')}>
+            <Ionicons name="close" size={24} color={colors.textMuted} />
+          </TouchableOpacity>
+        </View>
+        <DelayPicker value={patient.alertDelay} onChange={onDelay} />
+        <TouchableOpacity style={styles.unlinkBtn} onPress={onUnlink}>
+          <Ionicons name="link-outline" size={17} color={colors.danger} />
+          <Text style={styles.unlinkBtnText}>{t('guardian.unlinkNamed', { name })}</Text>
+        </TouchableOpacity>
+      </Animated.View>
     </View>
   );
 }
@@ -398,7 +510,32 @@ const makeStyles = (c: ThemeColors, scheme: Scheme) =>
     inviteCode: { fontSize: 40, fontWeight: '800', letterSpacing: 6, color: c.text, textAlign: 'center' },
     personRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
     personName: { flex: 1, fontSize: 16, fontWeight: '700', color: c.text },
-    unlink: { fontSize: 13, color: c.danger, fontWeight: '600' },
+    flipWrap: { marginBottom: 16 },
+    face: { position: 'absolute', top: 0, left: 0, right: 0, marginBottom: 0, backfaceVisibility: 'hidden' },
+    linkedSince: { fontSize: 12, color: c.textMuted, marginTop: 2 },
+    unlinkBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+      paddingVertical: 12,
+      borderRadius: 12,
+      borderWidth: 1.5,
+      borderColor: c.dangerSoft,
+    },
+    unlinkBtnText: { fontSize: 14, fontWeight: '700', color: c.danger },
+    swipeBacking: { backgroundColor: c.surface },
+    unlinkAction: {
+      width: 96,
+      marginLeft: 8,
+      borderRadius: 12,
+      backgroundColor: c.danger,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 2,
+    },
+    unlinkActionText: { fontSize: 12, fontWeight: '700', color: '#FFF' },
+    swipeHint: { fontSize: 11, color: c.textFaint, textAlign: 'right' },
     patient: { gap: 10, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: c.line },
     slot: { flexDirection: 'row', alignItems: 'center', paddingVertical: 6, gap: 10 },
     slotTime: { width: 48, fontSize: 14, fontWeight: '700', color: c.text },
