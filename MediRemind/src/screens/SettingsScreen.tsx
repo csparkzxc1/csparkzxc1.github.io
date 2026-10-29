@@ -36,7 +36,7 @@ import { exportBackup, importBackup } from '../lib/backup';
 import { dateKey } from '../lib/schedule';
 import { checkAndApplyUpdate, getBuildInfo } from '../utils/updateUtils';
 import { useI18n } from '../i18n/I18nProvider';
-import type { LanguagePref } from '../i18n/core';
+import { LANGUAGES, LANGUAGE_NAMES, type LanguagePref } from '../i18n/core';
 import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
 import { cardShadow, type Scheme, type TextSize, type ThemeColors, type ThemeMode } from '../theme/theme';
 import ScreenHeader from '../components/ScreenHeader';
@@ -351,15 +351,24 @@ export default function SettingsScreen() {
             ]}
           />
           <Text style={[styles.inlineLabel, { marginTop: 16 }]}>{t('settings.language')}</Text>
-          <Segmented<LanguagePref>
-            value={langPref}
-            onChange={setLanguage}
-            options={[
-              { value: 'system', label: t('settings.langSystem') },
-              { value: 'ko', label: '한국어' },
-              { value: 'en', label: 'English' },
-            ]}
-          />
+          <View style={styles.chips}>
+            {(['system', ...LANGUAGES] as LanguagePref[]).map((value) => {
+              const active = langPref === value;
+              return (
+                <TouchableOpacity
+                  key={value}
+                  style={[styles.chip, active && styles.chipActive]}
+                  onPress={() => setLanguage(value)}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                >
+                  <Text style={[styles.chipText, active && styles.chipTextActive]}>
+                    {value === 'system' ? t('settings.langSystem') : LANGUAGE_NAMES[value]}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         </View>
 
         {/* ─ Data ─ */}
@@ -471,6 +480,18 @@ const makeStyles = (c: ThemeColors, scheme: Scheme) =>
     segmentItemActive: { backgroundColor: c.surface },
     segmentText: { fontSize: 13, fontWeight: '600', color: c.textMuted },
     segmentTextActive: { color: c.text },
+    chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+    chip: {
+      paddingVertical: 8,
+      paddingHorizontal: 14,
+      borderRadius: 18,
+      backgroundColor: c.surfaceMuted,
+      borderWidth: 1.5,
+      borderColor: 'transparent',
+    },
+    chipActive: { backgroundColor: c.brandSoft, borderColor: c.brand },
+    chipText: { fontSize: 14, fontWeight: '600', color: c.textMuted },
+    chipTextActive: { color: c.brand },
     footer: {
       marginTop: 32,
       fontSize: 12,

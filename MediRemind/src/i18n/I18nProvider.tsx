@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { kvGet, kvSet, KV_KEYS } from '../db/kv';
 import {
+  LANGUAGES,
   t as coreT,
   resolvePref,
   setActiveLanguage,
@@ -18,7 +19,7 @@ interface I18nContextValue {
 const I18nContext = createContext<I18nContextValue | null>(null);
 
 function isPref(v: unknown): v is LanguagePref {
-  return v === 'system' || v === 'ko' || v === 'en';
+  return v === 'system' || (LANGUAGES as readonly unknown[]).includes(v);
 }
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {

@@ -2,11 +2,23 @@
  * UI string catalog. Every entry carries both languages inline so a missing
  * translation is easy to spot. `{name}` placeholders are filled by t().
  */
-export const LANGUAGES = ['ko', 'en'] as const;
+export const LANGUAGES = ['ko', 'en', 'ja', 'zh-Hans', 'zh-Hant', 'es', 'fr'] as const;
 export type Language = (typeof LANGUAGES)[number];
 export const FALLBACK_LANGUAGE: Language = 'en';
 
-type Entry = Record<Language, string>;
+/** Name of each language in itself, for the language picker. */
+export const LANGUAGE_NAMES: Record<Language, string> = {
+  ko: '한국어',
+  en: 'English',
+  ja: '日本語',
+  'zh-Hans': '简体中文',
+  'zh-Hant': '繁體中文',
+  es: 'Español',
+  fr: 'Français',
+};
+
+/** Korean and English live inline below; other languages in ./locales. */
+type Entry = Record<'ko' | 'en', string>;
 
 export const STRINGS: Record<string, Entry> = {
   // ── Navigation ────────────────────────────────────────────────────────

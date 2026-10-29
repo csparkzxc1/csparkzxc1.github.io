@@ -15,7 +15,12 @@
         "ITSAppUsesNonExemptEncryption": false,
         "CFBundleLocalizations": [
           "ko",
-          "en"
+          "en",
+          "ja",
+          "zh-Hans",
+          "zh-Hant",
+          "es",
+          "fr"
         ],
         "CFBundleAllowMixedLocalizations": true
       },
