@@ -215,7 +215,7 @@ export const STRINGS: Record<string, Entry> = {
   'paywall.active': { ko: '정식 버전 이용 중', en: 'Full version active' },
   'paywall.f1': { ko: '약 무제한 등록 (무료 버전은 {n}개까지)', en: 'Unlimited medicines (free version: up to {n})' },
   'paywall.f2': { ko: '한 번 결제로 평생 사용 · 자동 결제 없음', en: 'Pay once, keep it forever — never billed again' },
-  'paywall.f3': { ko: '가족 공유로 최대 6명이 함께 사용', en: 'Family Sharing: up to 6 family members' },
+  'paywall.f3': { ko: '같은 Apple ID라면 새 기기에서도 구매 복원', en: 'Restore on any device with the same Apple ID' },
   'paywall.f4': { ko: '앞으로 추가되는 기능도 모두 포함', en: 'Includes every future feature' },
   'paywall.limitReached': { ko: '무료 버전은 약 {n}개까지 등록할 수 있어요', en: 'The free version holds up to {n} medicines' },
   'paywall.freeUsage': { ko: '무료 버전 · 약 {n}/{max}개 사용 중', en: 'Free version · {n}/{max} medicines used' },

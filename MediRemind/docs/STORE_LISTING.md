@@ -36,7 +36,7 @@ MediRemind는 정해진 시간에 약 복용을 알려 주고, 오늘 먹은 약
 • 백업 파일로 폰을 바꿔도 기록 유지
 • 다크 모드, 한국어/영어 지원
 
-약 2개까지는 모든 기능을 평생 무료로 쓸 수 있어요. 더 많은 약을 관리하려면 한 번만 결제하세요. 구독이 아니며, 가족 공유로 가족과 함께 쓸 수 있습니다.
+약 2개까지는 모든 기능을 평생 무료로 쓸 수 있어요. 더 많은 약을 관리하려면 한 번만 결제하세요. 구독이 아니며, 같은 Apple ID라면 새 기기에서도 복원할 수 있습니다.
 
 ※ MediRemind는 의료 기기가 아니며 의사·약사의 지시를 대신하지 않습니다.
 ```
@@ -65,7 +65,7 @@ MediRemind reminds you when it's time to take your medicine and shows what you'v
 • Backup and restore when you switch phones
 • Dark mode, Korean and English
 
-Free forever for up to 2 medicines, with every feature. Need more? Unlock unlimited medicines with a one-time purchase — not a subscription, and shareable with your family.
+Free forever for up to 2 medicines, with every feature. Need more? Unlock unlimited medicines with a one-time purchase — not a subscription, and restorable on any device with the same Apple ID.
 
 MediRemind is not a medical device and does not replace advice from your doctor or pharmacist.
 ```
