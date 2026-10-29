@@ -27,7 +27,7 @@ const TAB_ICONS: Record<Exclude<keyof BottomTabParamList, 'MedicineList'>, [stri
 
 function BottomTabNavigator() {
   const { t } = useI18n();
-  const { colors, scheme } = useTheme();
+  const { colors, scheme, textScale } = useTheme();
 
   return (
     <Tab.Navigator
@@ -48,7 +48,8 @@ function BottomTabNavigator() {
           shadowOpacity: scheme === 'dark' ? 0 : 0.06,
           shadowRadius: 12,
         },
-        tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
+        // The tab bar has a fixed height, so its labels grow less than the content.
+        tabBarLabelStyle: { fontSize: Math.round(11 * Math.min(textScale, 1.2)), fontWeight: '600' },
         tabBarIcon: ({ color, size, focused }) => {
           if (route.name === 'MedicineList') {
             return <MaterialCommunityIcons name="pill" size={size} color={color} />;
@@ -74,7 +75,7 @@ function BottomTabNavigator() {
 
 export default function AppNavigator() {
   const { t } = useI18n();
-  const { colors, scheme } = useTheme();
+  const { colors, scheme, textScale } = useTheme();
 
   const navTheme = useMemo<Theme>(() => {
     const base = scheme === 'dark' ? DarkTheme : DefaultTheme;
@@ -97,7 +98,7 @@ export default function AppNavigator() {
         screenOptions={{
           headerStyle: { backgroundColor: colors.bg },
           headerTintColor: colors.text,
-          headerTitleStyle: { fontWeight: '700', fontSize: 18 },
+          headerTitleStyle: { fontWeight: '700', fontSize: Math.round(18 * textScale) },
           headerShadowVisible: false,
           headerBackTitle: t('nav.back'),
           contentStyle: { backgroundColor: colors.bg },

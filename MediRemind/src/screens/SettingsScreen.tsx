@@ -38,7 +38,7 @@ import { checkAndApplyUpdate, getBuildInfo } from '../utils/updateUtils';
 import { useI18n } from '../i18n/I18nProvider';
 import type { LanguagePref } from '../i18n/core';
 import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
-import { cardShadow, type Scheme, type ThemeColors, type ThemeMode } from '../theme/theme';
+import { cardShadow, type Scheme, type TextSize, type ThemeColors, type ThemeMode } from '../theme/theme';
 import ScreenHeader from '../components/ScreenHeader';
 import { guardianAvailable } from '../guardian/config';
 
@@ -112,7 +112,7 @@ function Segmented<T extends string>({
 export default function SettingsScreen() {
   const navigation = useNavigation<Nav>();
   const { t, pref: langPref, setLanguage } = useI18n();
-  const { colors, mode, setMode } = useTheme();
+  const { colors, mode, setMode, textSize, setTextSize } = useTheme();
   const styles = useThemedStyles(makeStyles);
   const { isPro, product, restore } = useEntitlement();
 
@@ -338,6 +338,16 @@ export default function SettingsScreen() {
               { value: 'system', label: t('settings.themeSystem') },
               { value: 'light', label: t('settings.themeLight') },
               { value: 'dark', label: t('settings.themeDark') },
+            ]}
+          />
+          <Text style={[styles.inlineLabel, { marginTop: 16 }]}>{t('settings.textSize')}</Text>
+          <Segmented<TextSize>
+            value={textSize}
+            onChange={setTextSize}
+            options={[
+              { value: 'normal', label: t('settings.textNormal') },
+              { value: 'large', label: t('settings.textLarge') },
+              { value: 'xlarge', label: t('settings.textXLarge') },
             ]}
           />
           <Text style={[styles.inlineLabel, { marginTop: 16 }]}>{t('settings.language')}</Text>

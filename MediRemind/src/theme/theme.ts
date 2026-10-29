@@ -91,3 +91,30 @@ export function cardShadow(c: ThemeColors, scheme: Scheme) {
         elevation: 2,
       };
 }
+
+// ─── Text size ──────────────────────────────────────────────────────────────
+
+/** In-app text size, on top of the iOS/Android system text size. */
+export type TextSize = 'normal' | 'large' | 'xlarge';
+
+export const TEXT_SCALE: Record<TextSize, number> = { normal: 1, large: 1.2, xlarge: 1.4 };
+
+/**
+ * Enlarges every fontSize/lineHeight in a style sheet object, so one setting
+ * reaches all screens built with useThemedStyles.
+ */
+export function scaleText<T>(styles: T, scale: number): T {
+  if (scale === 1 || !styles || typeof styles !== 'object') return styles;
+  const out: Record<string, unknown> = {};
+  for (const [key, style] of Object.entries(styles as Record<string, unknown>)) {
+    if (!style || typeof style !== 'object' || Array.isArray(style)) {
+      out[key] = style;
+      continue;
+    }
+    const s = { ...(style as Record<string, unknown>) };
+    if (typeof s.fontSize === 'number') s.fontSize = Math.round(s.fontSize * scale);
+    if (typeof s.lineHeight === 'number') s.lineHeight = Math.round(s.lineHeight * scale);
+    out[key] = s;
+  }
+  return out as T;
+}

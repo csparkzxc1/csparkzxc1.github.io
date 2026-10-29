@@ -1,19 +1,32 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { Appearance } from 'react-native';
 import { kvGet, kvSet, KV_KEYS } from '../db/kv';
-import { THEMES, type Scheme, type ThemeColors, type ThemeMode } from './theme';
+import {
+  scaleText,
+  TEXT_SCALE,
+  THEMES,
+  type Scheme,
+  type TextSize,
+  type ThemeColors,
+  type ThemeMode,
+} from './theme';
 
 interface ThemeContextValue {
   mode: ThemeMode;
   scheme: Scheme;
   colors: ThemeColors;
   setMode: (mode: ThemeMode) => void;
+  textSize: TextSize;
+  /** Multiplier applied to every font size (1 = normal). */
+  textScale: number;
+  setTextSize: (size: TextSize) => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [mode, setModeState] = useState<ThemeMode>('system');
+  const [textSize, setTextSizeState] = useState<TextSize>('normal');
   const [system, setSystem] = useState<Scheme>(
     Appearance.getColorScheme() === 'dark' ? 'dark' : 'light'
   );
@@ -25,6 +38,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         if (active && (v === 'system' || v === 'light' || v === 'dark')) setModeState(v);
       })
       .catch((e) => console.warn('[theme] load failed', e));
+    kvGet(KV_KEYS.textSize)
+      .then((v) => {
+        if (active && (v === 'normal' || v === 'large' || v === 'xlarge')) setTextSizeState(v);
+      })
+      .catch((e) => console.warn('[theme] text size load failed', e));
     return () => {
       active = false;
     };
@@ -48,8 +66,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         setModeState(next);
         kvSet(KV_KEYS.themeMode, next).catch((e) => console.warn('[theme] save failed', e));
       },
+      textSize,
+      textScale: TEXT_SCALE[textSize],
+      setTextSize: (next) => {
+        setTextSizeState(next);
+        kvSet(KV_KEYS.textSize, next).catch((e) => console.warn('[theme] save failed', e));
+      },
     }),
-    [mode, scheme]
+    [mode, scheme, textSize]
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
@@ -61,9 +85,12 @@ export function useTheme(): ThemeContextValue {
   return ctx;
 }
 
-/** Builds a StyleSheet from the active colors, rebuilt only when they change. */
+/**
+ * Builds a StyleSheet from the active colors and text size, rebuilt only when
+ * they change.
+ */
 export function useThemedStyles<T>(factory: (c: ThemeColors, scheme: Scheme) => T): T {
-  const { colors, scheme } = useTheme();
+  const { colors, scheme, textScale } = useTheme();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  return useMemo(() => factory(colors, scheme), [colors, scheme]);
+  return useMemo(() => scaleText(factory(colors, scheme), textScale), [colors, scheme, textScale]);
 }
