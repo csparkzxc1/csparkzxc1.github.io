@@ -1,6 +1,6 @@
 # 보호자 연결 설정 (Supabase)
 
-부모님이 약을 30분 넘게 체크하지 않으면 자녀 폰으로 알림이 가는 기능입니다.
+정해진 복용 시간이 지나도 체크가 없으면, 보호자가 정한 시점(5분~2시간)에 가족 폰으로 알림이 가는 기능입니다.
 서버는 Supabase 무료 플랜으로 충분하고, 모든 단계를 폰 브라우저로 할 수 있습니다.
 
 ## 동작 방식
@@ -53,7 +53,7 @@ Expo 푸시 서비스가 Apple에 알림을 보내려면 APNs 키가 필요합�
   기능을 출시할 때 이 브랜치를 master에 합쳐야 웹페이지에 반영됩니다.
 - 심사 메모(App Review Information → Notes)에 테스트 방법을 적습니다:
   "Settings → Family alerts → Create invite code on device A, enter the code on device B.
-  A missed dose (30 minutes past due, not checked) sends a push to device B."
+  A dose left unchecked past the delay chosen on device B (default 30 minutes) sends a push to device B."
 
 ## 6. 출시
 
