@@ -2,7 +2,7 @@
  * Full-version purchase screen, opened from Settings or when a free user tries
  * to add more medicines than the free limit.
  */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -31,12 +31,18 @@ interface Props {
 }
 
 export default function Paywall({ reason, onDismiss }: Props) {
-  const { isPro, product, purchase, restore } = useEntitlement();
+  const { isPro, product, purchase, restore, refreshProduct } = useEntitlement();
   const count = useMedicineStore((s) => s.medicines.length);
   const { t } = useI18n();
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
   const [busy, setBusy] = useState<null | 'buy' | 'restore'>(null);
+
+  // The launch-time fetch may have failed (offline, store not ready yet).
+  useEffect(() => {
+    if (!isPro && product?.available !== true) refreshProduct().catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const price = product?.priceLabel ?? PURCHASE_CONFIG.fallbackPriceLabel;
 
