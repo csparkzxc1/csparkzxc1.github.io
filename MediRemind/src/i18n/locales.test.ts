@@ -1,7 +1,16 @@
 import { describe, expect, it } from '@jest/globals';
 import { STRINGS } from './strings';
 import { LOCALES } from './locales';
-import { formatLongDate, formatShortDate, formatTime, matchLanguage, setActiveLanguage, t } from './core';
+import {
+  formatDosage,
+  formatLongDate,
+  formatShortDate,
+  formatTime,
+  matchLanguage,
+  monthNames,
+  setActiveLanguage,
+  t,
+} from './core';
 
 const placeholders = (s: string) => (s.match(/\{\w+\}/g) ?? []).sort();
 
@@ -63,6 +72,35 @@ describe('formatting', () => {
   it('falls back to English for a missing key', () => {
     setActiveLanguage('fr');
     expect(t('no.such.key')).toBe('no.such.key');
+    setActiveLanguage('en');
+  });
+});
+
+describe('formatDosage', () => {
+  it('translates stored units for display', () => {
+    setActiveLanguage('ko');
+    expect(formatDosage('2.5정')).toBe('2.5정');
+    setActiveLanguage('en');
+    expect(formatDosage('1포')).toBe('1 sachet');
+    expect(formatDosage('500mg')).toBe('500 mg');
+    setActiveLanguage('es');
+    expect(formatDosage('0.5정')).toBe('0,5 comp.');
+    setActiveLanguage('ja');
+    expect(formatDosage('2캡슐')).toBe('2カプセル');
+    setActiveLanguage('de');
+    expect(formatDosage('1정')).toBe('1 Tabl.');
+  });
+
+  it('leaves free text as typed', () => {
+    setActiveLanguage('en');
+    expect(formatDosage('half a spoon')).toBe('half a spoon');
+  });
+
+  it('names months per language', () => {
+    setActiveLanguage('fr');
+    expect(monthNames().long[6]).toBe('juillet');
+    setActiveLanguage('zh-Hant');
+    expect(monthNames().long[6]).toBe('7月');
     setActiveLanguage('en');
   });
 });

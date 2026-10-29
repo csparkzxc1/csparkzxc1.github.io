@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import type { DoseRecord, Medicine } from '../types';
-import { formatTime } from '../i18n/core';
+import { formatTime, formatDosage } from '../i18n/core';
 import { useI18n } from '../i18n/I18nProvider';
 import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
 import { cardShadow, type Scheme, type ThemeColors } from '../theme/theme';
@@ -42,7 +42,7 @@ export default function DoseItem({ record, medicine, onToggle }: DoseItemProps) 
           <Ionicons name="time-outline" size={13} color={colors.textMuted} />
           <Text style={styles.meta}> {formatTime(record.scheduledTime)}</Text>
           <Text style={styles.metaDot}>  ·  </Text>
-          <Text style={styles.meta}>{medicine?.dosage ?? ''}</Text>
+          <Text style={styles.meta}>{formatDosage(medicine?.dosage ?? '')}</Text>
           {offset > 0 && (
             <>
               <Text style={styles.metaDot}>  ·  </Text>

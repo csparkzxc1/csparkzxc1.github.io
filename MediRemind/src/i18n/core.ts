@@ -190,3 +190,61 @@ export function daysLabel(days: Medicine['days']): string {
   if (list.length === 7) return t('days.everyday');
   return list.map((d) => WEEKDAYS[activeLanguage][d]).join(', ');
 }
+
+// ── Dosage units ────────────────────────────────────────────────────────────
+
+/**
+ * Units are stored in their Korean form (e.g. '2.5정') so saved medicines and
+ * backups stay the same in every language; only the display is translated.
+ */
+export const DOSAGE_UNITS = ['정', '캡슐', '포', 'mg', 'mL'] as const;
+export type DosageUnit = (typeof DOSAGE_UNITS)[number];
+
+const UNIT_LABELS: Record<Language, Record<'정' | '캡슐' | '포', string>> = {
+  ko: { 정: '정', 캡슐: '캡슐', 포: '포' },
+  en: { 정: 'tab', 캡슐: 'cap', 포: 'sachet' },
+  ja: { 정: '錠', 캡슐: 'カプセル', 포: '包' },
+  'zh-Hans': { 정: '片', 캡슐: '粒', 포: '包' },
+  'zh-Hant': { 정: '顆', 캡슐: '粒', 포: '包' },
+  es: { 정: 'comp.', 캡슐: 'cáps.', 포: 'sobre' },
+  fr: { 정: 'cp.', 캡슐: 'gél.', 포: 'sachet' },
+  de: { 정: 'Tabl.', 캡슐: 'Kaps.', 포: 'Btl.' },
+};
+
+/** Languages that write a space between the number and the unit. */
+const SPACED = new Set<Language>(['en', 'es', 'fr', 'de']);
+
+export function unitLabel(unit: DosageUnit): string {
+  return unit === 'mg' || unit === 'mL' ? unit : UNIT_LABELS[activeLanguage][unit];
+}
+
+/** '2.5정' → '2.5 tab' / '2,5 cp.' / '2.5錠'. Text in another format is shown as typed. */
+export function formatDosage(dosage: string): string {
+  const unit = DOSAGE_UNITS.find((u) => dosage.endsWith(u));
+  if (!unit) return dosage;
+  let amount = dosage.slice(0, -unit.length).trim();
+  if (!/^\d+([.,]\d+)?$/.test(amount)) return dosage;
+  if (activeLanguage === 'fr' || activeLanguage === 'de' || activeLanguage === 'es') {
+    amount = amount.replace('.', ',');
+  }
+  return SPACED.has(activeLanguage) ? `${amount} ${unitLabel(unit)}` : `${amount}${unitLabel(unit)}`;
+}
+
+/** Full and short month names for the calendar; CJK languages use numbers. */
+export function monthNames(): { long: string[]; short: string[] } {
+  const num = (suffix: string) => Array.from({ length: 12 }, (_, i) => `${i + 1}${suffix}`);
+  if (activeLanguage === 'ko') return { long: num('월'), short: num('월') };
+  if (activeLanguage === 'ja' || activeLanguage === 'zh-Hans' || activeLanguage === 'zh-Hant') {
+    return { long: num('月'), short: num('月') };
+  }
+  const long = MONTHS[activeLanguage] ?? MONTHS.en!;
+  const short = activeLanguage === 'fr' ? MONTHS_SHORT_FR : long.map((m) => m.slice(0, 3));
+  return { long, short };
+}
+
+/** react-native-calendars header format (XDate tokens). */
+export function calendarMonthFormat(): string {
+  if (activeLanguage === 'ko') return "yyyy'년' M'월'";
+  if (activeLanguage === 'ja' || activeLanguage === 'zh-Hans' || activeLanguage === 'zh-Hant') return "yyyy'年'M'月'";
+  return 'MMMM yyyy';
+}

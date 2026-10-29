@@ -7,7 +7,7 @@ import { Linking, Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import type { Medicine } from '../types';
 import { kvGet, kvSet, KV_KEYS } from '../db/kv';
-import { t } from '../i18n/core';
+import { formatDosage, t } from '../i18n/core';
 import {
   buildNotificationPlan,
   SCHEDULE_BUDGET,
@@ -162,7 +162,7 @@ async function scheduleDoseSlot(slot: PlannedNotification, s: ReminderSettings) 
   const body = allEarly
     ? t('notif.doseBodyEarly', { n: first.offset, list: names.join(', ') })
     : slot.doses.length === 1
-      ? t('notif.doseBodyOne', { name: first.name, dosage: first.dosage })
+      ? t('notif.doseBodyOne', { name: first.name, dosage: formatDosage(first.dosage) })
       : names.join(', ');
 
   const trigger: Notifications.NotificationTriggerInput =

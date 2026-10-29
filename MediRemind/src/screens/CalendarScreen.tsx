@@ -8,7 +8,14 @@ import { useDoseStore } from '../store/doseStore';
 import { useMedicineStore } from '../store/medicineStore';
 import { useToday } from '../hooks/useToday';
 import { useI18n } from '../i18n/I18nProvider';
-import { formatShortDate, formatTime, weekdayLabels } from '../i18n/core';
+import {
+  calendarMonthFormat,
+  formatDosage,
+  formatShortDate,
+  formatTime,
+  monthNames,
+  weekdayLabels,
+} from '../i18n/core';
 import { dayStatuses } from '../lib/streak';
 import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
 import { cardShadow, type Scheme, type ThemeColors } from '../theme/theme';
@@ -86,13 +93,10 @@ export default function CalendarScreen() {
   const isFuture = selectedDate > today;
   const isToday = selectedDate === today;
 
+  const months = monthNames();
   LocaleConfig.locales[language] = {
-    monthNames: language === 'ko'
-      ? ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월']
-      : ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
-    monthNamesShort: language === 'ko'
-      ? ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월']
-      : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    monthNames: months.long,
+    monthNamesShort: months.short,
     dayNames: weekdayLabels(),
     dayNamesShort: weekdayLabels(),
     today: t('cal.today'),
@@ -126,7 +130,7 @@ export default function CalendarScreen() {
             }
             markedDates={markedDates}
             markingType="multi-dot"
-            monthFormat={language === 'ko' ? 'yyyy년 M월' : 'MMMM yyyy'}
+            monthFormat={calendarMonthFormat()}
             theme={{
               backgroundColor: colors.surface,
               calendarBackground: colors.surface,
@@ -173,7 +177,7 @@ export default function CalendarScreen() {
                 <View style={styles.recordInfo}>
                   <Text style={styles.recordName}>{medicine?.name ?? t('common.unknownMedicine')}</Text>
                   <Text style={styles.recordTime}>
-                    {formatTime(record.scheduledTime)} · {medicine?.dosage ?? ''}
+                    {formatTime(record.scheduledTime)} · {formatDosage(medicine?.dosage ?? '')}
                   </Text>
                 </View>
                 <Text style={[styles.recordStatus, { color: accent }]}>

@@ -18,7 +18,7 @@ import * as Haptics from 'expo-haptics';
 import { COLOR_TAGS, type ColorTag, type Medicine, type RootStackParamList } from '../types';
 import { useMedicineStore } from '../store/medicineStore';
 import { useI18n } from '../i18n/I18nProvider';
-import { formatTime, weekdayLabels } from '../i18n/core';
+import { DOSAGE_UNITS, formatDosage, formatTime, unitLabel, weekdayLabels } from '../i18n/core';
 import { uid } from '../lib/id';
 import { useEntitlement } from '../purchase/EntitlementProvider';
 import { canAddMedicine } from '../purchase/limits';
@@ -33,7 +33,6 @@ type RouteParams = RouteProp<RootStackParamList, 'MedicineForm'>;
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const DOSAGE_AMOUNTS = ['0.5', '1', '1.5', '2', '3', '5', '10'];
-const DOSAGE_UNITS = ['정', '캡슐', '포', 'mg', 'mL'];
 const DEFAULT_UNIT = '정';
 
 type FreqOption = '1' | '2' | '3' | '4' | '5' | '6' | 'custom';
@@ -289,7 +288,7 @@ export default function MedicineFormScreen() {
               return (
                 <Chip
                   key={value}
-                  label={value}
+                  label={formatDosage(value)}
                   active={!dosageCustom && dosage === value}
                   onPress={() => {
                     setDosageCustom(false);
@@ -325,7 +324,7 @@ export default function MedicineFormScreen() {
                 {DOSAGE_UNITS.map((unit) => (
                   <Chip
                     key={unit}
-                    label={unit}
+                    label={unitLabel(unit)}
                     active={customUnit === unit}
                     onPress={() => updateCustomDosage(customAmount, unit)}
                   />
