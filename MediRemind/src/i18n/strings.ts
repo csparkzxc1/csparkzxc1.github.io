@@ -229,6 +229,10 @@ export const STRINGS: Record<string, Entry> = {
     en: "Couldn't load the product from the store. Please check your connection.",
   },
   'paywall.failTitle': { ko: '구매 실패', en: 'Purchase failed' },
+  'paywall.failStoreBody': {
+    ko: 'App Store에서 상품 정보를 불러오지 못했어요. 네트워크를 확인한 뒤 다시 시도해 주세요.',
+    en: "Couldn't load the product from the App Store. Check your connection and try again.",
+  },
   'paywall.failBody': { ko: '결제를 완료하지 못했어요. 잠시 후 다시 시도해 주세요.', en: "The purchase didn't go through. Please try again." },
   'paywall.footer': { ko: '결제는 Apple ID로 처리됩니다. 정식 버전을 사지 않아도 약 {n}개까지는 알림·기록을 평생 무료로 쓸 수 있어요.', en: 'Payment is handled by your Apple ID. Without it, reminders and history for up to {n} medicines stay free forever.' },
 
