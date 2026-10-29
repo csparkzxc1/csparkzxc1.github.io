@@ -19,7 +19,7 @@ import { getActiveLanguage } from '../i18n/core';
 import { dateKey, parseDateKey } from '../lib/schedule';
 import { ensurePermission } from '../notifications/notifications';
 import { GUARDIAN_CONFIG, guardianAvailable } from './config';
-import { buildSlots, type DoseSlot } from './slots';
+import { buildSlots, DEFAULT_ALERT_DELAY, type DoseSlot } from './slots';
 
 const KEYS = {
   /** Set once an account exists, so the client isn't even created before. */
@@ -34,12 +34,17 @@ export interface Person {
   name: string;
 }
 
+export interface Patient extends Person {
+  /** Minutes after a dose's time I'm alerted about it. */
+  alertDelay: number;
+}
+
 export interface Links {
   me: string;
   /** People who watch my doses. */
   guardians: Person[];
   /** People whose doses I watch. */
-  patients: Person[];
+  patients: Patient[];
 }
 
 let client: SupabaseClient | null = null;
@@ -208,7 +213,7 @@ export async function getLinks(): Promise<Links | null> {
   if (!(await isActive())) return null;
   const me = await ensureSession();
   const sb = getClient();
-  const { data: links, error } = await sb.from('guardian_links').select('patient_id, guardian_id');
+  const { data: links, error } = await sb.from('guardian_links').select('patient_id, guardian_id, alert_delay_min');
   if (error) throw error;
   const ids = [...new Set((links ?? []).flatMap((l) => [l.patient_id, l.guardian_id]))].filter(
     (id) => id !== me
@@ -226,8 +231,16 @@ export async function getLinks(): Promise<Links | null> {
   return {
     me,
     guardians: (links ?? []).filter((l) => l.patient_id === me).map((l) => person(l.guardian_id)),
-    patients: (links ?? []).filter((l) => l.guardian_id === me).map((l) => person(l.patient_id)),
+    patients: (links ?? [])
+      .filter((l) => l.guardian_id === me)
+      .map((l) => ({ ...person(l.patient_id), alertDelay: l.alert_delay_min ?? DEFAULT_ALERT_DELAY })),
   };
+}
+
+/** How late a dose may be before I'm alerted about this family member. */
+export async function setAlertDelay(patientId: string, minutes: number): Promise<void> {
+  const { error } = await getClient().rpc('set_alert_delay', { p_patient: patientId, p_minutes: minutes });
+  if (error) throw error;
 }
 
 export async function unlink(patientId: string, guardianId: string): Promise<void> {

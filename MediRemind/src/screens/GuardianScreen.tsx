@@ -29,12 +29,13 @@ import {
   getLinks,
   patientToday,
   redeemInvite,
+  setAlertDelay,
   setDisplayName,
   unlink,
   type Links,
   type Person,
 } from '../guardian/guardian';
-import { slotState, type DoseSlot, type SlotState } from '../guardian/slots';
+import { ALERT_DELAYS, slotState, type DoseSlot, type SlotState } from '../guardian/slots';
 
 export default function GuardianScreen() {
   const { t } = useI18n();
@@ -123,6 +124,18 @@ export default function GuardianScreen() {
     } finally {
       setBusy(null);
     }
+  };
+
+  const onDelay = (patientId: string, minutes: number) => {
+    // Show the choice right away; put it back if the server refuses.
+    const previous = links;
+    setLinks((l) =>
+      l && { ...l, patients: l.patients.map((p) => (p.id === patientId ? { ...p, alertDelay: minutes } : p)) }
+    );
+    setAlertDelay(patientId, minutes).catch((e) => {
+      setLinks(previous);
+      fail(e);
+    });
   };
 
   const confirmUnlink = (person: Person, patientId: string, guardianId: string) => {
@@ -215,7 +228,8 @@ export default function GuardianScreen() {
           links.patients.map((p) => (
             <View key={p.id} style={styles.patient}>
               <PersonRow person={p} onUnlink={() => confirmUnlink(p, p.id, links.me)} />
-              <TodayList slots={today[p.id] ?? []} />
+              <DelayPicker value={p.alertDelay} onChange={(m) => onDelay(p.id, m)} />
+              <TodayList slots={today[p.id] ?? []} delay={p.alertDelay} />
             </View>
           ))
         ) : (
@@ -258,7 +272,32 @@ function PersonRow({ person, onUnlink }: { person: Person; onUnlink: () => void 
   );
 }
 
-function TodayList({ slots }: { slots: DoseSlot[] }) {
+function DelayPicker({ value, onChange }: { value: number; onChange: (m: number) => void }) {
+  const { t } = useI18n();
+  const styles = useThemedStyles(makeStyles);
+  return (
+    <View>
+      <Text style={styles.label}>{t('guardian.delayLabel')}</Text>
+      <View style={styles.delayRow}>
+        {ALERT_DELAYS.map((m) => (
+          <TouchableOpacity
+            key={m}
+            style={[styles.delayChip, value === m && styles.delayChipOn]}
+            onPress={() => onChange(m)}
+            accessibilityRole="button"
+            accessibilityState={{ selected: value === m }}
+          >
+            <Text style={[styles.delayText, value === m && styles.delayTextOn]}>
+              {m < 60 ? t('guardian.delayMin', { n: m }) : t('guardian.delayHour', { n: m / 60 })}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+function TodayList({ slots, delay }: { slots: DoseSlot[]; delay: number }) {
   const { t } = useI18n();
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
@@ -274,7 +313,7 @@ function TodayList({ slots }: { slots: DoseSlot[] }) {
     <View>
       <Text style={styles.label}>{t('guardian.today')}</Text>
       {slots.map((s) => {
-        const state = slotState(s, now);
+        const state = slotState(s, now, delay);
         const d = new Date(s.due_at);
         const time = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
         return (
@@ -365,6 +404,18 @@ const makeStyles = (c: ThemeColors, scheme: Scheme) =>
     slotTime: { width: 48, fontSize: 14, fontWeight: '700', color: c.text },
     slotName: { flex: 1, fontSize: 14, color: c.text },
     slotState: { fontSize: 13, fontWeight: '800' },
+    delayRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+    delayChip: {
+      paddingVertical: 7,
+      paddingHorizontal: 12,
+      borderRadius: 16,
+      backgroundColor: c.surfaceMuted,
+      borderWidth: 1.5,
+      borderColor: 'transparent',
+    },
+    delayChipOn: { backgroundColor: c.brandSoft, borderColor: c.brand },
+    delayText: { fontSize: 13, fontWeight: '600', color: c.textMuted },
+    delayTextOn: { color: c.brand },
     deleteBtn: { alignItems: 'center', paddingVertical: 12 },
     deleteText: { fontSize: 13, color: c.danger },
   });

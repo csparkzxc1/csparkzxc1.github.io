@@ -53,12 +53,18 @@ export function buildSlots(
 
 export type SlotState = 'taken' | 'upcoming' | 'late' | 'missed';
 
-/** Mirrors the server: a dose is reported missed 30 minutes after it was due. */
-export const MISSED_AFTER_MIN = 30;
+/** Minutes after a dose's time a guardian can choose to be alerted. */
+export const ALERT_DELAYS = [5, 10, 15, 30, 60, 120] as const;
+export const DEFAULT_ALERT_DELAY = 30;
 
-export function slotState(slot: Pick<DoseSlot, 'due_at' | 'taken_at'>, now: Date): SlotState {
+/** Mirrors the server: a dose counts as missed once the guardian's delay has passed. */
+export function slotState(
+  slot: Pick<DoseSlot, 'due_at' | 'taken_at'>,
+  now: Date,
+  delayMin: number = DEFAULT_ALERT_DELAY
+): SlotState {
   if (slot.taken_at) return 'taken';
   const overdueMin = (now.getTime() - new Date(slot.due_at).getTime()) / 60000;
   if (overdueMin < 0) return 'upcoming';
-  return overdueMin < MISSED_AFTER_MIN ? 'late' : 'missed';
+  return overdueMin < delayMin ? 'late' : 'missed';
 }

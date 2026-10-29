@@ -3,9 +3,10 @@
 -- to run again after edits (everything is create-or-replace / if-not-exists).
 --
 -- Model: the patient's app uploads its upcoming dose slots (next 7 days, with
--- taken state). Every 5 minutes a cron job finds slots still untaken 30
--- minutes after they were due and pushes an alert to that patient's guardians
--- through the Expo push service. Users are Supabase anonymous users.
+-- taken state). Every 5 minutes a cron job finds slots still untaken after
+-- each guardian's chosen delay (5 minutes to 2 hours, default 30) and pushes
+-- an alert to that guardian through the Expo push service. Users are Supabase
+-- anonymous users.
 
 create extension if not exists pg_cron;
 create extension if not exists pg_net;
@@ -29,6 +30,11 @@ create table if not exists public.guardian_links (
   check (patient_id <> guardian_id)
 );
 create index if not exists guardian_links_guardian on public.guardian_links (guardian_id);
+-- How long after a dose's time this guardian is alerted (chosen by the guardian).
+alter table public.guardian_links add column if not exists alert_delay_min integer not null default 30;
+alter table public.guardian_links drop constraint if exists guardian_links_delay_check;
+alter table public.guardian_links add constraint guardian_links_delay_check
+  check (alert_delay_min in (5, 10, 15, 30, 60, 120));
 
 create table if not exists public.invites (
   code text primary key,
@@ -45,8 +51,18 @@ create table if not exists public.dose_slots (
   alerted_at timestamptz,
   primary key (patient_id, id)
 );
-create index if not exists dose_slots_pending
-  on public.dose_slots (due_at) where taken_at is null and alerted_at is null;
+create index if not exists dose_slots_untaken
+  on public.dose_slots (due_at) where taken_at is null;
+
+-- One row per alert sent, so each guardian is told once per dose.
+create table if not exists public.slot_alerts (
+  patient_id uuid not null,
+  slot_id text not null,
+  guardian_id uuid not null references auth.users on delete cascade,
+  sent_at timestamptz not null default now(),
+  primary key (patient_id, slot_id, guardian_id),
+  foreign key (patient_id, slot_id) references public.dose_slots (patient_id, id) on delete cascade
+);
 
 -- ─── Row level security ──────────────────────────────────────────────────────
 
@@ -54,6 +70,7 @@ alter table public.profiles enable row level security;
 alter table public.guardian_links enable row level security;
 alter table public.invites enable row level security;
 alter table public.dose_slots enable row level security;
+alter table public.slot_alerts enable row level security;  -- no policies: server only
 
 create or replace function public.is_linked(a uuid, b uuid) returns boolean
 language sql stable security definer set search_path = public as $$
@@ -132,8 +149,8 @@ end;
 $$;
 
 -- Replaces the caller's slots from p_from on with p_slots
--- ([{id, medicine_name, due_at, taken_at}]). Slots already alerted keep that
--- mark so a resync never alerts twice.
+-- ([{id, medicine_name, due_at, taken_at}]). Existing slots are updated in
+-- place, so their sent alerts (slot_alerts) survive and a resync never alerts twice.
 create or replace function public.sync_slots(p_from timestamptz, p_slots jsonb) returns void
 language plpgsql security definer set search_path = public as $$
 begin
@@ -154,6 +171,16 @@ begin
 end;
 $$;
 
+-- The caller (a guardian) chooses how late a dose may be before they're alerted.
+create or replace function public.set_alert_delay(p_patient uuid, p_minutes integer) returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if auth.uid() is null then raise exception 'not signed in'; end if;
+  update guardian_links set alert_delay_min = p_minutes
+  where patient_id = p_patient and guardian_id = auth.uid();
+end;
+$$;
+
 -- Deletes the caller's account and everything linked to it.
 create or replace function public.delete_my_data() returns void
 language plpgsql security definer set search_path = public, auth as $$
@@ -167,10 +194,12 @@ revoke all on function public.create_invite() from public, anon;
 revoke all on function public.redeem_invite(text) from public, anon;
 revoke all on function public.sync_slots(timestamptz, jsonb) from public, anon;
 revoke all on function public.delete_my_data() from public, anon;
+revoke all on function public.set_alert_delay(uuid, integer) from public, anon;
 grant execute on function public.create_invite() to authenticated;
 grant execute on function public.redeem_invite(text) to authenticated;
 grant execute on function public.sync_slots(timestamptz, jsonb) to authenticated;
 grant execute on function public.delete_my_data() to authenticated;
+grant execute on function public.set_alert_delay(uuid, integer) to authenticated;
 
 -- ─── Missed-dose alerts ──────────────────────────────────────────────────────
 
@@ -182,22 +211,29 @@ declare
 begin
   for msg in
     with due as (
-      update dose_slots s set alerted_at = now()
-      where s.taken_at is null and s.alerted_at is null
-        and s.due_at <= now() - interval '30 minutes'
-        and s.due_at > now() - interval '6 hours'
-      returning s.patient_id, s.medicine_name, s.due_at
+      -- Doses past each guardian's delay that this guardian hasn't been told
+      -- about. Doses from before the link existed, or long past, are skipped.
+      insert into slot_alerts (patient_id, slot_id, guardian_id)
+      select s.patient_id, s.id, l.guardian_id
+      from dose_slots s
+      join guardian_links l on l.patient_id = s.patient_id
+      where s.taken_at is null
+        and s.due_at <= now() - make_interval(mins => l.alert_delay_min)
+        and s.due_at > now() - make_interval(mins => l.alert_delay_min) - interval '6 hours'
+        and s.due_at > l.created_at
+      on conflict do nothing
+      returning patient_id, slot_id, guardian_id
     )
     select g.push_token, g.language,
            coalesce(nullif(p.display_name, ''), case g.language
              when 'ko' then '가족' when 'ja' then 'ご家族' when 'zh-Hans' then '家人' when 'zh-Hant' then '家人'
              when 'es' then 'Tu familiar' when 'fr' then 'Votre proche' when 'de' then 'Dein Familienmitglied'
              else 'Your family member' end) as who,
-           d.medicine_name,
-           to_char(d.due_at at time zone coalesce(p.timezone, 'Asia/Seoul'), 'HH24:MI') as at
+           s.medicine_name,
+           to_char(s.due_at at time zone coalesce(p.timezone, 'Asia/Seoul'), 'HH24:MI') as at
     from due d
-    join guardian_links l on l.patient_id = d.patient_id
-    join profiles g on g.user_id = l.guardian_id and g.push_token is not null
+    join dose_slots s on s.patient_id = d.patient_id and s.id = d.slot_id
+    join profiles g on g.user_id = d.guardian_id and g.push_token is not null
     left join profiles p on p.user_id = d.patient_id
   loop
     perform net.http_post(

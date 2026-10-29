@@ -44,6 +44,11 @@ describe('slotState', () => {
     expect(slotState(slot, at(30))).toBe('missed');
   });
 
+  it('follows the guardian\'s chosen delay', () => {
+    expect(slotState(slot, at(12), 10)).toBe('missed');
+    expect(slotState(slot, at(45), 60)).toBe('late');
+  });
+
   it('is taken once taken_at is set', () => {
     expect(slotState({ ...slot, taken_at: due.toISOString() }, at(90))).toBe('taken');
   });

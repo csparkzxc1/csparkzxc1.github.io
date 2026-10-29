@@ -71,7 +71,7 @@
       <li>복용을 공유하는 사용자: 약 이름, 오늘부터 7일간의 복용 예정 시각, 복용 여부, 가족에게 보일 이름,
         시간대가 서버에 저장되어 <strong>연결된 가족에게만</strong> 보입니다.</li>
       <li>가족(보호자): 놓친 약 알림을 받기 위한 푸시 알림 토큰과 언어 설정이 저장됩니다.</li>
-      <li>복용 시간이 30분 지나도 체크되지 않으면 서버가 Expo 푸시 서비스를 통해 가족에게 알림을 보냅니다.</li>
+      <li>복용 시간이 지나 가족이 정한 시간(5분~2시간, 기본 30분)이 되도록 체크되지 않으면, 서버가 Expo 푸시 서비스를 통해 그 가족에게 알림을 보냅니다.</li>
       <li>서버의 복용 기록은 14일이 지나면 자동 삭제됩니다. 앱의 "연결 해제 및 서버 데이터 삭제"를 누르면
         계정과 연결, 공유된 기록이 즉시 모두 삭제됩니다.</li>
       <li>서버는 Supabase(데이터 저장), 알림 전송은 Expo가 처리하며, 이 목적 외에는 사용되지 않습니다.</li>
@@ -133,7 +133,7 @@
       <li>If you share your doses: medicine names, dose times for the next 7 days, whether each was taken,
         the name you choose to show, and your time zone are stored and visible <strong>only to linked family</strong>.</li>
       <li>If you watch a family member: your push token and language are stored to send missed-dose alerts.</li>
-      <li>When a dose is still unchecked 30 minutes after its time, the server notifies linked family through Expo's push service.</li>
+      <li>When a dose is still unchecked once the delay each family member chose has passed (5 minutes to 2 hours, 30 minutes by default), the server notifies them through Expo's push service.</li>
       <li>Shared doses are deleted after 14 days. "Unlink all &amp; delete server data" in the app deletes the account,
         links, and shared doses immediately.</li>
       <li>Data is stored by Supabase and alerts are delivered by Expo, solely for this feature.</li>

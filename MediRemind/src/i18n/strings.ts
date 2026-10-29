@@ -219,9 +219,12 @@ export const STRINGS: Record<string, Entry> = {
   // ── Guardian ──────────────────────────────────────────────────────────
   'nav.guardian': { ko: '보호자 연결', en: 'Family Alerts' },
   'guardian.intro': {
-    ko: '복용 시간이 30분 지나도 체크하지 않으면 연결된 가족에게 알림이 가요.',
-    en: 'If a dose is still unchecked 30 minutes after its time, your linked family gets a notification.',
+    ko: '정해진 복용 시간이 지나도 체크가 없으면 연결된 가족에게 알림이 가요. 알림 시점은 가족이 정할 수 있어요.',
+    en: 'If a dose is still unchecked after its time, your linked family gets a notification. They choose how soon.',
   },
+  'guardian.delayLabel': { ko: '알림 받을 시점', en: 'Alert me after' },
+  'guardian.delayMin': { ko: '{n}분 후', en: '{n} min' },
+  'guardian.delayHour': { ko: '{n}시간 후', en: '{n} hr' },
   'guardian.myName': { ko: '가족에게 보일 내 이름', en: 'Your name shown to family' },
   'guardian.myNamePlaceholder': { ko: '예: 엄마, 아빠, 김영희', en: 'e.g. Mom, Dad, Alex' },
   'guardian.save': { ko: '저장', en: 'Save' },
