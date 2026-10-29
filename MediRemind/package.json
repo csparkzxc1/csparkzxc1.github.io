@@ -24,6 +24,7 @@
     "@react-navigation/bottom-tabs": "^7.4.0",
     "@react-navigation/native": "^7.1.0",
     "@react-navigation/native-stack": "^7.3.0",
+    "@supabase/supabase-js": "2.117.3",
     "date-fns": "^3.6.0",
     "expo": "~56.0.8",
     "expo-constants": "~56.0.27",
@@ -44,6 +45,7 @@
     "react-native-nitro-modules": "^0.35.9",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "~4.26.0",
+    "react-native-url-polyfill": "3.0.0",
     "zustand": "^5.0.0"
   },
   "devDependencies": {

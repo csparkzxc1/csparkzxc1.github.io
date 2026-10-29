@@ -40,6 +40,7 @@ import type { LanguagePref } from '../i18n/core';
 import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
 import { cardShadow, type Scheme, type ThemeColors, type ThemeMode } from '../theme/theme';
 import ScreenHeader from '../components/ScreenHeader';
+import { guardianAvailable } from '../guardian/config';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
@@ -264,6 +265,22 @@ export default function SettingsScreen() {
             right={spinner('restore')}
           />
         </View>
+
+        {/* ─ Family ─ */}
+        {guardianAvailable() && (
+          <>
+            <Text style={styles.sectionLabel}>{t('settings.sectionFamily')}</Text>
+            <View style={styles.card}>
+              <SettingRow
+                icon="people"
+                iconColor={colors.success}
+                title={t('settings.guardian')}
+                subtitle={t('settings.guardianSub')}
+                onPress={() => navigation.navigate('Guardian')}
+              />
+            </View>
+          </>
+        )}
 
         {/* ─ Notifications ─ */}
         <Text style={styles.sectionLabel}>{t('settings.sectionNotif')}</Text>

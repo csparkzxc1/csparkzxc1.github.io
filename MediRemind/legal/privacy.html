@@ -26,17 +26,18 @@
   </head>
   <body>
     <h1>개인정보처리방침</h1>
-    <p class="muted">MediRemind (약 복용 알리미) · 시행일: 2026-10-27</p>
+    <p class="muted">MediRemind (약 복용 알리미) · 시행일: 2026-11-15</p>
 
     <div class="card">
-      <strong>요약:</strong> MediRemind는 개인정보를 수집·전송·공유하지 않습니다. 약 정보와
-      복용 기록은 사용자 기기 안에만 저장됩니다. 서버가 없고, 광고·추적·분석 도구를 사용하지 않습니다.
+      <strong>요약:</strong> 약 정보와 복용 기록은 기본적으로 사용자 기기 안에만 저장됩니다.
+      사용자가 <strong>보호자 연결</strong>을 직접 켠 경우에만, 복용 확인에 필요한 정보가 서버를 거쳐
+      연결된 가족에게 공유됩니다. 광고·추적·분석 도구는 사용하지 않습니다.
     </div>
 
     <h2>1. 수집하는 정보</h2>
-    <p>없습니다. 본 앱은 다음을 하지 않습니다.</p>
+    <p>기본 기능은 아무것도 수집하지 않습니다(선택 기능인 보호자 연결은 5번 참고). 본 앱은 다음을 하지 않습니다.</p>
     <ul>
-      <li>회원가입, 로그인, 계정 생성</li>
+      <li>이름·이메일이 필요한 회원가입이나 로그인</li>
       <li>이름·이메일·전화번호 등 개인 식별 정보 수집</li>
       <li>사용 기록 분석, 광고 식별자(IDFA) 수집, 광고 표시</li>
       <li>위치·연락처·사진·건강(HealthKit) 데이터 접근</li>
@@ -64,19 +65,32 @@
       확인해 기능을 잠금 해제합니다.
     </p>
 
-    <h2>5. 제3자 제공</h2>
-    <p>없습니다. 어떤 데이터도 제3자에게 제공·판매·공유하지 않습니다.</p>
+    <h2>5. 보호자 연결 (선택 기능)</h2>
+    <ul>
+      <li>사용자가 초대 코드를 만들거나 입력할 때만 동작하며, 이름·이메일 없이 익명 계정이 만들어집니다.</li>
+      <li>복용을 공유하는 사용자: 약 이름, 오늘부터 7일간의 복용 예정 시각, 복용 여부, 가족에게 보일 이름,
+        시간대가 서버에 저장되어 <strong>연결된 가족에게만</strong> 보입니다.</li>
+      <li>가족(보호자): 놓친 약 알림을 받기 위한 푸시 알림 토큰과 언어 설정이 저장됩니다.</li>
+      <li>복용 시간이 30분 지나도 체크되지 않으면 서버가 Expo 푸시 서비스를 통해 가족에게 알림을 보냅니다.</li>
+      <li>서버의 복용 기록은 14일이 지나면 자동 삭제됩니다. 앱의 "연결 해제 및 서버 데이터 삭제"를 누르면
+        계정과 연결, 공유된 기록이 즉시 모두 삭제됩니다.</li>
+      <li>서버는 Supabase(데이터 저장), 알림 전송은 Expo가 처리하며, 이 목적 외에는 사용되지 않습니다.</li>
+    </ul>
 
-    <h2>6. 앱 업데이트</h2>
+    <h2>6. 제3자 제공</h2>
+    <p>데이터를 판매하거나 광고에 쓰지 않습니다. 보호자 연결을 켠 경우 위 5번의 정보가 사용자가 연결한 가족에게만
+      공유되며, 이를 위해 Supabase와 Expo가 처리 위탁을 받습니다.</p>
+
+    <h2>7. 앱 업데이트</h2>
     <p>
       앱은 Expo 업데이트 서버에서 새 버전 여부를 확인할 수 있습니다. 이 과정에서 앱 버전 정보 외의
       개인정보나 약·복용 데이터는 전송되지 않습니다.
     </p>
 
-    <h2>7. 아동</h2>
+    <h2>8. 아동</h2>
     <p>본 앱은 개인정보를 수집하지 않으므로 아동의 개인정보도 수집하지 않습니다.</p>
 
-    <h2>8. 문의</h2>
+    <h2>9. 문의</h2>
     <p>
       문의는 App Store의 앱 페이지에 있는 "앱 지원" 링크 또는
       <a href="https://github.com/csparkzxc1">github.com/csparkzxc1</a>로 해 주세요.
@@ -87,16 +101,16 @@
     <hr />
 
     <h1 lang="en">Privacy Policy</h1>
-    <p class="muted">MediRemind · Effective 2026-10-27</p>
+    <p class="muted">MediRemind · Effective 2026-11-15</p>
 
     <div class="card">
-      <strong>Summary:</strong> MediRemind does not collect, transmit, or share personal data.
-      Your medicines and dose history stay on your device. There is no server, and no ads,
-      tracking, or analytics.
+      <strong>Summary:</strong> Your medicines and dose history stay on your device by default.
+      Only if you turn on <strong>Family alerts</strong> is the information needed for it shared,
+      through our server, with the family members you link. No ads, tracking, or analytics.
     </div>
 
     <h2>1. Data we collect</h2>
-    <p>None. The app has no accounts, collects no identifiers, shows no ads, and does not access
+    <p>Core features collect nothing (for the optional Family alerts, see section 5). There is no sign-up, the app collects no identifiers, shows no ads, and does not access
       location, contacts, photos, or HealthKit.</p>
 
     <h2>2. Data stored on your device</h2>
@@ -113,14 +127,27 @@
       processes the payment; the app never sees or stores payment details and only checks with the
       App Store whether the purchase exists.</p>
 
-    <h2>5. Third parties</h2>
-    <p>We do not share, sell, or disclose any data to third parties.</p>
+    <h2>5. Family alerts (optional)</h2>
+    <ul>
+      <li>Works only after you create or enter an invite code, using an anonymous account (no name or email).</li>
+      <li>If you share your doses: medicine names, dose times for the next 7 days, whether each was taken,
+        the name you choose to show, and your time zone are stored and visible <strong>only to linked family</strong>.</li>
+      <li>If you watch a family member: your push token and language are stored to send missed-dose alerts.</li>
+      <li>When a dose is still unchecked 30 minutes after its time, the server notifies linked family through Expo's push service.</li>
+      <li>Shared doses are deleted after 14 days. "Unlink all &amp; delete server data" in the app deletes the account,
+        links, and shared doses immediately.</li>
+      <li>Data is stored by Supabase and alerts are delivered by Expo, solely for this feature.</li>
+    </ul>
 
-    <h2>6. App updates</h2>
+    <h2>6. Third parties</h2>
+    <p>We never sell data or use it for ads. With Family alerts on, the data above is shared only with the
+      family you link, processed on our behalf by Supabase and Expo.</p>
+
+    <h2>7. App updates</h2>
     <p>The app may check Expo's update service for a newer version. No personal or medication data
       is sent in that check.</p>
 
-    <h2>7. Contact</h2>
+    <h2>8. Contact</h2>
     <p>Use the "App Support" link on the App Store page, or
       <a href="https://github.com/csparkzxc1">github.com/csparkzxc1</a>.</p>
 

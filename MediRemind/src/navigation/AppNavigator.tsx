@@ -14,6 +14,7 @@ import CalendarScreen from '../screens/CalendarScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import MedicineFormScreen from '../screens/MedicineFormScreen';
 import PaywallScreen from '../screens/PaywallScreen';
+import GuardianScreen from '../screens/GuardianScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<BottomTabParamList>();
@@ -104,6 +105,7 @@ export default function AppNavigator() {
       >
         <Stack.Screen name="Main" component={BottomTabNavigator} options={{ headerShown: false }} />
         <Stack.Screen name="MedicineForm" component={MedicineFormScreen} />
+        <Stack.Screen name="Guardian" component={GuardianScreen} options={{ title: t('nav.guardian') }} />
         <Stack.Screen
           name="Paywall"
           component={PaywallScreen}

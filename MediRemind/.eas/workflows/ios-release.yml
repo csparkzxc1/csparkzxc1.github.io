@@ -1,11 +1,13 @@
-# Builds the iOS app and uploads it to App Store Connect on every push to the
-# release branch, so a release doesn't need the Mac. Requires the GitHub repo
-# to be linked in expo.dev (Project settings → GitHub, base directory MediRemind).
+# Builds the iOS app and uploads it to App Store Connect, so a release doesn't
+# need the Mac. Runs only when MediRemind/RELEASE changes (bump the number in
+# it to release), not on every push. Requires the GitHub repo to be linked in
+# expo.dev (Project settings → GitHub, base directory MediRemind).
 name: iOS release
 
 on:
   push:
     branches: ['claude/medication-reminder-app-hlZTA']
+    paths: ['**/RELEASE']
 
 jobs:
   build_ios:

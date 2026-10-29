@@ -20,6 +20,7 @@ import { dateKey } from './src/lib/schedule';
 import { EntitlementProvider, useEntitlement } from './src/purchase/EntitlementProvider';
 import { I18nProvider, useI18n } from './src/i18n/I18nProvider';
 import { ThemeProvider, useTheme } from './src/theme/ThemeProvider';
+import { scheduleSlotSync } from './src/guardian/guardian';
 
 export default function App() {
   return (
@@ -36,6 +37,8 @@ export default function App() {
     </GestureHandlerRootView>
   );
 }
+
+const medicinesNow = () => useMedicineStore.getState().medicines;
 
 async function handleResponse(response: Notifications.NotificationResponse) {
   const take = await readTakeResponse(response);
@@ -80,11 +83,19 @@ function Root() {
     // Notifications may have been switched on in iOS Settings meanwhile; the
     // schedule is skipped while permission is off, so rebuild it on return.
     const appState = AppState.addEventListener('change', (state) => {
-      if (state === 'active') syncNotifications(useMedicineStore.getState().medicines);
+      if (state === 'active') {
+        syncNotifications(useMedicineStore.getState().medicines);
+        scheduleSlotSync(medicinesNow);
+      }
     });
+    // Keep family members' view current when doses or medicines change.
+    const unsubDoses = useDoseStore.subscribe(() => scheduleSlotSync(medicinesNow));
+    const unsubMeds = useMedicineStore.subscribe(() => scheduleSlotSync(medicinesNow));
     return () => {
       sub.remove();
       appState.remove();
+      unsubDoses();
+      unsubMeds();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
