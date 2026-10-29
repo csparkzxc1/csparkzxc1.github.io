@@ -1,0 +1,321 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>MediRemind — 보호자 연결 목업</title><style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+    background:#1E2235; padding:40px 24px; color:#1A1D2B;
+  }
+  h1 { color:#FFF; text-align:center; font-size:22px; margin-bottom:6px; font-weight:800; }
+  .sub { color:#9AA1B5; text-align:center; font-size:13px; margin-bottom:36px; }
+  .screens { display:flex; gap:28px; justify-content:center; flex-wrap:wrap; }
+
+  /* ── Phone shell ── */
+  .phone {
+    width:340px; background:#000; border-radius:44px; padding:10px;
+    box-shadow:0 24px 60px rgba(0,0,0,.5);
+  }
+  .screen {
+    background:#F4F6FB; border-radius:36px; overflow:hidden; height:700px;
+    display:flex; flex-direction:column; position:relative;
+  }
+  .notch {
+    position:absolute; top:10px; left:50%; transform:translateX(-50%);
+    width:110px; height:26px; background:#000; border-radius:16px; z-index:50;
+  }
+  .status { display:flex; justify-content:space-between; padding:14px 26px 4px; font-size:12px; font-weight:700; color:#1A1D2B; }
+  .screen-label { color:#8A91A8; text-align:center; font-size:12px; font-weight:700; padding:10px 0 2px; letter-spacing:1px; text-transform:uppercase; }
+  .body { flex:1; overflow:hidden; padding:0 16px; }
+
+  /* ── Light large-title header ── */
+  .header { display:flex; justify-content:space-between; align-items:flex-end; padding:16px 20px 12px; }
+  .header .date { color:#8A91A8; font-size:12px; font-weight:600; margin-bottom:3px; }
+  .header .title { color:#1A1D2B; font-size:24px; font-weight:800; letter-spacing:-.5px; }
+  .fab {
+    width:42px; height:42px; border-radius:21px; background:#4A6CF7; color:#FFF;
+    display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:400;
+    box-shadow:0 6px 14px rgba(74,108,247,.4);
+  }
+
+  /* ── Cards ── */
+  .card {
+    background:#FFF; border-radius:20px; padding:18px; margin-bottom:12px;
+    box-shadow:0 8px 20px rgba(63,74,126,.08);
+  }
+
+  /* ── Progress ── */
+  .prog-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+  .prog-label { font-size:12px; color:#8A91A8; font-weight:600; margin-bottom:3px; }
+  .prog-count { font-size:13px; color:#8A91A8; font-weight:600; }
+  .prog-count b { color:#4A6CF7; font-size:16px; font-weight:800; }
+  .prog-pct { font-size:34px; font-weight:800; color:#4A6CF7; letter-spacing:-1px; }
+  .prog-pct span { font-size:17px; }
+  .track { height:12px; background:#EBEEF6; border-radius:6px; overflow:hidden; }
+  .fill { height:100%; width:66%; background:#4A6CF7; border-radius:6px; }
+
+  .trial { display:flex; align-items:center; gap:6px; background:#EDF1FE; color:#4A6CF7; border-radius:14px; padding:9px 12px; font-size:12px; font-weight:700; margin-bottom:10px; }
+  .trial span { margin-left:auto; }
+  .streak { display:inline-block; margin-top:12px; background:#FFFBEB; color:#92400E; border-radius:12px; padding:5px 11px; font-size:12px; font-weight:800; }
+
+  /* ── Banner ── */
+  .banner {
+    background:#FFFBEB; border-left:4px solid #F59E0B; border-radius:16px;
+    padding:12px 14px; margin-bottom:12px; box-shadow:0 4px 10px rgba(63,74,126,.05);
+  }
+  .banner-title { font-size:12px; font-weight:700; color:#92400E; margin-bottom:8px; }
+  .pill {
+    display:inline-flex; align-items:center; gap:6px; background:#FFF; border:1.5px solid #F59E0B;
+    border-radius:18px; padding:5px 11px; font-size:12px; font-weight:600; margin-right:6px;
+  }
+  .pill .dot { width:8px; height:8px; border-radius:4px; background:#F59E0B; }
+  .pill .dday { color:#F59E0B; font-weight:800; }
+  .pill.urgent { border-color:#EF4444; }
+  .pill.urgent .dday { color:#EF4444; }
+
+  /* ── Dose item ── */
+  .dose {
+    display:flex; align-items:center; background:#FFF; border-radius:18px; margin-bottom:10px;
+    box-shadow:0 6px 14px rgba(63,74,126,.07); overflow:hidden; min-height:70px;
+  }
+  .dose .bar { width:5px; align-self:stretch; }
+  .dose .info { flex:1; padding:13px 14px; }
+  .dose .name { font-size:15px; font-weight:700; color:#1A1D2B; margin-bottom:4px; letter-spacing:-.2px; }
+  .dose .name.done { text-decoration:line-through; color:#A9B0C5; }
+  .dose .meta { font-size:12px; color:#8A91A8; }
+  .dose .meta .accent { color:#4A6CF7; }
+  .check {
+    width:44px; height:44px; border-radius:22px; margin-right:14px; flex-shrink:0;
+    background:#F1F3F9; border:2px solid #E3E7F1;
+    display:flex; align-items:center; justify-content:center; font-size:22px; color:#C4CBDD;
+  }
+  .check.done {
+    background:#10B981; border-color:#10B981; color:#FFF;
+    box-shadow:0 4px 10px rgba(16,185,129,.35);
+  }
+
+  /* ── Medicine card ── */
+  .med { display:flex; align-items:center; gap:12px; background:#FFF; border-radius:18px; padding:14px 16px; margin-bottom:10px; box-shadow:0 6px 14px rgba(63,74,126,.07); }
+  .med .icon { width:42px; height:42px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:19px; flex-shrink:0; }
+  .med .icon.blue { background:rgba(74,108,247,.14); color:#4A6CF7; }
+  .med .icon .pill-ic { width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:2.2; }
+  .med .icon .pill-ic .half { fill:currentColor; stroke:none; }
+  .med .mt + .mt { margin-top:2px; }
+  .med .mt .dot { margin:0 6px; color:#C3C8D6; }
+  .med .icon.green { background:rgba(16,185,129,.14); color:#10B981; }
+  .med .icon.purple { background:rgba(139,92,246,.14); color:#8B5CF6; }
+  .med .b { flex:1; min-width:0; }
+  .med .row1 { display:flex; align-items:center; gap:8px; margin-bottom:3px; }
+  .med .nm { font-size:15px; font-weight:700; color:#1A1D2B; letter-spacing:-.2px; }
+  .badge { border-radius:12px; padding:2px 9px; font-size:10px; font-weight:800; color:#FFF; }
+  .badge.g { background:#10B981; } .badge.o { background:#F59E0B; } .badge.r { background:#EF4444; }
+  .med .mt { font-size:12px; color:#8A91A8; }
+  .switch { width:44px; height:26px; border-radius:13px; background:#4A6CF7; position:relative; flex-shrink:0; }
+  .switch::after { content:''; position:absolute; right:3px; top:3px; width:20px; height:20px; background:#FFF; border-radius:10px; box-shadow:0 1px 3px rgba(0,0,0,.2); }
+  .switch.off { background:#CCD2E0; }
+  .switch.off::after { left:3px; right:auto; }
+  .med.swiped { transform:translateX(-64px); }
+  .swipe-wrap { position:relative; border-radius:18px; overflow:hidden; margin-bottom:10px; }
+  .swipe-wrap .med { margin-bottom:0; }
+  .del { position:absolute; right:0; top:0; bottom:0; width:64px; background:#EF4444; color:#FFF; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:11px; font-weight:700; gap:2px; border-radius:0 18px 18px 0; }
+
+  /* ── Form ── */
+  .sec-title { font-size:13px; font-weight:700; color:#4A6CF7; margin-bottom:11px; }
+  .lbl { font-size:12px; font-weight:600; color:#555; margin-bottom:7px; }
+  .input { background:#F4F6FB; border:1px solid #E5E7EB; border-radius:12px; padding:11px 13px; font-size:13px; color:#1A1D2B; margin-bottom:10px; }
+  .chips { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:10px; }
+  .chip { border:1.5px solid #DDD; background:#F4F6FB; border-radius:18px; padding:7px 12px; font-size:12px; font-weight:600; color:#888; }
+  .chip.on { border-color:#4A6CF7; background:#EDF1FE; color:#4A6CF7; }
+  .freq { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
+  .freq .f { flex:1; min-width:38px; text-align:center; border:1.5px solid #DDD; border-radius:10px; padding:9px 0; font-size:12px; font-weight:600; color:#888; }
+  .freq .f.on { border-color:#4A6CF7; background:#EDF1FE; color:#4A6CF7; }
+  .time-in { display:flex; align-items:center; gap:8px; background:#F0F3FF; border:1px solid #DCE3FD; border-radius:12px; padding:11px 13px; margin-bottom:8px; }
+  .time-in .t { font-size:16px; font-weight:700; color:#4A6CF7; flex:1; }
+  .time-in .cursor { display:inline-block; width:2px; height:18px; background:#4A6CF7; vertical-align:middle; animation:blink 1s infinite; }
+  @keyframes blink { 50% { opacity:0; } }
+  .minus { color:#EF4444; font-size:18px; }
+  .save { background:#4A6CF7; border-radius:16px; color:#FFF; text-align:center; padding:14px; font-size:15px; font-weight:700; box-shadow:0 8px 18px rgba(74,108,247,.35); margin-top:4px; }
+
+  /* ── Calendar ── */
+  .rate-badge { background:#EDF1FE; color:#4A6CF7; border-radius:16px; padding:6px 13px; font-size:12px; font-weight:800; }
+  .cal { background:#FFF; border-radius:20px; padding:14px; margin-bottom:12px; box-shadow:0 8px 20px rgba(63,74,126,.08); }
+  .cal .mon { text-align:center; font-weight:800; font-size:14px; margin-bottom:10px; color:#1A1D2B; }
+  .cal table { width:100%; border-collapse:collapse; font-size:11px; text-align:center; }
+  .cal th { color:#8A91A8; font-weight:600; padding:4px 0; }
+  .cal td { padding:6px 0; color:#333; position:relative; }
+  .cal td.dis { color:#CCD2E0; }
+  .cal td.sel { background:#4A6CF7; color:#FFF; border-radius:10px; font-weight:800; }
+  .d { position:absolute; bottom:1px; left:50%; transform:translateX(-50%); display:flex; gap:2px; }
+  .d i { width:4px; height:4px; border-radius:2px; display:block; }
+  .d .g { background:#10B981; } .d .r { background:#EF4444; }
+  .rec { display:flex; align-items:center; gap:10px; background:#FFF; border-radius:16px; padding:12px 14px; margin-bottom:8px; box-shadow:0 4px 10px rgba(63,74,126,.06); border-left:4px solid #10B981; }
+  .rec .sd { width:9px; height:9px; border-radius:5px; background:#10B981; }
+  .rec .rn { flex:1; font-size:13px; font-weight:600; color:#1A1D2B; }
+  .rec .rt { font-size:11px; color:#8A91A8; }
+  .rec .st { font-size:12px; font-weight:800; color:#10B981; }
+  .rec.miss .st { color:#EF4444; }
+
+  /* ── Settings ── */
+  .set-lbl { font-size:10px; font-weight:700; color:#999; letter-spacing:.8px; text-transform:uppercase; margin:14px 4px 7px; }
+  .set-card { background:#FFF; border-radius:18px; overflow:hidden; box-shadow:0 4px 12px rgba(63,74,126,.06); }
+  .set-row { display:flex; align-items:center; gap:12px; padding:13px 14px; }
+  .set-row + .set-row { border-top:1px solid #F3F4F6; }
+  .set-ic { width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px; }
+  .set-tt { flex:1; font-size:13px; font-weight:500; color:#1A1D2B; }
+  .set-tt small { display:block; font-size:11px; color:#999; margin-top:1px; }
+  .chev { color:#CCC; font-size:14px; }
+
+  /* ── Tab bar ── */
+  .tabbar {
+    display:flex; background:#FFF; padding:10px 8px 22px;
+    box-shadow:0 -6px 20px rgba(26,34,70,.07);
+  }
+  .tab { flex:1; text-align:center; font-size:10px; font-weight:600; color:#8A91A8; }
+  .tab .ic { width:22px; height:22px; display:block; margin:0 auto 3px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+  .tab .ic .dots { fill:currentColor; stroke:none; }
+  .tab .ic g[transform] { stroke:none; }
+  .tab.on .ic .f { fill:currentColor; }
+  .tab.on .ic .dots, .tab.on .ic .hole { fill:#FFF; stroke:#FFF; }
+  .dark .tab.on .ic .dots, .dark .tab.on .ic .hole { fill:#161A26; stroke:#161A26; }
+  .tab.on { color:#4A6CF7; }
+
+  .segm { display:flex; background:#EBEEF6; border-radius:10px; padding:3px; }
+  .segm span { flex:1; text-align:center; padding:6px 0; border-radius:8px; font-size:11px; font-weight:600; color:#8A91A8; }
+  .segm span.on { background:#FFF; color:#1A1D2B; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+
+  /* ── Paywall ── */
+  .pw { padding:8px 22px 0; flex:1; display:flex; flex-direction:column; }
+  .pw-close { align-self:flex-end; color:#8A91A8; font-size:20px; }
+  .pw-hero { text-align:center; margin-top:4px; }
+  .pw-icon { width:72px; height:72px; border-radius:22px; background:#EDF1FE; display:inline-flex; align-items:center; justify-content:center; font-size:36px; }
+  .pw-title { font-size:20px; font-weight:800; margin-top:12px; letter-spacing:-.3px; }
+  .pw-status { font-size:12px; font-weight:700; color:#4A6CF7; margin-top:5px; }
+  .pw-feat { background:#FFF; border-radius:16px; padding:14px; margin-top:16px; box-shadow:0 6px 14px rgba(63,74,126,.07); }
+  .pw-feat div { display:flex; gap:9px; align-items:center; font-size:12.5px; padding:5px 0; }
+  .pw-feat i { font-style:normal; color:#FFF; background:#10B981; width:18px; height:18px; border-radius:9px; display:inline-flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0; }
+  .pw-price { text-align:center; margin-top:16px; font-size:28px; font-weight:800; }
+  .pw-price small { display:block; font-size:11px; color:#8A91A8; font-weight:500; margin-top:2px; }
+  .pw-buy { background:#4A6CF7; color:#FFF; border-radius:14px; text-align:center; padding:13px; font-weight:700; font-size:14px; margin-top:14px; box-shadow:0 8px 18px rgba(74,108,247,.35); }
+  .pw-restore { border:1px solid #E5E8F0; border-radius:14px; text-align:center; padding:11px; font-weight:600; font-size:13px; margin-top:9px; }
+  .pw-foot { text-align:center; font-size:10px; color:#8A91A8; margin-top:10px; line-height:1.5; }
+
+  /* ── Dark theme screen ── */
+  .screen.dark { background:#0B0D14; color:#F3F5FA; }
+  .dark .status, .dark .header .title, .dark .dose .name, .dark .prog-head, .dark .med .nm { color:#F3F5FA; }
+  .dark .card, .dark .dose, .dark .med { background:#161A26; box-shadow:none; border:1px solid #2A3042; }
+  .dark .track { background:#232838; }
+  .dark .fill, .dark .fab { background:#6B86FF; }
+  .dark .prog-pct, .dark .prog-count b, .dark .dose .meta .accent { color:#6B86FF; }
+  .dark .trial { background:rgba(107,134,255,.16); color:#8EA2FF; }
+  .dark .streak { background:rgba(251,191,36,.12); color:#FCD34D; }
+  .dark .banner { background:rgba(251,191,36,.10); border-left-color:#FBBF24; box-shadow:none; }
+  .dark .banner-title { color:#FCD34D; }
+  .dark .pill { background:#161A26; color:#F3F5FA; }
+  .dark .dose .name.done { color:#5D6479; }
+  .dark .check { background:#232838; border-color:#2A3042; color:#5D6479; }
+  .dark .check.done { background:#34D399; border-color:#34D399; color:#FFF; box-shadow:none; }
+  .dark .tabbar { background:#161A26; box-shadow:none; border-top:1px solid #2A3042; }
+  .dark .tab.on { color:#6B86FF; }
+
+  /* ── Family alerts ── */
+  .push {
+    position:absolute; top:44px; left:10px; right:10px; z-index:40;
+    background:rgba(250,250,252,.96); border-radius:18px; padding:11px 13px;
+    box-shadow:0 12px 30px rgba(20,24,48,.28); display:flex; gap:10px; align-items:flex-start;
+  }
+  .push-ic { width:30px; height:30px; border-radius:8px; background:#4A6CF7; color:#FFF; display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0; }
+  .push-app { font-size:10px; color:#8A91A8; font-weight:600; display:flex; justify-content:space-between; }
+  .push-tt { font-size:12.5px; font-weight:800; margin-top:1px; }
+  .push-bd { font-size:12px; color:#3A3F55; margin-top:1px; line-height:1.35; }
+  .gd-intro { font-size:11.5px; color:#8A91A8; line-height:1.5; margin:4px 4px 12px; }
+  .gd-person { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .gd-av { width:34px; height:34px; border-radius:17px; background:#EDF1FE; display:flex; align-items:center; justify-content:center; font-size:17px; }
+  .gd-name { font-size:15px; font-weight:800; flex:1; }
+  .gd-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-top:1px solid #F1F3F8; font-size:13px; }
+  .gd-time { width:44px; font-weight:800; }
+  .gd-med { flex:1; }
+  .gd-st { font-size:12.5px; font-weight:800; }
+  .gd-st.ok { color:#10B981; }
+  .gd-st.miss { color:#EF4444; }
+  .gd-st.next { color:#8A91A8; }
+  .gd-nav { margin-top:96px; }
+  .gd-pc { width:28px; height:28px; fill:#4A6CF7; flex-shrink:0; }
+  .gd-delays { display:flex; flex-wrap:wrap; gap:5px; }
+  .gd-delays span { padding:5px 9px; border-radius:12px; background:#EBEEF6; font-size:10.5px; font-weight:600; color:#8A91A8; border:1.2px solid transparent; }
+  .gd-delays span.on { background:#EDF1FE; border-color:#4A6CF7; color:#4A6CF7; }
+  .gd-unlink { font-size:12px; color:#EF4444; font-weight:600; }
+  .gd-lbl { font-size:12px; font-weight:700; color:#1A1D2B; margin:2px 0 2px; }
+  .gd-input { display:flex; gap:8px; margin-top:12px; }
+  .gd-field { flex:1; background:#F4F6FB; border-radius:12px; padding:11px 13px; font-size:13px; color:#A9B0C5; }
+  .gd-btn { background:#4A6CF7; color:#fff; border-radius:12px; padding:11px 16px; font-size:13px; font-weight:700; }
+  .gd-code { text-align:center; background:#EDF1FE; border-radius:14px; padding:12px; }
+  .gd-code b { display:block; font-size:28px; letter-spacing:5px; margin-top:2px; }
+  .gd-code span { font-size:11px; color:#4A6CF7; font-weight:700; }
+  .mi { width:1.05em; height:1.05em; vertical-align:-0.17em; margin-right:3px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .navbar { display:flex; justify-content:space-between; align-items:center; padding:10px 14px 12px; }
+  .navbar .back { color:#4A6CF7; font-size:14px; font-weight:500; width:60px; }
+  .navbar .nt { font-size:15px; font-weight:700; color:#1A1D2B; }
+  .navbar span:last-child { width:60px; }
+  .time-row { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+  .time-row .time-in { flex:1; margin-bottom:0; }
+  .time-in .mi { color:#4A6CF7; width:16px; height:16px; }
+  .time-in .ampm { font-size:12px; font-weight:600; color:#8A91A8; }
+  .time-row .minus { width:22px; height:22px; fill:#EF4444; flex-shrink:0; }
+  .colors { display:flex; gap:10px; }
+  .colors i { width:32px; height:32px; border-radius:16px; display:flex; align-items:center; justify-content:center; color:#fff; font-style:normal; font-size:14px; font-weight:800; }
+  .colors i:first-child { box-shadow:0 0 0 3px #fff, 0 0 0 5px #4A6CF7; }
+  .set-ic svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
+  .lchips { display:flex; flex-wrap:wrap; gap:5px; }
+  .lchips span { padding:4px 9px; border-radius:12px; background:#EBEEF6; font-size:10.5px; font-weight:600; color:#8A91A8; border:1.2px solid transparent; }
+  .lchips span.on { background:#EDF1FE; border-color:#4A6CF7; color:#4A6CF7; }
+  .banner-title { display:flex; align-items:center; gap:5px; }
+  .banner-title .al { width:15px; height:15px; fill:#F59E0B; flex-shrink:0; }
+  .pw-later { text-align:center; font-size:12px; color:#8A91A8; font-weight:600; margin-top:9px; }
+
+.flow{display:flex;gap:26px;justify-content:center;flex-wrap:wrap;margin-bottom:40px}
+.step{margin:0;display:flex;flex-direction:column;align-items:center;gap:12px}
+.step figcaption{color:#E5E8F5;font-size:13px;font-weight:700;max-width:330px;text-align:center}
+h2{color:#fff;text-align:center;font-size:17px;margin:10px 0 18px}
+.gd-code{margin-top:0} .gd-hint{font-size:10.5px;color:#6B7290;line-height:1.5;margin:6px 0 10px}
+.gd-share{background:#4A6CF7;color:#fff;border-radius:12px;text-align:center;padding:11px;font-size:13px;font-weight:700;margin-top:6px}
+.gd-fine{font-size:10px;color:#A9B0C5;margin-top:10px;line-height:1.5}
+.gd-pc.dad{fill:#10B981} .gd-pc.sib{fill:#8B5CF6}
+.screen .push{top:44px}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:#F2F2F7;border-radius:22px 22px 0 0;padding:16px 16px 26px;box-shadow:0 -10px 30px rgba(0,0,0,.18);z-index:30}
+.sheet-msg{background:#fff;border-radius:12px;padding:12px;font-size:11.5px;line-height:1.55;color:#1A1D2B}
+.sheet-apps{display:flex;gap:16px;justify-content:center;margin-top:14px} .sheet-apps i{width:50px;height:50px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:800;color:#fff;font-size:18px}
+.sheet-lbl{text-align:center;font-size:10.5px;color:#6B7290;margin-top:8px}
+.dim{position:absolute;inset:0;background:rgba(10,14,30,.35);z-index:30}
+.alert{position:absolute;left:40px;right:40px;top:40%;background:rgba(250,250,252,.98);border-radius:16px;z-index:31;text-align:center;padding:18px 14px 0;display:flex;flex-direction:column;gap:6px;font-size:12.5px}
+.alert b{font-size:14px} .alert span{color:#3A3F55} .alert-btn{border-top:1px solid #E1E3EA;margin:10px -14px 0;padding:11px;color:#0A84FF;font-weight:700}
+</style></head><body>
+<h1>보호자 연결 — 등록 과정</h1><div class="sub">부모님 폰에서 코드 만들기 → 가족 폰에서 코드 입력 → 연결 완료</div>
+<div class="flow"><figure class="step"><div class="phone"><div class="screen">
+<div class="notch"></div><div class="status"><span>9:41</span><span>📶 🔋</span></div>
+<div class="navbar"><span class="back">‹ 뒤로</span><span class="nt">보호자 연결</span><span></span></div>
+<div class="body"><div class="gd-intro">정해진 복용 시간이 지나도 체크가 없으면 연결된 가족에게 알림이 가요. 알림 시점은 가족이 정할 수 있어요.</div><div class="card"><div class="gd-lbl">가족에게 보일 내 이름</div><div class="gd-input"><span class="gd-field" style="color:#1A1D2B">엄마</span><span class="gd-btn">저장</span></div></div><div class="set-lbl">나를 지켜보는 가족</div><div class="card"><div class="gd-intro" style="margin:0 0 10px">아직 연결된 가족이 없어요.</div><div class="gd-code"><span>초대 코드</span><b>482 913</b><div class="gd-hint">가족이 MediRemind 앱의 설정 → 보호자 연결에서 이 코드를 입력하면 연결돼요. 30분 동안 유효해요.</div><div class="gd-share">코드 보내기</div></div><div class="gd-fine">연결하면 약 이름과 복용 시간·여부가 연결된 가족에게만 공유돼요.</div></div></div>
+</div></div><figcaption>① 엄마 폰 — 이름 입력 후 “초대 코드 만들기”</figcaption></figure><figure class="step"><div class="phone"><div class="screen">
+<div class="notch"></div><div class="status"><span>9:41</span><span>📶 🔋</span></div>
+<div class="navbar"><span class="back">‹ 뒤로</span><span class="nt">보호자 연결</span><span></span></div>
+<div class="body"><div class="gd-intro">정해진 복용 시간이 지나도 체크가 없으면 연결된 가족에게 알림이 가요. 알림 시점은 가족이 정할 수 있어요.</div><div class="card"><div class="gd-lbl">가족에게 보일 내 이름</div><div class="gd-input"><span class="gd-field" style="color:#1A1D2B">엄마</span><span class="gd-btn">저장</span></div></div><div class="set-lbl">나를 지켜보는 가족</div><div class="card"><div class="gd-code"><span>초대 코드</span><b>482 913</b></div></div></div><div class="sheet"><div class="sheet-msg">MediRemind 보호자 연결 코드: 482913<br>앱 설정 → 보호자 연결에서 입력해 주세요 (30분 유효).<br><u>apps.apple.com/app/id6762364088</u></div><div class="sheet-apps"><i style="background:#FEE500;color:#3C1E1E">톡</i><i style="background:#34C759">💬</i><i style="background:#0A84FF">✉️</i><i style="background:#8E8E93">⋯</i></div><div class="sheet-lbl">카카오톡 · 메시지 · 메일 · 더 보기</div></div>
+</div></div><figcaption>② 카톡 등으로 코드 전달</figcaption></figure><figure class="step"><div class="phone"><div class="screen">
+<div class="notch"></div><div class="status"><span>9:41</span><span>📶 🔋</span></div>
+<div class="navbar"><span class="back">‹ 뒤로</span><span class="nt">보호자 연결</span><span></span></div>
+<div class="body"><div class="gd-intro">정해진 복용 시간이 지나도 체크가 없으면 연결된 가족에게 알림이 가요. 알림 시점은 가족이 정할 수 있어요.</div><div class="set-lbl">나를 지켜보는 가족</div><div class="card"><div class="gd-intro" style="margin:0 0 10px">아직 연결된 가족이 없어요.</div><div class="gd-share" style="margin:0">초대 코드 만들기</div></div><div class="set-lbl">내가 돌보는 가족</div><div class="card"><div class="gd-intro" style="margin:0 0 4px">가족에게 받은 코드를 입력해 연결하세요.</div><div class="gd-input"><span class="gd-field" style="color:#1A1D2B;font-weight:800;letter-spacing:3px;border:1.5px solid #4A6CF7">482913</span><span class="gd-btn">연결</span></div></div></div>
+</div></div><figcaption>③ 자녀 폰 — 받은 코드 입력 후 “연결”</figcaption></figure><figure class="step"><div class="phone"><div class="screen">
+<div class="notch"></div><div class="status"><span>9:41</span><span>📶 🔋</span></div>
+<div class="navbar"><span class="back">‹ 뒤로</span><span class="nt">보호자 연결</span><span></span></div>
+<div class="body"><div class="gd-intro">정해진 복용 시간이 지나도 체크가 없으면 연결된 가족에게 알림이 가요. 알림 시점은 가족이 정할 수 있어요.</div><div class="set-lbl">내가 돌보는 가족</div><div class="card"><div class="gd-person"><svg class="gd-pc" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11"/><circle cx="12" cy="9.5" r="3.6" fill="#fff"/><path d="M5.6 18.6c1.3-2.4 3.7-3.8 6.4-3.8s5.1 1.4 6.4 3.8" fill="#fff"/></svg><div class="gd-name">엄마</div><span class="gd-unlink">연결 끊기</span></div><div class="gd-lbl">알림 받을 시점</div><div class="gd-delays"><span class="">5분 후</span><span class="">10분 후</span><span class="">15분 후</span><span class="on">30분 후</span><span class="">1시간 후</span><span class="">2시간 후</span></div></div></div><div class="dim"></div><div class="alert"><b>연결됐어요.</b><span>약을 놓치면 알려 드릴게요.</span><div class="alert-btn">확인</div></div>
+</div></div><figcaption>④ 연결 완료 — 알림 허용</figcaption></figure></div>
+<h2>여러 명일 때</h2>
+<div class="flow"><figure class="step"><div class="phone"><div class="screen">
+<div class="notch"></div><div class="status"><span>9:41</span><span>📶 🔋</span></div>
+<div class="navbar"><span class="back">‹ 뒤로</span><span class="nt">보호자 연결</span><span></span></div>
+<div class="body"><div class="set-lbl">내가 돌보는 가족</div><div class="card"><div class="gd-person"><svg class="gd-pc" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11"/><circle cx="12" cy="9.5" r="3.6" fill="#fff"/><path d="M5.6 18.6c1.3-2.4 3.7-3.8 6.4-3.8s5.1 1.4 6.4 3.8" fill="#fff"/></svg><div class="gd-name">엄마</div><span class="gd-unlink">연결 끊기</span></div><div class="gd-lbl">알림 받을 시점</div><div class="gd-delays"><span class="">5분 후</span><span class="on">10분 후</span><span class="">15분 후</span><span class="">30분 후</span><span class="">1시간 후</span><span class="">2시간 후</span></div><div class="gd-lbl" style="margin-top:8px">오늘 복용</div><div class="gd-row"><span class="gd-time">08:00</span><span class="gd-med">혈압약</span><span class="gd-st ok">복용</span></div><div class="gd-row"><span class="gd-time">19:00</span><span class="gd-med">혈압약</span><span class="gd-st miss">안 먹음</span></div></div><div class="card"><div class="gd-person"><svg class="gd-pc dad" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11"/><circle cx="12" cy="9.5" r="3.6" fill="#fff"/><path d="M5.6 18.6c1.3-2.4 3.7-3.8 6.4-3.8s5.1 1.4 6.4 3.8" fill="#fff"/></svg><div class="gd-name">아빠</div><span class="gd-unlink">연결 끊기</span></div><div class="gd-lbl">알림 받을 시점</div><div class="gd-delays"><span class="">5분 후</span><span class="">10분 후</span><span class="">15분 후</span><span class="on">30분 후</span><span class="">1시간 후</span><span class="">2시간 후</span></div><div class="gd-lbl" style="margin-top:8px">오늘 복용</div><div class="gd-row"><span class="gd-time">09:00</span><span class="gd-med">당뇨약</span><span class="gd-st ok">복용</span></div><div class="gd-row"><span class="gd-time">21:00</span><span class="gd-med">당뇨약</span><span class="gd-st next">예정</span></div></div></div>
+</div></div><figcaption>내가 엄마·아빠 둘 다 돌볼 때 (내 폰)</figcaption></figure><figure class="step"><div class="phone"><div class="screen">
+<div class="notch"></div><div class="status"><span>9:41</span><span>📶 🔋</span></div>
+<div class="navbar"><span class="back">‹ 뒤로</span><span class="nt">보호자 연결</span><span></span></div>
+<div class="body"><div class="card"><div class="gd-lbl">가족에게 보일 내 이름</div><div class="gd-input"><span class="gd-field" style="color:#1A1D2B">엄마</span><span class="gd-btn">저장</span></div></div><div class="set-lbl">나를 지켜보는 가족</div><div class="card"><div class="gd-person"><svg class="gd-pc" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11"/><circle cx="12" cy="9.5" r="3.6" fill="#fff"/><path d="M5.6 18.6c1.3-2.4 3.7-3.8 6.4-3.8s5.1 1.4 6.4 3.8" fill="#fff"/></svg><div class="gd-name">큰아들</div><span class="gd-unlink">연결 끊기</span></div><div class="gd-person" style="margin-top:12px"><svg class="gd-pc sib" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11"/><circle cx="12" cy="9.5" r="3.6" fill="#fff"/><path d="M5.6 18.6c1.3-2.4 3.7-3.8 6.4-3.8s5.1 1.4 6.4 3.8" fill="#fff"/></svg><div class="gd-name">작은딸</div><span class="gd-unlink">연결 끊기</span></div><div class="gd-share" style="margin-top:14px">초대 코드 만들기</div><div class="gd-fine">한 사람에 코드 하나씩 만들어 보내세요. 30분 동안 유효해요.</div></div></div>
+</div></div><figcaption>엄마를 나와 동생이 같이 돌볼 때 (엄마 폰)</figcaption></figure><figure class="step"><div class="phone"><div class="screen">
+<div class="notch"></div><div class="status"><span>9:41</span><span>📶 🔋</span></div>
+<div class="navbar"><span class="back">‹ 뒤로</span><span class="nt">보호자 연결</span><span></span></div>
+<div class="body"><div style="height:80px"></div><div class="set-lbl">큰아들 폰 · 10분 후</div><div class="card"><div class="gd-intro" style="margin:0">19:10에 알림</div></div><div class="set-lbl">작은딸 폰 · 1시간 후</div><div class="card"><div class="gd-intro" style="margin:0">20:00에 알림 (그 전에 엄마가 체크하면 안 감)</div></div></div><div class="push"><div class="push-ic">💊</div><div style="flex:1"><div class="push-app"><span>MEDIREMIND</span><span>지금</span></div><div class="push-tt">💊 복용 확인이 필요해요</div><div class="push-bd">엄마님이 19:00 혈압약을(를) 아직 복용하지 않았어요.</div></div></div>
+</div></div><figcaption>놓치면 각자 정한 시점에 각자 알림</figcaption></figure></div>
+</body></html>
