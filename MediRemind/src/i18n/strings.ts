@@ -266,6 +266,8 @@ export const STRINGS: Record<string, Entry> = {
   'guardian.linkedSince': { ko: '{date}부터 연결됨', en: 'Linked since {date}' },
   'guardian.unlinkNamed': { ko: '{name} 님과 연결 끊기', en: 'Unlink {name}' },
   'guardian.swipeHint': { ko: '← 밀어서 연결 끊기', en: '← Swipe to unlink' },
+  'guardian.history': { ko: '최근 2주', en: 'Last 2 weeks' },
+  'guardian.historyRate': { ko: '복용률 {n}%', en: '{n}% taken' },
   'guardian.unlinkConfirm': { ko: '{name} 님과의 연결을 끊을까요?', en: 'Unlink {name}?' },
   'guardian.deleteAll': { ko: '연결 해제 및 서버 데이터 삭제', en: 'Unlink all & delete server data' },
   'guardian.deleteConfirm': {

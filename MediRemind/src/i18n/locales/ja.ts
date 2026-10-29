@@ -180,6 +180,8 @@ const ja: Record<string, string> = {
   'guardian.linkedSince': '{date}からつながっています',
   'guardian.unlinkNamed': '{name}さんとのつながりを解除',
   'guardian.swipeHint': '← スワイプで解除',
+  'guardian.history': '直近2週間',
+  'guardian.historyRate': '服薬率 {n}%',
   'guardian.unlinkConfirm': '{name}さんとのつながりを解除しますか？',
   'guardian.deleteAll': 'すべて解除してサーバーのデータを削除',
   'guardian.deleteConfirm': 'すべての家族とのつながりと、サーバーで共有した服薬記録が削除されます。このスマホのお薬と記録はそのまま残ります。',

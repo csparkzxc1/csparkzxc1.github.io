@@ -180,6 +180,8 @@ const de: Record<string, string> = {
   'guardian.linkedSince': 'Verbunden seit {date}',
   'guardian.unlinkNamed': 'Verbindung mit {name} trennen',
   'guardian.swipeHint': '← Wischen zum Trennen',
+  'guardian.history': 'Letzte 2 Wochen',
+  'guardian.historyRate': '{n} % genommen',
   'guardian.unlinkConfirm': 'Verbindung mit {name} trennen?',
   'guardian.deleteAll': 'Alle trennen & Serverdaten löschen',
   'guardian.deleteConfirm': 'Alle Familienverbindungen und die auf dem Server geteilten Einnahmen werden gelöscht. Medikamente und Verlauf auf diesem Handy bleiben erhalten.',

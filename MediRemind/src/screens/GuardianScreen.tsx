@@ -29,7 +29,7 @@ import {
   deleteAllData,
   getDisplayName,
   getLinks,
-  patientToday,
+  patientHistory,
   redeemInvite,
   setAlertDelay,
   setDisplayName,
@@ -38,7 +38,14 @@ import {
   type Patient,
   type Person,
 } from '../guardian/guardian';
-import { ALERT_DELAYS, slotState, type DoseSlot, type SlotState } from '../guardian/slots';
+import {
+  adherenceRate,
+  ALERT_DELAYS,
+  dailyTally,
+  slotState,
+  type DoseSlot,
+  type SlotState,
+} from '../guardian/slots';
 import { formatShortDate } from '../i18n/core';
 import { dateKey } from '../lib/schedule';
 
@@ -70,7 +77,7 @@ export default function GuardianScreen() {
       if (!l) return;
       setName(await getDisplayName());
       const entries = await Promise.all(
-        l.patients.map(async (p) => [p.id, await patientToday(p.id)] as const)
+        l.patients.map(async (p) => [p.id, await patientHistory(p.id)] as const)
       );
       setToday(Object.fromEntries(entries));
     } catch (e) {
@@ -332,6 +339,8 @@ function PatientCard({
   const front = flip.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] });
   const back = flip.interpolate({ inputRange: [0, 1], outputRange: ['180deg', '360deg'] });
   const name = patient.name || t('guardian.unnamed');
+  const todayKey = dateKey(new Date());
+  const todaySlots = slots.filter((s) => dateKey(new Date(s.due_at)) === todayKey);
   const faceHeight = height ? { minHeight: height } : null;
 
   return (
@@ -351,7 +360,8 @@ function PatientCard({
             <Ionicons name="menu" size={24} color={colors.textMuted} />
           </TouchableOpacity>
         </View>
-        <TodayList slots={slots} delay={patient.alertDelay} />
+        <TodayList slots={todaySlots} delay={patient.alertDelay} />
+        <HistoryChart slots={slots} delay={patient.alertDelay} />
       </Animated.View>
 
       <Animated.View
@@ -404,6 +414,54 @@ function DelayPicker({ value, onChange }: { value: number; onChange: (m: number)
             </Text>
           </TouchableOpacity>
         ))}
+      </View>
+    </View>
+  );
+}
+
+/** Last two weeks: one bar per day, green for taken, red for missed. */
+function HistoryChart({ slots, delay }: { slots: DoseSlot[]; delay: number }) {
+  const { t } = useI18n();
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+  const now = new Date();
+  const tally = dailyTally(slots, dateKey(now), now, delay);
+  const rate = adherenceRate(tally);
+  const max = Math.max(1, ...tally.map((d) => d.total));
+  return (
+    <View style={styles.history}>
+      <View style={styles.historyHead}>
+        <Text style={styles.label}>{t('guardian.history')}</Text>
+        {rate !== null && (
+          <Text style={[styles.historyRate, { color: rate >= 80 ? colors.success : rate >= 50 ? colors.warning : colors.danger }]}>
+            {t('guardian.historyRate', { n: rate })}
+          </Text>
+        )}
+      </View>
+      <View style={styles.bars}>
+        {tally.map((d) => {
+          const isToday = d === tally[tally.length - 1];
+          return (
+            <View key={d.date} style={styles.barCol} accessibilityLabel={`${d.date} ${d.taken}/${d.total}`}>
+              <View style={styles.barTrack}>
+                {d.total > 0 && (
+                  <View style={{ height: `${(d.total / max) * 100}%`, width: '100%', justifyContent: 'flex-end' }}>
+                    <View style={[styles.barPart, { flex: d.total - d.taken - d.missed, backgroundColor: colors.surfaceMuted }]} />
+                    <View style={[styles.barPart, { flex: d.missed, backgroundColor: colors.danger }]} />
+                    <View style={[styles.barPart, { flex: d.taken, backgroundColor: colors.success }]} />
+                  </View>
+                )}
+              </View>
+              <Text style={[styles.barDay, isToday && styles.barToday]}>{Number(d.date.slice(8))}</Text>
+            </View>
+          );
+        })}
+      </View>
+      <View style={styles.legend}>
+        <View style={[styles.legendDot, { backgroundColor: colors.success }]} />
+        <Text style={styles.legendText}>{t('guardian.state.taken')}</Text>
+        <View style={[styles.legendDot, { backgroundColor: colors.danger }]} />
+        <Text style={styles.legendText}>{t('guardian.state.missed')}</Text>
       </View>
     </View>
   );
@@ -511,6 +569,18 @@ const makeStyles = (c: ThemeColors, scheme: Scheme) =>
     personRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
     personName: { flex: 1, fontSize: 16, fontWeight: '700', color: c.text },
     flipWrap: { marginBottom: 16 },
+    history: { marginTop: 4, paddingTop: 12, borderTopWidth: 1, borderTopColor: c.line },
+    historyHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
+    historyRate: { fontSize: 13, fontWeight: '800' },
+    bars: { flexDirection: 'row', gap: 3, height: 72, alignItems: 'flex-end', marginTop: 4 },
+    barCol: { flex: 1, alignItems: 'center', height: '100%' },
+    barTrack: { flex: 1, width: '100%', justifyContent: 'flex-end', borderRadius: 3, overflow: 'hidden' },
+    barPart: { width: '100%' },
+    barDay: { fontSize: 9, color: c.textFaint, marginTop: 3 },
+    barToday: { color: c.brand, fontWeight: '800' },
+    legend: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 8 },
+    legendDot: { width: 8, height: 8, borderRadius: 4, marginLeft: 6 },
+    legendText: { fontSize: 11, color: c.textMuted },
     face: { position: 'absolute', top: 0, left: 0, right: 0, marginBottom: 0, backfaceVisibility: 'hidden' },
     linkedSince: { fontSize: 12, color: c.textMuted, marginTop: 2 },
     unlinkBtn: {

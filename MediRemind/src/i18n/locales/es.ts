@@ -180,6 +180,8 @@ const es: Record<string, string> = {
   'guardian.linkedSince': 'Vinculado desde el {date}',
   'guardian.unlinkNamed': 'Desvincular a {name}',
   'guardian.swipeHint': '← Desliza para desvincular',
+  'guardian.history': 'Últimas 2 semanas',
+  'guardian.historyRate': '{n} % tomadas',
   'guardian.unlinkConfirm': '¿Desvincular a {name}?',
   'guardian.deleteAll': 'Desvincular todo y borrar datos del servidor',
   'guardian.deleteConfirm': 'Se borrarán todos los vínculos familiares y las dosis compartidas en el servidor. Los medicamentos y el historial de este teléfono se conservan.',

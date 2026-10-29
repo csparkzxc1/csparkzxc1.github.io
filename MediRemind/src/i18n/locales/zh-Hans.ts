@@ -180,6 +180,8 @@ const zhHans: Record<string, string> = {
   'guardian.linkedSince': '{date}起已关联',
   'guardian.unlinkNamed': '解除与{name}的关联',
   'guardian.swipeHint': '← 滑动以解除关联',
+  'guardian.history': '最近两周',
+  'guardian.historyRate': '服药率 {n}%',
   'guardian.unlinkConfirm': '确定解除与{name}的关联吗？',
   'guardian.deleteAll': '解除全部关联并删除服务器数据',
   'guardian.deleteConfirm': '所有家人关联及服务器上共享的服药记录都将被删除。本机上的药品和记录会保留。',

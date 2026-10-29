@@ -16,10 +16,10 @@ import type { Medicine } from '../types';
 import { kvDelete, kvGet, kvSet } from '../db/kv';
 import { getDoseRecordsByDate } from '../db/doseRepository';
 import { getActiveLanguage } from '../i18n/core';
-import { dateKey, parseDateKey } from '../lib/schedule';
+import { addDays, dateKey, parseDateKey } from '../lib/schedule';
 import { ensurePermission } from '../notifications/notifications';
 import { GUARDIAN_CONFIG, guardianAvailable } from './config';
-import { buildSlots, DEFAULT_ALERT_DELAY, type DoseSlot } from './slots';
+import { buildSlots, DEFAULT_ALERT_DELAY, HISTORY_DAYS, type DoseSlot } from './slots';
 
 const KEYS = {
   /** Set once an account exists, so the client isn't even created before. */
@@ -193,11 +193,11 @@ export async function redeemInvite(code: string): Promise<RedeemResult> {
   return push ? 'linked' : 'linked_no_push';
 }
 
-/** Today's doses of a linked patient, in their order. */
-export async function patientToday(patientId: string): Promise<DoseSlot[]> {
-  const start = parseDateKey(dateKey(new Date()));
-  const end = new Date(start);
-  end.setDate(end.getDate() + 1);
+/** A linked patient's doses from `days - 1` days ago through today, in order. */
+export async function patientHistory(patientId: string, days = HISTORY_DAYS): Promise<DoseSlot[]> {
+  const today = dateKey(new Date());
+  const start = parseDateKey(addDays(today, -(days - 1)));
+  const end = parseDateKey(addDays(today, 1));
   const { data, error } = await getClient()
     .from('dose_slots')
     .select('id, medicine_name, due_at, taken_at')

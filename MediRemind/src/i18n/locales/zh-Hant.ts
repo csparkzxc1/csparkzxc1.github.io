@@ -180,6 +180,8 @@ const zhHant: Record<string, string> = {
   'guardian.linkedSince': '{date}起已連結',
   'guardian.unlinkNamed': '解除與{name}的連結',
   'guardian.swipeHint': '← 滑動以解除連結',
+  'guardian.history': '最近兩週',
+  'guardian.historyRate': '服藥率 {n}%',
   'guardian.unlinkConfirm': '要解除與 {name} 的連結嗎？',
   'guardian.deleteAll': '解除所有連結並刪除伺服器資料',
   'guardian.deleteConfirm': '所有家人連結及分享到伺服器的服藥紀錄都會被刪除。這支手機上的藥品和紀錄會保留。',

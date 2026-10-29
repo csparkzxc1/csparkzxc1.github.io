@@ -180,6 +180,8 @@ const fr: Record<string, string> = {
   'guardian.linkedSince': 'Lié depuis le {date}',
   'guardian.unlinkNamed': 'Délier {name}',
   'guardian.swipeHint': '← Glissez pour délier',
+  'guardian.history': '2 dernières semaines',
+  'guardian.historyRate': '{n} % prises',
   'guardian.unlinkConfirm': 'Supprimer le lien avec {name} ?',
   'guardian.deleteAll': 'Tout délier et supprimer les données du serveur',
   'guardian.deleteConfirm': "Tous les liens familiaux et les prises partagées sur le serveur seront supprimés. Les médicaments et l'historique de ce téléphone sont conservés.",

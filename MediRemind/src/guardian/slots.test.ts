@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
-import { buildSlots, dueAt, slotState } from './slots';
+import { adherenceRate, buildSlots, dailyTally, dueAt, slotState } from './slots';
 import { dose, medicine } from '../test/factories';
 
 describe('buildSlots', () => {
@@ -51,5 +51,39 @@ describe('slotState', () => {
 
   it('is taken once taken_at is set', () => {
     expect(slotState({ ...slot, taken_at: due.toISOString() }, at(90))).toBe('taken');
+  });
+});
+
+describe('dailyTally', () => {
+  const now = dueAt('2026-11-04', '12:00');
+  const slot = (date: string, time: string, taken: boolean) => ({
+    due_at: dueAt(date, time).toISOString(),
+    taken_at: taken ? dueAt(date, time).toISOString() : null,
+  });
+
+  it('counts taken and missed per day, oldest first', () => {
+    const tally = dailyTally(
+      [
+        slot('2026-11-03', '08:00', true),
+        slot('2026-11-03', '20:00', false),
+        slot('2026-11-04', '08:00', true),
+        slot('2026-11-04', '20:00', false), // still upcoming
+        slot('2026-10-01', '08:00', true), // outside the window
+      ],
+      '2026-11-04',
+      now,
+      30,
+      3
+    );
+    expect(tally).toEqual([
+      { date: '2026-11-02', total: 0, taken: 0, missed: 0 },
+      { date: '2026-11-03', total: 2, taken: 1, missed: 1 },
+      { date: '2026-11-04', total: 2, taken: 1, missed: 0 },
+    ]);
+    expect(adherenceRate(tally)).toBe(67);
+  });
+
+  it('has no rate before anything is due', () => {
+    expect(adherenceRate(dailyTally([], '2026-11-04', now))).toBeNull();
   });
 });
