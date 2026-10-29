@@ -20,7 +20,8 @@
           "zh-Hans",
           "zh-Hant",
           "es",
-          "fr"
+          "fr",
+          "de"
         ],
         "CFBundleAllowMixedLocalizations": true
       },

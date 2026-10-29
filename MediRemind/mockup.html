@@ -212,6 +212,31 @@
   .dark .check.done { background:#34D399; border-color:#34D399; color:#FFF; box-shadow:none; }
   .dark .tabbar { background:#161A26; box-shadow:none; border-top:1px solid #2A3042; }
   .dark .tab.on { color:#6B86FF; }
+
+  /* ── Family alerts ── */
+  .push {
+    position:absolute; top:44px; left:10px; right:10px; z-index:40;
+    background:rgba(250,250,252,.96); border-radius:18px; padding:11px 13px;
+    box-shadow:0 12px 30px rgba(20,24,48,.28); display:flex; gap:10px; align-items:flex-start;
+  }
+  .push-ic { width:30px; height:30px; border-radius:8px; background:#4A6CF7; color:#FFF; display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0; }
+  .push-app { font-size:10px; color:#8A91A8; font-weight:600; display:flex; justify-content:space-between; }
+  .push-tt { font-size:12.5px; font-weight:800; margin-top:1px; }
+  .push-bd { font-size:12px; color:#3A3F55; margin-top:1px; line-height:1.35; }
+  .gd-intro { font-size:11.5px; color:#8A91A8; line-height:1.5; margin:4px 4px 12px; }
+  .gd-person { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .gd-av { width:34px; height:34px; border-radius:17px; background:#EDF1FE; display:flex; align-items:center; justify-content:center; font-size:17px; }
+  .gd-name { font-size:15px; font-weight:800; flex:1; }
+  .gd-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-top:1px solid #F1F3F8; font-size:13px; }
+  .gd-time { width:44px; font-weight:800; }
+  .gd-med { flex:1; }
+  .gd-st { font-size:12px; font-weight:800; border-radius:10px; padding:3px 9px; }
+  .gd-st.ok { color:#0E9F6E; background:#E3F6EE; }
+  .gd-st.miss { color:#DC2626; background:#FDECEC; }
+  .gd-st.next { color:#8A91A8; background:#F1F3F8; }
+  .gd-code { text-align:center; background:#EDF1FE; border-radius:14px; padding:12px; }
+  .gd-code b { display:block; font-size:28px; letter-spacing:5px; margin-top:2px; }
+  .gd-code span { font-size:11px; color:#4A6CF7; font-weight:700; }
 </style>
 </head>
 <body>
@@ -497,7 +522,7 @@
       <div class="pw-feat">
         <div><i>✓</i>약 무제한 등록 (무료 버전은 2개까지)</div>
         <div><i>✓</i>한 번 결제로 평생 사용 · 자동 결제 없음</div>
-        <div><i>✓</i>가족 공유로 최대 6명이 함께 사용</div>
+        <div><i>✓</i>같은 Apple ID라면 새 기기에서도 구매 복원</div>
         <div><i>✓</i>앞으로 추가되는 기능도 모두 포함</div>
       </div>
       <div class="pw-price">₩1,900<small>1회 결제 · 구독 아님</small></div>
@@ -568,6 +593,34 @@
       <div class="tab"><span class="ic">💊</span>내 약</div>
       <div class="tab"><span class="ic">📅</span>달력</div>
       <div class="tab"><span class="ic">⚙️</span>설정</div>
+    </div>
+  </div></div>
+
+  <!-- ═══ 8. FAMILY ALERTS ═══ -->
+  <div class="phone"><div class="screen">
+    <div class="notch"></div>
+    <div class="status"><span>9:41</span><span>📶 🔋</span></div>
+    <div class="screen-label">보호자 연결</div>
+    <div class="push">
+      <div class="push-ic">💊</div>
+      <div style="flex:1">
+        <div class="push-app"><span>MEDIREMIND</span><span>지금</span></div>
+        <div class="push-tt">💊 복용 확인이 필요해요</div>
+        <div class="push-bd">엄마님이 19:00 혈압약을(를) 아직 복용하지 않았어요.</div>
+      </div>
+    </div>
+    <div class="header" style="padding-top:96px"><div><div class="title">보호자 연결</div></div></div>
+    <div class="body">
+      <div class="gd-intro">복용 시간이 30분 지나도 체크하지 않으면 연결된 가족에게 알림이 가요.</div>
+      <div class="set-lbl">내가 돌보는 가족</div>
+      <div class="card">
+        <div class="gd-person"><div class="gd-av">👩</div><div class="gd-name">엄마</div><span class="chev">›</span></div>
+        <div class="gd-row"><span class="gd-time">08:00</span><span class="gd-med">혈압약</span><span class="gd-st ok">복용</span></div>
+        <div class="gd-row"><span class="gd-time">13:00</span><span class="gd-med">오메가3</span><span class="gd-st ok">복용</span></div>
+        <div class="gd-row"><span class="gd-time">19:00</span><span class="gd-med">혈압약</span><span class="gd-st miss">안 먹음</span></div>
+        <div class="gd-row"><span class="gd-time">22:00</span><span class="gd-med">종합비타민</span><span class="gd-st next">예정</span></div>
+      </div>
+      <div class="gd-code"><span>초대 코드</span><b>482 913</b></div>
     </div>
   </div></div>
 

@@ -1,5 +1,6 @@
 /** Translations beyond the Korean/English kept inline in ../strings.ts. */
 import type { Language } from '../strings';
+import de from './de';
 import es from './es';
 import fr from './fr';
 import ja from './ja';
@@ -12,4 +13,5 @@ export const LOCALES: Partial<Record<Language, Record<string, string>>> = {
   'zh-Hant': zhHant,
   es,
   fr,
+  de,
 };

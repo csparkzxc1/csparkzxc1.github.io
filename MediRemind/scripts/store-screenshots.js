@@ -1,7 +1,8 @@
 /**
  * Builds App Store screenshots in every accepted iPhone/iPad size from mockup.html, each framed
- * under a headline, in Korean and English. Also writes docs/mockup-en.html.
- *   node scripts/store-screenshots.js
+ * under a headline, in every store language. Also writes docs/mockup-en.html.
+ *   node scripts/store-screenshots.js          (all languages)
+ *   node scripts/store-screenshots.js ja de    (only these)
  * Replace with real device captures if the app UI drifts from the mockup.
  */
 const fs = require('fs');
@@ -20,10 +21,12 @@ const SIZES = [
   { dir: 'ipad-13', w: 2064, h: 2752 },
 ];
 
-// Index into the mockup's screens, plus the headline above it.
+// Index into the mockup's screens, plus the headline above it. Order is the
+// App Store order: home, family alerts, list, form, calendar, dark, paywall.
 const SHOTS = {
   ko: [
     [0, '약 먹을 시간,', '이제 놓치지 마세요'],
+    [7, '약을 놓치면', '가족에게 알려 드려요'],
     [1, '내 약을 한눈에', '재처방 D-Day까지'],
     [2, '1일 6회까지', '시간·용량 자유롭게'],
     [3, '달력으로 보는', '복용 기록'],
@@ -32,13 +35,80 @@ const SHOTS = {
   ],
   en: [
     [0, 'Never miss', 'a dose again'],
+    [7, 'Missed a dose?', 'Your family gets a heads-up'],
     [1, 'All your meds', 'with refill countdowns'],
     [2, 'Up to 6 doses a day,', 'any time, any amount'],
     [3, 'See your history', 'on a calendar'],
     [6, 'Easy on the eyes', 'in dark mode'],
-    [5, 'Free for 2 medicines,', 'unlimited for $1.49'],
+    [5, 'Free for 2 medicines,', 'unlimited with one purchase'],
+  ],
+  ja: [
+    [0, '飲み忘れを', 'もうしない'],
+    [7, '飲み忘れたら', '家族にお知らせ'],
+    [1, 'お薬をひと目で', '処方の残り日数も'],
+    [2, '1日6回まで', '時間も量も自由に'],
+    [3, 'カレンダーで', '服薬の記録'],
+    [6, '目にやさしい', 'ダークモード'],
+    [5, '2つまでずっと無料', '1回の購入で無制限'],
+  ],
+  'zh-Hans': [
+    [0, '按时吃药', '不再忘记'],
+    [7, '忘记吃药时', '家人会收到提醒'],
+    [1, '所有药品', '一目了然'],
+    [2, '每天最多6次', '时间剂量随心设'],
+    [3, '日历查看', '服药记录'],
+    [6, '护眼的', '深色模式'],
+    [5, '2种药永久免费', '一次购买即无限'],
+  ],
+  'zh-Hant': [
+    [0, '按時吃藥', '不再忘記'],
+    [7, '忘了吃藥時', '家人會收到提醒'],
+    [1, '所有藥品', '一目了然'],
+    [2, '每天最多6次', '時間劑量自由設'],
+    [3, '用日曆查看', '服藥紀錄'],
+    [6, '護眼的', '深色模式'],
+    [5, '2種藥永久免費', '一次購買即無上限'],
+  ],
+  es: [
+    [0, 'Nunca olvides', 'una dosis'],
+    [7, '¿Una dosis olvidada?', 'Tu familia recibe un aviso'],
+    [1, 'Todos tus medicamentos', 'y avisos de receta'],
+    [2, 'Hasta 6 tomas al día,', 'a tu hora y dosis'],
+    [3, 'Tu historial', 'en un calendario'],
+    [6, 'Cuida tu vista', 'con el modo oscuro'],
+    [5, 'Gratis para 2 medicamentos,', 'ilimitado con un solo pago'],
+  ],
+  fr: [
+    [0, 'Ne manquez plus', 'aucune prise'],
+    [7, 'Une prise oubliée ?', 'Votre famille est prévenue'],
+    [1, 'Tous vos médicaments', 'et vos renouvellements'],
+    [2, "Jusqu'à 6 prises par jour,", 'à votre rythme'],
+    [3, 'Votre historique', 'sur un calendrier'],
+    [6, 'Reposant pour les yeux', 'avec le mode sombre'],
+    [5, 'Gratuit pour 2 médicaments,', 'illimité en un seul achat'],
+  ],
+  de: [
+    [0, 'Nie wieder', 'eine Einnahme vergessen'],
+    [7, 'Einnahme verpasst?', 'Deine Familie erfährt es'],
+    [1, 'Alle Medikamente', 'mit Rezept-Countdown'],
+    [2, 'Bis zu 6× täglich,', 'Zeit und Dosis frei'],
+    [3, 'Dein Verlauf', 'im Kalender'],
+    [6, 'Augenschonend', 'im Dunkelmodus'],
+    [5, '2 Medikamente gratis,', 'unbegrenzt mit einem Kauf'],
   ],
 };
+
+// Fonts per language (Google Fonts), so CJK text doesn't fall back to a bitmap face.
+const FONTS = {
+  ko: 'Noto Sans KR',
+  ja: 'Noto Sans JP',
+  'zh-Hans': 'Noto Sans SC',
+  'zh-Hant': 'Noto Sans TC',
+};
+const fontFor = (lang) => FONTS[lang] || 'Noto Sans';
+const fontLink = (lang) =>
+  `https://fonts.googleapis.com/css2?family=${fontFor(lang).replace(/ /g, '+')}:wght@400;500;600;700;800&display=swap`;
+const LATIN = new Set(['en', 'es', 'fr', 'de']);
 
 // Mockup text → English. Longest matches are applied first.
 const EN = {
@@ -49,7 +119,7 @@ const EN = {
   '오늘 복용 현황': "Today's progress",
   '무료 버전은 약 2개까지 등록할 수 있어요': 'The free version holds up to 2 medicines',
   '무료 버전 · 약 2개까지': 'Free version · up to 2 medicines',
-  '₩1,900 한 번이면 무제한 · 탭하여 보기': 'Unlimited for $1.49, once · Tap to see',
+  '₩1,900 한 번이면 무제한 · 탭하여 보기': 'Unlimited with one purchase · Tap to see',
   '탭하여 정식 버전 보기': 'Tap to see the full version',
   ' / 3회 완료': ' / 3 taken',
   '12일 연속 복용': '12-day streak',
@@ -120,13 +190,24 @@ const EN = {
   '정식 버전': 'Full Version',
   '약 무제한 등록 (무료 버전은 2개까지)': 'Unlimited medicines (free version: up to 2)',
   '한 번 결제로 평생 사용 · 자동 결제 없음': 'Pay once, keep it forever, never billed again',
-  '가족 공유로 최대 6명이 함께 사용': 'Family Sharing: up to 6 family members',
+  '같은 Apple ID라면 새 기기에서도 구매 복원': 'Restore on any device with the same Apple ID',
   '앞으로 추가되는 기능도 모두 포함': 'Includes every future feature',
   '1회 결제 · 구독 아님': 'One-time purchase, not a subscription',
-  '₩1,900에 정식 버전 구매': 'Unlock for $1.49',
-  '₩1,900': '$1.49',
+  '₩1,900에 정식 버전 구매': 'Unlock the full version',
   '결제는 Apple ID로 처리됩니다.': 'Payment is handled by your Apple ID.',
   '사지 않아도 약 2개까지는 평생 무료예요.': 'Up to 2 medicines stay free forever.',
+  // Family alerts screen
+  '엄마님이 19:00 혈압약을(를) 아직 복용하지 않았어요.': "Mom hasn't taken her blood pressure pill (19:00) yet.",
+  '💊 복용 확인이 필요해요': '💊 Missed dose',
+  '복용 시간이 30분 지나도 체크하지 않으면 연결된 가족에게 알림이 가요.':
+    'If a dose is still unchecked 30 minutes after its time, your linked family gets a notification.',
+  '보호자 연결': 'Family alerts',
+  '내가 돌보는 가족': 'Family I watch',
+  '초대 코드': 'Invite code',
+  '안 먹음': 'Missed',
+  '예정': 'Upcoming',
+  '지금': 'now',
+  '엄마': 'Mom',
   '내 약': 'Meds',
   '달력': 'History',
   '홈': 'Today',
@@ -135,7 +216,7 @@ const EN = {
   '일': 'S', '월': 'M', '화': 'T', '수': 'W', '목': 'T', '금': 'F', '토': 'S',
 };
 
-function translateInPage(map) {
+function translateInPage([map, lang]) {
   const keys = Object.keys(map).sort((a, b) => b.length - a.length);
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   const nodes = [];
@@ -153,27 +234,35 @@ function translateInPage(map) {
     }
     node.nodeValue = text.replace(/\u0000(\d+)\u0000/g, (_, i) => hits[Number(i)]);
   }
-  document.documentElement.lang = 'en';
+  document.documentElement.lang = lang;
 }
 
 (async () => {
-  for (const size of SIZES) {
-    const dir = path.join(OUT, size.dir);
-    fs.rmSync(dir, { recursive: true, force: true });
-    fs.mkdirSync(dir, { recursive: true });
-  }
+  for (const size of SIZES) fs.mkdirSync(path.join(OUT, size.dir), { recursive: true });
   for (const f of fs.readdirSync(OUT)) if (f.endsWith('.png')) fs.unlinkSync(path.join(OUT, f));
 
-  const browser = await chromium.launch();
+  const MAPS = { en: EN, ...require('./screenshot-i18n') };
+  // The sandbox reaches Google Fonts only through the proxy.
+  const proxy = process.env.HTTPS_PROXY ? { server: process.env.HTTPS_PROXY } : undefined;
+  const browser = await chromium.launch({ proxy });
+  const only = process.argv.slice(2);
   for (const lang of Object.keys(SHOTS)) {
-    const mock = await browser.newPage({ deviceScaleFactor: 3, viewport: { width: 2600, height: 1000 } });
+    if (only.length && !only.includes(lang)) continue;
+    const mock = await browser.newPage({ deviceScaleFactor: 3, viewport: { width: 3000, height: 1000 } });
     await mock.goto('file://' + path.join(ROOT, 'mockup.html'));
+    if (lang !== 'ko') await mock.evaluate(translateInPage, [MAPS[lang], lang]);
     if (lang === 'en') {
-      await mock.evaluate(translateInPage, EN);
       fs.writeFileSync(path.join(ROOT, 'docs/mockup-en.html'), await mock.content());
       console.log('wrote docs/mockup-en.html');
     }
-    await mock.addStyleTag({ content: '.screen-label{display:none}.screen{border-radius:0}' });
+    await mock.addStyleTag({ url: fontLink(lang) });
+    await mock.addStyleTag({
+      content: `.screen-label{display:none}.screen{border-radius:0}
+        body,body *{font-family:'${fontFor(lang)}','Noto Color Emoji',sans-serif !important}
+        ${lang === 'ko' ? '' : '.pw-price{display:none}'}`,
+    });
+    await mock.waitForLoadState('networkidle');
+    await mock.evaluate(() => document.fonts.ready);
     const screens = await mock.locator('.screen').all();
     const shots = [];
     for (const [idx] of SHOTS[lang]) shots.push((await screens[idx].screenshot()).toString('base64'));
@@ -182,14 +271,16 @@ function translateInPage(map) {
       // Layout is designed at 1290x2796 and scaled to fit; wide iPad canvases
       // keep the phone centered.
       const k = Math.min(W / 1290, H / 2796);
+      const size = (LATIN.has(lang) ? 80 : 96) * k;
       const frame = await browser.newPage({ viewport: { width: W, height: H } });
       for (const [n, [, l1, l2]] of SHOTS[lang].entries()) {
         await frame.setContent(`
-          <html><body style="margin:0;width:${W}px;height:${H}px;overflow:hidden;
+          <html><head><link rel="stylesheet" href="${fontLink(lang)}"></head>
+          <body style="margin:0;width:${W}px;height:${H}px;overflow:hidden;
             background:linear-gradient(160deg,#5B7CFA,#3B55E0);
-            font-family:-apple-system,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;">
+            font-family:'${fontFor(lang)}',sans-serif;">
             <div style="padding:${190 * k}px ${70 * k}px 0;color:#fff;text-align:center;">
-              <div style="font-size:${(lang === 'en' ? 88 : 96) * k}px;font-weight:800;letter-spacing:${-2 * k}px;line-height:1.2">${l1}<br>${l2}</div>
+              <div style="font-size:${size}px;font-weight:800;letter-spacing:${-2 * k}px;line-height:1.2">${l1}<br>${l2}</div>
             </div>
             <div style="position:absolute;left:50%;top:${640 * k}px;transform:translateX(-50%);
               width:${1000 * k}px;border-radius:${72 * k}px;overflow:hidden;
@@ -197,6 +288,8 @@ function translateInPage(map) {
               <img src="data:image/png;base64,${shots[n]}" style="display:block;width:100%">
             </div>
           </body></html>`);
+        await frame.waitForLoadState('networkidle');
+        await frame.evaluate(() => document.fonts.ready);
         const file = path.join(OUT, dir, `${lang}-0${n + 1}.png`);
         await frame.screenshot({ path: file });
       }

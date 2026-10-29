@@ -75,6 +75,7 @@ const WEEKDAYS: Record<Language, string[]> = {
   'zh-Hant': ['日', '一', '二', '三', '四', '五', '六'],
   es: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
   fr: ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'],
+  de: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
 };
 
 const WEEKDAYS_LONG: Record<Language, string[]> = {
@@ -85,6 +86,7 @@ const WEEKDAYS_LONG: Record<Language, string[]> = {
   'zh-Hant': ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'],
   es: ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'],
   fr: ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'],
+  de: ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'],
 };
 
 const MONTHS: Partial<Record<Language, string[]>> = {
@@ -95,6 +97,10 @@ const MONTHS: Partial<Record<Language, string[]>> = {
   es: [
     'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
     'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
+  ],
+  de: [
+    'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
+    'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember',
   ],
   fr: [
     'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
@@ -119,11 +125,11 @@ export function weekdayLabels(): string[] {
   return WEEKDAYS[activeLanguage];
 }
 
-/** '08:00' → '오전 8:00' / '8:00 AM' / '午前8:00' / '08:00' (es, fr). */
+/** '08:00' → '오전 8:00' / '8:00 AM' / '午前8:00' / '08:00' (es, fr, de). */
 export function formatTime(time: string): string {
   const { hour, minute } = parseTime(time);
   const mm = String(minute).padStart(2, '0');
-  if (activeLanguage === 'es' || activeLanguage === 'fr') {
+  if (activeLanguage === 'es' || activeLanguage === 'fr' || activeLanguage === 'de') {
     return `${String(hour).padStart(2, '0')}:${mm}`;
   }
   const hour12 = hour % 12 === 0 ? 12 : hour % 12;
@@ -149,6 +155,8 @@ export function formatLongDate(d: Date): string {
       return `${wd}, ${day} de ${MONTHS.es![m]}`;
     case 'fr':
       return `${wd} ${day} ${MONTHS.fr![m]}`;
+    case 'de':
+      return `${wd}, ${day}. ${MONTHS.de![m]}`;
     default:
       return `${wd}, ${MONTHS.en![m]} ${day}`;
   }
@@ -167,6 +175,8 @@ export function formatShortDate(key: string): string {
       return `${d} ${MONTHS.es![m - 1].slice(0, 3)} ${y}`;
     case 'fr':
       return `${d} ${MONTHS_SHORT_FR[m - 1]} ${y}`;
+    case 'de':
+      return `${d}. ${MONTHS.de![m - 1]} ${y}`;
     default:
       return `${MONTHS.en![m - 1].slice(0, 3)} ${d}, ${y}`;
   }

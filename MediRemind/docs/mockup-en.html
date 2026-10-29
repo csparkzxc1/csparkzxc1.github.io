@@ -210,6 +210,31 @@
   .dark .check.done { background:#34D399; border-color:#34D399; color:#FFF; box-shadow:none; }
   .dark .tabbar { background:#161A26; box-shadow:none; border-top:1px solid #2A3042; }
   .dark .tab.on { color:#6B86FF; }
+
+  /* ── Family alerts ── */
+  .push {
+    position:absolute; top:44px; left:10px; right:10px; z-index:40;
+    background:rgba(250,250,252,.96); border-radius:18px; padding:11px 13px;
+    box-shadow:0 12px 30px rgba(20,24,48,.28); display:flex; gap:10px; align-items:flex-start;
+  }
+  .push-ic { width:30px; height:30px; border-radius:8px; background:#4A6CF7; color:#FFF; display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0; }
+  .push-app { font-size:10px; color:#8A91A8; font-weight:600; display:flex; justify-content:space-between; }
+  .push-tt { font-size:12.5px; font-weight:800; margin-top:1px; }
+  .push-bd { font-size:12px; color:#3A3F55; margin-top:1px; line-height:1.35; }
+  .gd-intro { font-size:11.5px; color:#8A91A8; line-height:1.5; margin:4px 4px 12px; }
+  .gd-person { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .gd-av { width:34px; height:34px; border-radius:17px; background:#EDF1FE; display:flex; align-items:center; justify-content:center; font-size:17px; }
+  .gd-name { font-size:15px; font-weight:800; flex:1; }
+  .gd-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-top:1px solid #F1F3F8; font-size:13px; }
+  .gd-time { width:44px; font-weight:800; }
+  .gd-med { flex:1; }
+  .gd-st { font-size:12px; font-weight:800; border-radius:10px; padding:3px 9px; }
+  .gd-st.ok { color:#0E9F6E; background:#E3F6EE; }
+  .gd-st.miss { color:#DC2626; background:#FDECEC; }
+  .gd-st.next { color:#8A91A8; background:#F1F3F8; }
+  .gd-code { text-align:center; background:#EDF1FE; border-radius:14px; padding:12px; }
+  .gd-code b { display:block; font-size:28px; letter-spacing:5px; margin-top:2px; }
+  .gd-code span { font-size:11px; color:#4A6CF7; font-weight:700; }
 </style>
 </head>
 <body>
@@ -434,7 +459,7 @@
       <div class="set-card">
         <div class="set-row">
           <div class="set-ic" style="background:rgba(74,108,247,.12)">✨</div>
-          <div class="set-tt">Free version · up to 2 medicines<small>Unlimited for $1.49, once · Tap to see</small></div>
+          <div class="set-tt">Free version · up to 2 medicines<small>Unlimited with one purchase · Tap to see</small></div>
           <span class="chev">›</span>
         </div>
         <div class="set-row">
@@ -495,11 +520,11 @@
       <div class="pw-feat">
         <div><i>✓</i>Unlimited medicines (free version: up to 2)</div>
         <div><i>✓</i>Pay once, keep it forever, never billed again</div>
-        <div><i>✓</i>Family Sharing: up to 6 family members</div>
+        <div><i>✓</i>Restore on any device with the same Apple ID</div>
         <div><i>✓</i>Includes every future feature</div>
       </div>
-      <div class="pw-price">$1.49<small>One-time purchase, not a subscription</small></div>
-      <div class="pw-buy">Unlock for $1.49</div>
+      <div class="pw-price">₩1,900<small>One-time purchase, not a subscription</small></div>
+      <div class="pw-buy">Unlock the full version</div>
       <div class="pw-restore">Restore purchase</div>
       <div class="pw-foot">Payment is handled by your Apple ID.<br>Up to 2 medicines stay free forever.</div>
     </div>
@@ -566,6 +591,34 @@
       <div class="tab"><span class="ic">💊</span>Meds</div>
       <div class="tab"><span class="ic">📅</span>History</div>
       <div class="tab"><span class="ic">⚙️</span>Settings</div>
+    </div>
+  </div></div>
+
+  <!-- ═══ 8. FAMILY ALERTS ═══ -->
+  <div class="phone"><div class="screen">
+    <div class="notch"></div>
+    <div class="status"><span>9:41</span><span>📶 🔋</span></div>
+    <div class="screen-label">Family alerts</div>
+    <div class="push">
+      <div class="push-ic">💊</div>
+      <div style="flex:1">
+        <div class="push-app"><span>MEDIREMIND</span><span>now</span></div>
+        <div class="push-tt">💊 Missed dose</div>
+        <div class="push-bd">Mom hasn't taken her blood pressure pill (19:00) yet.</div>
+      </div>
+    </div>
+    <div class="header" style="padding-top:96px"><div><div class="title">Family alerts</div></div></div>
+    <div class="body">
+      <div class="gd-intro">If a dose is still unchecked 30 minutes after its time, your linked family gets a notification.</div>
+      <div class="set-lbl">Family I watch</div>
+      <div class="card">
+        <div class="gd-person"><div class="gd-av">👩</div><div class="gd-name">Mom</div><span class="chev">›</span></div>
+        <div class="gd-row"><span class="gd-time">08:00</span><span class="gd-med">Blood pressure</span><span class="gd-st ok">Taken</span></div>
+        <div class="gd-row"><span class="gd-time">13:00</span><span class="gd-med">Omega-3</span><span class="gd-st ok">Taken</span></div>
+        <div class="gd-row"><span class="gd-time">19:00</span><span class="gd-med">Blood pressure</span><span class="gd-st miss">Missed</span></div>
+        <div class="gd-row"><span class="gd-time">22:00</span><span class="gd-med">Multivitamin</span><span class="gd-st next">Upcoming</span></div>
+      </div>
+      <div class="gd-code"><span>Invite code</span><b>482 913</b></div>
     </div>
   </div></div>
 

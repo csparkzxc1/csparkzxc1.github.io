@@ -2,7 +2,7 @@
  * UI string catalog. Every entry carries both languages inline so a missing
  * translation is easy to spot. `{name}` placeholders are filled by t().
  */
-export const LANGUAGES = ['ko', 'en', 'ja', 'zh-Hans', 'zh-Hant', 'es', 'fr'] as const;
+export const LANGUAGES = ['ko', 'en', 'ja', 'zh-Hans', 'zh-Hant', 'es', 'fr', 'de'] as const;
 export type Language = (typeof LANGUAGES)[number];
 export const FALLBACK_LANGUAGE: Language = 'en';
 
@@ -15,6 +15,7 @@ export const LANGUAGE_NAMES: Record<Language, string> = {
   'zh-Hant': '繁體中文',
   es: 'Español',
   fr: 'Français',
+  de: 'Deutsch',
 };
 
 /** Korean and English live inline below; other languages in ./locales. */

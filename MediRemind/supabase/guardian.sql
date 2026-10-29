@@ -191,7 +191,8 @@ begin
     select g.push_token, g.language,
            coalesce(nullif(p.display_name, ''), case g.language
              when 'ko' then '가족' when 'ja' then 'ご家族' when 'zh-Hans' then '家人' when 'zh-Hant' then '家人'
-             when 'es' then 'Tu familiar' when 'fr' then 'Votre proche' else 'Your family member' end) as who,
+             when 'es' then 'Tu familiar' when 'fr' then 'Votre proche' when 'de' then 'Dein Familienmitglied'
+             else 'Your family member' end) as who,
            d.medicine_name,
            to_char(d.due_at at time zone coalesce(p.timezone, 'Asia/Seoul'), 'HH24:MI') as at
     from due d
@@ -212,6 +213,7 @@ begin
           when 'zh-Hant' then '💊 需要確認服藥'
           when 'es' then '💊 Dosis sin tomar'
           when 'fr' then '💊 Prise oubliée'
+          when 'de' then '💊 Einnahme verpasst'
           else '💊 Missed dose' end,
         'body', case msg.language
           when 'ko' then format('%s님이 %s %s을(를) 아직 복용하지 않았어요.', msg.who, msg.at, msg.medicine_name)
@@ -220,6 +222,7 @@ begin
           when 'zh-Hant' then format('%s還沒有服用%s的%s。', msg.who, msg.at, msg.medicine_name)
           when 'es' then format('%s aún no ha tomado %s (%s).', msg.who, msg.medicine_name, msg.at)
           when 'fr' then format('%s n''a pas encore pris %s (%s).', msg.who, msg.medicine_name, msg.at)
+          when 'de' then format('%s hat %s (%s) noch nicht eingenommen.', msg.who, msg.medicine_name, msg.at)
           else format('%s hasn''t taken %s (%s) yet.', msg.who, msg.medicine_name, msg.at) end,
         'data', jsonb_build_object('type', 'guardian')
       )

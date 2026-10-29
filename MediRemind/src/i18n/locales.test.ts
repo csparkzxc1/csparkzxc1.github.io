@@ -15,8 +15,8 @@ describe('locales', () => {
     }
   });
 
-  it('registers all five extra languages', () => {
-    expect(Object.keys(LOCALES).sort()).toEqual(['es', 'fr', 'ja', 'zh-Hans', 'zh-Hant']);
+  it('registers all six extra languages', () => {
+    expect(Object.keys(LOCALES).sort()).toEqual(['de', 'es', 'fr', 'ja', 'zh-Hans', 'zh-Hant']);
   });
 });
 
@@ -31,7 +31,8 @@ describe('matchLanguage', () => {
     expect(matchLanguage('zh_HK')).toBe('zh-Hant');
     expect(matchLanguage('es-419')).toBe('es');
     expect(matchLanguage('fr-CA')).toBe('fr');
-    expect(matchLanguage('de-DE')).toBeNull();
+    expect(matchLanguage('de-DE')).toBe('de');
+    expect(matchLanguage('pt-BR')).toBeNull();
   });
 });
 
@@ -49,6 +50,10 @@ describe('formatting', () => {
     setActiveLanguage('fr');
     expect(formatLongDate(d)).toBe('lundi 6 juillet');
     expect(formatShortDate('2026-07-06')).toBe('6 juil. 2026');
+    setActiveLanguage('de');
+    expect(formatTime('08:05')).toBe('08:05');
+    expect(formatLongDate(d)).toBe('Montag, 6. Juli');
+    expect(formatShortDate('2026-07-06')).toBe('6. Juli 2026');
     setActiveLanguage('zh-Hant');
     expect(formatTime('13:00')).toBe('下午1:00');
     setActiveLanguage('ko');
