@@ -268,6 +268,10 @@ export const STRINGS: Record<string, Entry> = {
   'guardian.swipeHint': { ko: '← 밀어서 연결 끊기', en: '← Swipe to unlink' },
   'guardian.history': { ko: '최근 2주', en: 'Last 2 weeks' },
   'guardian.historyRate': { ko: '복용률 {n}%', en: '{n}% taken' },
+  'guardian.dayDoses': { ko: '{date} 복용', en: 'Doses on {date}' },
+  'guardian.backToday': { ko: '오늘 보기', en: 'Back to today' },
+  'guardian.noDosesDay': { ko: '이 날 기록이 없어요.', en: 'No doses on this day.' },
+  'guardian.tapDay': { ko: '막대를 누르면 그날 보기', en: 'Tap a bar for that day' },
   'guardian.unlinkConfirm': { ko: '{name} 님과의 연결을 끊을까요?', en: 'Unlink {name}?' },
   'guardian.deleteAll': { ko: '연결 해제 및 서버 데이터 삭제', en: 'Unlink all & delete server data' },
   'guardian.deleteConfirm': {

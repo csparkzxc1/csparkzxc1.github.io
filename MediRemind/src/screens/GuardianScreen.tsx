@@ -340,7 +340,9 @@ function PatientCard({
   const back = flip.interpolate({ inputRange: [0, 1], outputRange: ['180deg', '360deg'] });
   const name = patient.name || t('guardian.unnamed');
   const todayKey = dateKey(new Date());
-  const todaySlots = slots.filter((s) => dateKey(new Date(s.due_at)) === todayKey);
+  // The list shows today, or the day picked on the chart.
+  const [day, setDay] = useState(todayKey);
+  const daySlots = slots.filter((s) => dateKey(new Date(s.due_at)) === day);
   const faceHeight = height ? { minHeight: height } : null;
 
   return (
@@ -360,8 +362,18 @@ function PatientCard({
             <Ionicons name="menu" size={24} color={colors.textMuted} />
           </TouchableOpacity>
         </View>
-        <TodayList slots={todaySlots} delay={patient.alertDelay} />
-        <HistoryChart slots={slots} delay={patient.alertDelay} />
+        <TodayList
+          slots={daySlots}
+          delay={patient.alertDelay}
+          title={day === todayKey ? undefined : t('guardian.dayDoses', { date: formatShortDate(day) })}
+          onBackToToday={day === todayKey ? undefined : () => setDay(todayKey)}
+        />
+        <HistoryChart
+          slots={slots}
+          delay={patient.alertDelay}
+          selected={day}
+          onSelect={(d) => setDay(d === day ? todayKey : d)}
+        />
       </Animated.View>
 
       <Animated.View
@@ -420,7 +432,17 @@ function DelayPicker({ value, onChange }: { value: number; onChange: (m: number)
 }
 
 /** Last two weeks: one bar per day, green for taken, red for missed. */
-function HistoryChart({ slots, delay }: { slots: DoseSlot[]; delay: number }) {
+function HistoryChart({
+  slots,
+  delay,
+  selected,
+  onSelect,
+}: {
+  slots: DoseSlot[];
+  delay: number;
+  selected: string;
+  onSelect: (date: string) => void;
+}) {
   const { t } = useI18n();
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
@@ -441,8 +463,17 @@ function HistoryChart({ slots, delay }: { slots: DoseSlot[]; delay: number }) {
       <View style={styles.bars}>
         {tally.map((d) => {
           const isToday = d === tally[tally.length - 1];
+          const isSelected = d.date === selected;
           return (
-            <View key={d.date} style={styles.barCol} accessibilityLabel={`${d.date} ${d.taken}/${d.total}`}>
+            <TouchableOpacity
+              key={d.date}
+              style={[styles.barCol, isSelected && styles.barColOn]}
+              onPress={() => onSelect(d.date)}
+              disabled={d.total === 0}
+              accessibilityRole="button"
+              accessibilityState={{ selected: isSelected }}
+              accessibilityLabel={`${formatShortDate(d.date)} ${d.taken}/${d.total}`}
+            >
               <View style={styles.barTrack}>
                 {d.total > 0 && (
                   <View style={{ height: `${(d.total / max) * 100}%`, width: '100%', justifyContent: 'flex-end' }}>
@@ -452,8 +483,10 @@ function HistoryChart({ slots, delay }: { slots: DoseSlot[]; delay: number }) {
                   </View>
                 )}
               </View>
-              <Text style={[styles.barDay, isToday && styles.barToday]}>{Number(d.date.slice(8))}</Text>
-            </View>
+              <Text style={[styles.barDay, (isToday || isSelected) && styles.barToday]}>
+                {Number(d.date.slice(8))}
+              </Text>
+            </TouchableOpacity>
           );
         })}
       </View>
@@ -462,12 +495,24 @@ function HistoryChart({ slots, delay }: { slots: DoseSlot[]; delay: number }) {
         <Text style={styles.legendText}>{t('guardian.state.taken')}</Text>
         <View style={[styles.legendDot, { backgroundColor: colors.danger }]} />
         <Text style={styles.legendText}>{t('guardian.state.missed')}</Text>
+        <Text style={styles.legendHint}>{t('guardian.tapDay')}</Text>
       </View>
     </View>
   );
 }
 
-function TodayList({ slots, delay }: { slots: DoseSlot[]; delay: number }) {
+function TodayList({
+  slots,
+  delay,
+  title,
+  onBackToToday,
+}: {
+  slots: DoseSlot[];
+  delay: number;
+  /** Heading for a past day; today's heading when omitted. */
+  title?: string;
+  onBackToToday?: () => void;
+}) {
   const { t } = useI18n();
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
@@ -478,10 +523,27 @@ function TodayList({ slots, delay }: { slots: DoseSlot[]; delay: number }) {
     late: colors.warning,
     missed: colors.danger,
   };
-  if (!slots.length) return <Text style={styles.muted}>{t('guardian.noDosesToday')}</Text>;
+  const head = (
+    <View style={styles.listHead}>
+      <Text style={styles.label}>{title ?? t('guardian.today')}</Text>
+      {onBackToToday && (
+        <TouchableOpacity onPress={onBackToToday} hitSlop={8}>
+          <Text style={styles.backToday}>{t('guardian.backToday')}</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+  if (!slots.length) {
+    return (
+      <View>
+        {title && head}
+        <Text style={styles.muted}>{title ? t('guardian.noDosesDay') : t('guardian.noDosesToday')}</Text>
+      </View>
+    );
+  }
   return (
     <View>
-      <Text style={styles.label}>{t('guardian.today')}</Text>
+      {head}
       {slots.map((s) => {
         const state = slotState(s, now, delay);
         const d = new Date(s.due_at);
@@ -573,7 +635,11 @@ const makeStyles = (c: ThemeColors, scheme: Scheme) =>
     historyHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
     historyRate: { fontSize: 13, fontWeight: '800' },
     bars: { flexDirection: 'row', gap: 3, height: 72, alignItems: 'flex-end', marginTop: 4 },
-    barCol: { flex: 1, alignItems: 'center', height: '100%' },
+    barCol: { flex: 1, alignItems: 'center', height: '100%', borderRadius: 4, paddingHorizontal: 1 },
+    barColOn: { backgroundColor: c.brandSoft },
+    legendHint: { fontSize: 11, color: c.textFaint, marginLeft: 'auto' },
+    listHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
+    backToday: { fontSize: 12, fontWeight: '700', color: c.brand },
     barTrack: { flex: 1, width: '100%', justifyContent: 'flex-end', borderRadius: 3, overflow: 'hidden' },
     barPart: { width: '100%' },
     barDay: { fontSize: 9, color: c.textFaint, marginTop: 3 },
