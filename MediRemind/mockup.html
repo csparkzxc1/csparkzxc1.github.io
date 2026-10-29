@@ -171,8 +171,13 @@
     display:flex; background:#FFF; padding:10px 8px 22px;
     box-shadow:0 -6px 20px rgba(26,34,70,.07);
   }
-  .tab { flex:1; text-align:center; font-size:10px; font-weight:600; color:#9AA1B5; }
-  .tab .ic { font-size:20px; display:block; margin-bottom:2px; }
+  .tab { flex:1; text-align:center; font-size:10px; font-weight:600; color:#8A91A8; }
+  .tab .ic { width:22px; height:22px; display:block; margin:0 auto 3px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+  .tab .ic .dots { fill:currentColor; stroke:none; }
+  .tab .ic g[transform] { stroke:none; }
+  .tab.on .ic .f { fill:currentColor; }
+  .tab.on .ic .dots, .tab.on .ic .hole { fill:#FFF; stroke:#FFF; }
+  .dark .tab.on .ic .dots, .dark .tab.on .ic .hole { fill:#161A26; stroke:#161A26; }
   .tab.on { color:#4A6CF7; }
 
   .segm { display:flex; background:#EBEEF6; border-radius:10px; padding:3px; }
@@ -237,6 +242,7 @@
   .gd-code { text-align:center; background:#EDF1FE; border-radius:14px; padding:12px; }
   .gd-code b { display:block; font-size:28px; letter-spacing:5px; margin-top:2px; }
   .gd-code span { font-size:11px; color:#4A6CF7; font-weight:700; }
+  .mi { width:1.05em; height:1.05em; vertical-align:-0.17em; margin-right:3px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
 </style>
 </head>
 <body>
@@ -280,7 +286,7 @@
         <div class="bar" style="background:#4A6CF7"></div>
         <div class="info">
           <div class="name done">혈압약</div>
-          <div class="meta">🕗 오전 8:00 · 1정 · <span class="accent">🔔 10분 전</span></div>
+          <div class="meta"><svg class="mi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>오전 8:00 · 1정 · <span class="accent"><svg class="mi" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg>10분 전</span></div>
         </div>
         <div class="check done">✓</div>
       </div>
@@ -288,7 +294,7 @@
         <div class="bar" style="background:#10B981"></div>
         <div class="info">
           <div class="name done">오메가3</div>
-          <div class="meta">🕐 오후 1:00 · 2정</div>
+          <div class="meta"><svg class="mi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>오후 1:00 · 2정</div>
         </div>
         <div class="check done">✓</div>
       </div>
@@ -296,16 +302,16 @@
         <div class="bar" style="background:#8B5CF6"></div>
         <div class="info">
           <div class="name">종합비타민</div>
-          <div class="meta">🕘 오후 9:00 · 1정 · <span class="accent">🔔 5분 전</span></div>
+          <div class="meta"><svg class="mi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>오후 9:00 · 1정 · <span class="accent"><svg class="mi" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg>5분 전</span></div>
         </div>
         <div class="check">✓</div>
       </div>
     </div>
     <div class="tabbar">
-      <div class="tab on"><span class="ic">🏠</span>홈</div>
-      <div class="tab"><span class="ic">💊</span>내 약</div>
-      <div class="tab"><span class="ic">📅</span>달력</div>
-      <div class="tab"><span class="ic">⚙️</span>설정</div>
+      <div class="tab on"><svg class="ic" viewBox="0 0 24 24"><path class="f" d="M3.5 10.6 12 3.8l8.5 6.8V19.5a1.5 1.5 0 0 1-1.5 1.5h-4.2v-6.2H9.2V21H5a1.5 1.5 0 0 1-1.5-1.5z"/></svg>홈</div>
+      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><g transform="rotate(-45 12 12)"><rect x="2.5" y="7.5" width="19" height="9" rx="4.5" fill="currentColor" opacity=".9"/><path d="M12 7.5h5a4.5 4.5 0 0 1 0 9h-5z" fill="#fff" opacity=".45"/></g></svg>내 약</div>
+      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><rect class="f" x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/><g class="dots"><circle cx="8" cy="13" r="1"/><circle cx="12" cy="13" r="1"/><circle cx="16" cy="13" r="1"/><circle cx="8" cy="16.6" r="1"/><circle cx="12" cy="16.6" r="1"/><circle cx="16" cy="16.6" r="1"/></g></svg>달력</div>
+      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><path class="f" d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/><circle class="hole" cx="12" cy="12" r="3"/></svg>설정</div>
     </div>
   </div></div>
 
@@ -323,7 +329,7 @@
         <div class="icon blue">💊</div>
         <div class="b">
           <div class="row1"><span class="nm">혈압약</span><span class="badge r">D-2</span></div>
-          <div class="mt">🕗 오전 8:00 · 매일 · 1정</div>
+          <div class="mt"><svg class="mi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>오전 8:00 · 매일 · 1정</div>
         </div>
         <div class="switch"></div>
       </div>
@@ -331,7 +337,7 @@
         <div class="icon green">💊</div>
         <div class="b">
           <div class="row1"><span class="nm">오메가3</span><span class="badge o">D-6</span></div>
-          <div class="mt">🕐 오후 1:00 · 매일 · 2정</div>
+          <div class="mt"><svg class="mi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>오후 1:00 · 매일 · 2정</div>
         </div>
         <div class="switch"></div>
       </div>
@@ -341,7 +347,7 @@
           <div class="icon purple">💊</div>
           <div class="b">
             <div class="row1"><span class="nm">종합비타민</span><span class="badge g">D-24</span></div>
-            <div class="mt">🕘 오후 9:00 · 평일 · 1정</div>
+            <div class="mt"><svg class="mi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>오후 9:00 · 평일 · 1정</div>
           </div>
           <div class="switch"></div>
         </div>
@@ -350,17 +356,17 @@
         <div class="icon blue">💊</div>
         <div class="b">
           <div class="row1"><span class="nm">수면유도제</span></div>
-          <div class="mt">🕚 오후 11:00 · 매일 · 0.5정</div>
+          <div class="mt"><svg class="mi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>오후 11:00 · 매일 · 0.5정</div>
         </div>
         <div class="switch off"></div>
       </div>
       <p style="text-align:center; font-size:11px; color:#9AA1B5; margin-top:8px">← 왼쪽으로 밀면 삭제</p>
     </div>
     <div class="tabbar">
-      <div class="tab"><span class="ic">🏠</span>홈</div>
-      <div class="tab on"><span class="ic">💊</span>내 약</div>
-      <div class="tab"><span class="ic">📅</span>달력</div>
-      <div class="tab"><span class="ic">⚙️</span>설정</div>
+      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><path class="f" d="M3.5 10.6 12 3.8l8.5 6.8V19.5a1.5 1.5 0 0 1-1.5 1.5h-4.2v-6.2H9.2V21H5a1.5 1.5 0 0 1-1.5-1.5z"/></svg>홈</div>
+      <div class="tab on"><svg class="ic" viewBox="0 0 24 24"><g transform="rotate(-45 12 12)"><rect x="2.5" y="7.5" width="19" height="9" rx="4.5" fill="currentColor" opacity=".9"/><path d="M12 7.5h5a4.5 4.5 0 0 1 0 9h-5z" fill="#fff" opacity=".45"/></g></svg>내 약</div>
+      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><rect class="f" x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/><g class="dots"><circle cx="8" cy="13" r="1"/><circle cx="12" cy="13" r="1"/><circle cx="16" cy="13" r="1"/><circle cx="8" cy="16.6" r="1"/><circle cx="12" cy="16.6" r="1"/><circle cx="16" cy="16.6" r="1"/></g></svg>달력</div>
+      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><path class="f" d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/><circle class="hole" cx="12" cy="12" r="3"/></svg>설정</div>
     </div>
   </div></div>
 
@@ -390,9 +396,9 @@
           <div class="f">4회</div><div class="f">5회</div><div class="f">6회</div><div class="f">직접</div>
         </div>
         <div class="lbl">복용 시간 — 탭하여 바로 입력</div>
-        <div class="time-in"><span>🕐</span><span class="t">08:00</span></div>
+        <div class="time-in"><span><svg class="mi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span class="t">08:00</span></div>
         <div class="time-in" style="border-color:#4A6CF7">
-          <span>🕐</span><span class="t">13:3<span class="cursor"></span></span><span class="minus">⊖</span>
+          <span><svg class="mi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span class="t">13:3<span class="cursor"></span></span><span class="minus">⊖</span>
         </div>
       </div>
       <div class="card" style="padding:15px">
@@ -443,10 +449,10 @@
       </div>
     </div>
     <div class="tabbar">
-      <div class="tab"><span class="ic">🏠</span>홈</div>
-      <div class="tab"><span class="ic">💊</span>내 약</div>
-      <div class="tab on"><span class="ic">📅</span>달력</div>
-      <div class="tab"><span class="ic">⚙️</span>설정</div>
+      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><path class="f" d="M3.5 10.6 12 3.8l8.5 6.8V19.5a1.5 1.5 0 0 1-1.5 1.5h-4.2v-6.2H9.2V21H5a1.5 1.5 0 0 1-1.5-1.5z"/></svg>홈</div>
+      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><g transform="rotate(-45 12 12)"><rect x="2.5" y="7.5" width="19" height="9" rx="4.5" fill="currentColor" opacity=".9"/><path d="M12 7.5h5a4.5 4.5 0 0 1 0 9h-5z" fill="#fff" opacity=".45"/></g></svg>내 약</div>
+      <div class="tab on"><svg class="ic" viewBox="0 0 24 24"><rect class="f" x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/><g class="dots"><circle cx="8" cy="13" r="1"/><circle cx="12" cy="13" r="1"/><circle cx="16" cy="13" r="1"/><circle cx="8" cy="16.6" r="1"/><circle cx="12" cy="16.6" r="1"/><circle cx="16" cy="16.6" r="1"/></g></svg>달력</div>
+      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><path class="f" d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/><circle class="hole" cx="12" cy="12" r="3"/></svg>설정</div>
     </div>
   </div></div>
 
@@ -500,10 +506,10 @@
       </div>
     </div>
     <div class="tabbar">
-      <div class="tab"><span class="ic">🏠</span>홈</div>
-      <div class="tab"><span class="ic">💊</span>내 약</div>
-      <div class="tab"><span class="ic">📅</span>달력</div>
-      <div class="tab on"><span class="ic">⚙️</span>설정</div>
+      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><path class="f" d="M3.5 10.6 12 3.8l8.5 6.8V19.5a1.5 1.5 0 0 1-1.5 1.5h-4.2v-6.2H9.2V21H5a1.5 1.5 0 0 1-1.5-1.5z"/></svg>홈</div>
+      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><g transform="rotate(-45 12 12)"><rect x="2.5" y="7.5" width="19" height="9" rx="4.5" fill="currentColor" opacity=".9"/><path d="M12 7.5h5a4.5 4.5 0 0 1 0 9h-5z" fill="#fff" opacity=".45"/></g></svg>내 약</div>
+      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><rect class="f" x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/><g class="dots"><circle cx="8" cy="13" r="1"/><circle cx="12" cy="13" r="1"/><circle cx="16" cy="13" r="1"/><circle cx="8" cy="16.6" r="1"/><circle cx="12" cy="16.6" r="1"/><circle cx="16" cy="16.6" r="1"/></g></svg>달력</div>
+      <div class="tab on"><svg class="ic" viewBox="0 0 24 24"><path class="f" d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/><circle class="hole" cx="12" cy="12" r="3"/></svg>설정</div>
     </div>
   </div></div>
 
@@ -567,7 +573,7 @@
         <div class="bar" style="background:#4A6CF7"></div>
         <div class="info">
           <div class="name done">혈압약</div>
-          <div class="meta">🕗 오전 8:00 · 1정 · <span class="accent">🔔 10분 전</span></div>
+          <div class="meta"><svg class="mi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>오전 8:00 · 1정 · <span class="accent"><svg class="mi" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg>10분 전</span></div>
         </div>
         <div class="check done">✓</div>
       </div>
@@ -575,7 +581,7 @@
         <div class="bar" style="background:#10B981"></div>
         <div class="info">
           <div class="name done">오메가3</div>
-          <div class="meta">🕐 오후 1:00 · 2정</div>
+          <div class="meta"><svg class="mi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>오후 1:00 · 2정</div>
         </div>
         <div class="check done">✓</div>
       </div>
@@ -583,16 +589,16 @@
         <div class="bar" style="background:#8B5CF6"></div>
         <div class="info">
           <div class="name">종합비타민</div>
-          <div class="meta">🕘 오후 9:00 · 1정 · <span class="accent">🔔 5분 전</span></div>
+          <div class="meta"><svg class="mi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>오후 9:00 · 1정 · <span class="accent"><svg class="mi" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg>5분 전</span></div>
         </div>
         <div class="check">✓</div>
       </div>
     </div>
     <div class="tabbar">
-      <div class="tab on"><span class="ic">🏠</span>홈</div>
-      <div class="tab"><span class="ic">💊</span>내 약</div>
-      <div class="tab"><span class="ic">📅</span>달력</div>
-      <div class="tab"><span class="ic">⚙️</span>설정</div>
+      <div class="tab on"><svg class="ic" viewBox="0 0 24 24"><path class="f" d="M3.5 10.6 12 3.8l8.5 6.8V19.5a1.5 1.5 0 0 1-1.5 1.5h-4.2v-6.2H9.2V21H5a1.5 1.5 0 0 1-1.5-1.5z"/></svg>홈</div>
+      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><g transform="rotate(-45 12 12)"><rect x="2.5" y="7.5" width="19" height="9" rx="4.5" fill="currentColor" opacity=".9"/><path d="M12 7.5h5a4.5 4.5 0 0 1 0 9h-5z" fill="#fff" opacity=".45"/></g></svg>내 약</div>
+      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><rect class="f" x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/><g class="dots"><circle cx="8" cy="13" r="1"/><circle cx="12" cy="13" r="1"/><circle cx="16" cy="13" r="1"/><circle cx="8" cy="16.6" r="1"/><circle cx="12" cy="16.6" r="1"/><circle cx="16" cy="16.6" r="1"/></g></svg>달력</div>
+      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><path class="f" d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/><circle class="hole" cx="12" cy="12" r="3"/></svg>설정</div>
     </div>
   </div></div>
 
