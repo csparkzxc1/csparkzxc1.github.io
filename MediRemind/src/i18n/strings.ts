@@ -127,6 +127,7 @@ export const STRINGS: Record<string, Entry> = {
   'form.prescDaysPlaceholder': { ko: '예: 30', en: 'e.g. 30' },
   'form.prescAlert': { ko: '알림 시점 (복수 선택)', en: 'Remind me (pick any)' },
   'form.saveNew': { ko: '약 등록하기', en: 'Add medicine' },
+  'form.delete': { ko: '이 약 삭제', en: 'Delete this medicine' },
   'form.saveEdit': { ko: '수정 완료', en: 'Save changes' },
   'form.errTitle': { ko: '입력 오류', en: 'Check your input' },
   'form.errName': { ko: '약 이름을 입력해주세요.', en: 'Please enter a name.' },

@@ -74,6 +74,7 @@ const es: Record<string, string> = {
   'form.prescDaysPlaceholder': 'Ej.: 30',
   'form.prescAlert': 'Avisarme (elige uno o más)',
   'form.saveNew': 'Agregar medicamento',
+  'form.delete': 'Eliminar este medicamento',
   'form.saveEdit': 'Guardar cambios',
   'form.errTitle': 'Revisa los datos',
   'form.errName': 'Escribe un nombre.',

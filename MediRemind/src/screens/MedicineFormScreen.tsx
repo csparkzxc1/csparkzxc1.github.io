@@ -72,7 +72,7 @@ export default function MedicineFormScreen() {
   const styles = useThemedStyles(makeStyles);
 
   const medicineId = route.params?.medicineId;
-  const { medicines, getMedicineById, addMedicine, updateMedicine } = useMedicineStore();
+  const { medicines, getMedicineById, addMedicine, updateMedicine, deleteMedicine } = useMedicineStore();
   const { isPro } = useEntitlement();
   const existing = medicineId ? getMedicineById(medicineId) : undefined;
 
@@ -171,6 +171,28 @@ export default function MedicineFormScreen() {
   const addTime = () => setTimes((prev) => [...prev, '12:00']);
 
   // ─── Save ────────────────────────────────────────────────────────────────
+
+  // Deleting also removes the dose history, so it always asks first.
+  const handleDelete = () => {
+    if (!existing) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+    Alert.alert(t('list.deleteTitle'), t('list.deleteBody', { name: existing.name }), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('common.delete'),
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await deleteMedicine(existing.id);
+            navigation.goBack();
+          } catch (e) {
+            console.warn('[form] delete failed', e);
+            Alert.alert(t('common.error'), t('form.errSave'));
+          }
+        },
+      },
+    ]);
+  };
 
   const handleSave = async () => {
     if (!existing && !canAddMedicine(isPro, medicines.length)) {
@@ -542,6 +564,13 @@ export default function MedicineFormScreen() {
           <Ionicons name="checkmark-circle" size={20} color={colors.onBrand} />
           <Text style={styles.saveText}>{existing ? t('form.saveEdit') : t('form.saveNew')}</Text>
         </TouchableOpacity>
+
+        {existing && (
+          <TouchableOpacity style={styles.deleteBtn} onPress={handleDelete} accessibilityRole="button">
+            <Ionicons name="trash-outline" size={18} color={colors.danger} />
+            <Text style={styles.deleteText}>{t('form.delete')}</Text>
+          </TouchableOpacity>
+        )}
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -689,4 +718,16 @@ const makeStyles = (c: ThemeColors, scheme: Scheme) =>
       gap: 10,
     },
     saveText: { color: c.onBrand, fontSize: 17, fontWeight: '700' },
+    deleteBtn: {
+      marginTop: 14,
+      paddingVertical: 14,
+      borderRadius: 16,
+      borderWidth: 1.5,
+      borderColor: c.dangerSoft,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
+    },
+    deleteText: { color: c.danger, fontSize: 15, fontWeight: '700' },
   });

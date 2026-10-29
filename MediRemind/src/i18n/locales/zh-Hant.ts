@@ -74,6 +74,7 @@ const zhHant: Record<string, string> = {
   'form.prescDaysPlaceholder': '例如：30',
   'form.prescAlert': '提醒時機（可複選）',
   'form.saveNew': '新增藥品',
+  'form.delete': '刪除這個藥品',
   'form.saveEdit': '儲存變更',
   'form.errTitle': '輸入錯誤',
   'form.errName': '請輸入藥品名稱。',

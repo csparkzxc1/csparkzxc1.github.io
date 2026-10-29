@@ -74,6 +74,7 @@ const ja: Record<string, string> = {
   'form.prescDaysPlaceholder': '例：30',
   'form.prescAlert': '通知のタイミング（複数選択可）',
   'form.saveNew': 'お薬を登録',
+  'form.delete': 'この薬を削除',
   'form.saveEdit': '変更を保存',
   'form.errTitle': '入力エラー',
   'form.errName': 'お薬の名前を入力してください。',

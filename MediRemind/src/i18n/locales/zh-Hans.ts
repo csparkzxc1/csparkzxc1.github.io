@@ -74,6 +74,7 @@ const zhHans: Record<string, string> = {
   'form.prescDaysPlaceholder': '例如：30',
   'form.prescAlert': '提醒时间（可多选）',
   'form.saveNew': '添加药品',
+  'form.delete': '删除此药品',
   'form.saveEdit': '保存修改',
   'form.errTitle': '请检查输入',
   'form.errName': '请输入药品名称。',
