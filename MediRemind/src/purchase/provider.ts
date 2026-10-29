@@ -4,7 +4,7 @@
  * - Dev / Expo Go / simulator (`__DEV__`): the mock provider, so the full
  *   purchase + entitlement UX runs without the native StoreKit/Play module.
  * - Release builds: the real `react-native-iap` provider (see realProvider.ts
- *   and docs/IAP_SETUP.md). The store product `com.csparkzxc.mediremind.full`
+ *   and docs/IAP_SETUP.md). The store product `01` (reference name com.csparkzxc.mediremind.full)
  *   must exist and pass sandbox testing before submission.
  *
  * Everything else in the app depends only on the PurchaseProvider interface, so
