@@ -99,6 +99,34 @@ const SHOTS = {
   ],
 };
 
+// New layout: two hero panels that run into each other, then single panels
+// with an upright, fully visible phone. Languages without an entry here still
+// use the panorama layout below.
+//   hero: [mockup screen for panel 1, mockup screen for panel 2, headline lines,
+//          index of the accented line]
+//   singles: [mockup screen, small line, bold line, accented end of the bold line]
+const STORY = {
+  ko: {
+    hero: [0, 3, ['복용 알림과 복약 기록,', '부모님을 위한', '가족 안심', '약 복용 알리미'], 1],
+    singles: [
+      [7, '약 시간이 30분 지나도 체크가 없으면', '가족에게 ', '바로 알림'],
+      [1, '재처방 D-Day와 복용 일정까지', '내 약을 한눈에 ', '관리'],
+      [2, '하루 6회, 0.5정부터 직접 입력까지', '복용 시간·용량 ', '자유롭게'],
+      [6, '밤에도 눈부시지 않게', '눈이 편한 ', '다크 모드'],
+      [5, '광고 없이, 구독 없이', '약 2개까지 ', '평생 무료'],
+    ],
+  },
+};
+
+// Light device frame shared by every phone in the new layout.
+const phoneFrame = (img, width, k, style = '') => `
+  <div style="position:absolute;width:${width}px;padding:${22 * k}px;border-radius:${108 * k}px;
+    background:linear-gradient(150deg,#FFFFFF 0%,#F1F3F8 55%,#E3E7F0 100%);
+    box-shadow:inset 0 0 0 ${3 * k}px #DDE2EC,0 ${70 * k}px ${140 * k}px rgba(34,44,96,.20),0 ${16 * k}px ${40 * k}px rgba(34,44,96,.10);
+    ${style}">
+    <img src="data:image/png;base64,${img}" style="display:block;width:100%;border-radius:${88 * k}px">
+  </div>`;
+
 // Fonts per language (Google Fonts), so CJK text doesn't fall back to a bitmap face.
 const FONTS = {
   ko: 'Noto Sans KR',
@@ -238,6 +266,67 @@ function translateInPage([map, lang]) {
   document.documentElement.lang = lang;
 }
 
+async function renderStory(browser, lang, story, shot) {
+  const [heroA, heroB, heroLines, accentLine] = story.hero;
+  const imgs = {};
+  for (const idx of [heroA, heroB, ...story.singles.map(([i]) => i)]) imgs[idx] ??= await shot(idx);
+  const font = `'${fontFor(lang)}',sans-serif`;
+  const bg = 'radial-gradient(120% 70% at 80% 100%,#DCE3FB 0%,transparent 60%),linear-gradient(180deg,#F8F9FD 0%,#EDF0F8 100%)';
+
+  for (const { dir, w: W, h: H } of SIZES) {
+    if (process.env.SIZE && process.env.SIZE !== dir) continue;
+    const k = Math.min(W / 1290, H / 2796);
+    const tk = W / H > 0.6 ? W / 1290 : k;
+    const page = await browser.newPage({ viewport: { width: W * 2, height: H } });
+
+    // Panels 1–2: one canvas, two tilted phones crossing the cut.
+    const heroW = 860 * k;
+    await page.setContent(`
+      <html><head><link rel="stylesheet" href="${fontLink(lang)}"></head>
+      <body style="margin:0;width:${W * 2}px;height:${H}px;overflow:hidden;position:relative;background:${bg};font-family:${font}">
+        <div style="position:absolute;left:${110 * tk}px;top:${230 * k}px;font-size:${104 * tk}px;font-weight:800;
+          line-height:1.42;letter-spacing:${-2 * tk}px;color:#2A2F45">
+          ${heroLines.map((l, i) => `<div style="color:${i === accentLine ? '#4A6CF7' : '#2A2F45'}">${l}</div>`).join('')}
+        </div>
+        <div style="position:absolute;left:${110 * tk}px;bottom:${190 * k}px;display:flex;align-items:center;gap:${26 * tk}px">
+          <img src="data:image/png;base64,${ICON}" style="width:${120 * tk}px;height:${120 * tk}px;border-radius:${28 * tk}px;
+            box-shadow:0 ${8 * k}px ${24 * k}px rgba(40,52,120,.2)">
+          <span style="font-size:${84 * tk}px;font-weight:800;color:#2A2F45;letter-spacing:${-2 * tk}px">MediRemind</span>
+        </div>
+        ${phoneFrame(imgs[heroA], heroW, k, `left:${W * 0.52}px;top:${H * 0.47}px;transform:rotate(-24deg);transform-origin:0 0`)}
+        ${phoneFrame(imgs[heroB], heroW * 1.08, k, `left:${W * 1.02}px;top:${H * 0.30}px;transform:rotate(-24deg);transform-origin:0 0`)}
+      </body></html>`);
+    await page.waitForLoadState('networkidle');
+    await page.evaluate(() => document.fonts.ready);
+    for (let n = 0; n < 2; n++) {
+      await page.screenshot({ path: path.join(OUT, dir, `${lang}-0${n + 1}.png`), clip: { x: n * W, y: 0, width: W, height: H } });
+    }
+
+    // Panels 3+: headline on top, the whole phone upright below.
+    await page.setViewportSize({ width: W, height: H });
+    for (const [n, [idx, small, bold, accent]] of story.singles.entries()) {
+      // Below the two headline lines, whatever their scale.
+      const top = 170 * k + (62 * 1.3 + 14 + 96 * 1.3) * tk + 110 * k;
+      const phoneW = Math.min(860 * k, ((H - top - 150 * k) / 2.19));
+      await page.setContent(`
+        <html><head><link rel="stylesheet" href="${fontLink(lang)}"></head>
+        <body style="margin:0;width:${W}px;height:${H}px;overflow:hidden;position:relative;background:${bg};font-family:${font}">
+          <div style="position:absolute;left:0;right:0;top:${170 * k}px;text-align:center;padding:0 ${80 * tk}px">
+            <div style="font-size:${62 * tk}px;font-weight:500;color:#4A5068;letter-spacing:${-1 * tk}px">${small}</div>
+            <div style="margin-top:${14 * k}px;font-size:${96 * tk}px;font-weight:800;color:#1A1D2B;letter-spacing:${-3 * tk}px">
+              ${bold}<span style="color:#4A6CF7">${accent}</span></div>
+          </div>
+          ${phoneFrame(imgs[idx], phoneW, k, `left:${(W - phoneW) / 2}px;top:${top}px`)}
+        </body></html>`);
+      await page.waitForLoadState('networkidle');
+      await page.evaluate(() => document.fonts.ready);
+      await page.screenshot({ path: path.join(OUT, dir, `${lang}-0${n + 3}.png`) });
+    }
+    await page.close();
+    console.log('wrote', lang, dir);
+  }
+}
+
 (async () => {
   for (const size of SIZES) fs.mkdirSync(path.join(OUT, size.dir), { recursive: true });
   for (const f of fs.readdirSync(OUT)) if (f.endsWith('.png')) fs.unlinkSync(path.join(OUT, f));
@@ -265,6 +354,14 @@ function translateInPage([map, lang]) {
     await mock.waitForLoadState('networkidle');
     await mock.evaluate(() => document.fonts.ready);
     const screens = await mock.locator('.screen').all();
+    if (STORY[lang]) {
+      // The store frame replaces the mockup's status bar and notch.
+      await mock.addStyleTag({ content: '.notch,.status{display:none}.push{top:10px}.push+.header{padding-top:118px !important}' });
+      const shot = async (idx) => (await screens[idx].screenshot()).toString('base64');
+      await renderStory(browser, lang, STORY[lang], shot);
+      await mock.close();
+      continue;
+    }
     const shots = [];
     for (const [idx] of SHOTS[lang]) shots.push((await screens[idx].screenshot()).toString('base64'));
 
