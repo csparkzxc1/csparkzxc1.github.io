@@ -100,9 +100,13 @@
   /* ── Medicine card ── */
   .med { display:flex; align-items:center; gap:12px; background:#FFF; border-radius:18px; padding:14px 16px; margin-bottom:10px; box-shadow:0 6px 14px rgba(63,74,126,.07); }
   .med .icon { width:42px; height:42px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:19px; flex-shrink:0; }
-  .med .icon.blue { background:rgba(74,108,247,.12); }
-  .med .icon.green { background:rgba(16,185,129,.12); }
-  .med .icon.purple { background:rgba(139,92,246,.12); }
+  .med .icon.blue { background:rgba(74,108,247,.14); color:#4A6CF7; }
+  .med .icon .pill-ic { width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:2.2; }
+  .med .icon .pill-ic .half { fill:currentColor; stroke:none; }
+  .med .mt + .mt { margin-top:2px; }
+  .med .mt .dot { margin:0 6px; color:#C3C8D6; }
+  .med .icon.green { background:rgba(16,185,129,.14); color:#10B981; }
+  .med .icon.purple { background:rgba(139,92,246,.14); color:#8B5CF6; }
   .med .b { flex:1; min-width:0; }
   .med .row1 { display:flex; align-items:center; gap:8px; margin-bottom:3px; }
   .med .nm { font-size:15px; font-weight:700; color:#1A1D2B; letter-spacing:-.2px; }
@@ -326,37 +330,37 @@
     </div>
     <div class="body">
       <div class="med">
-        <div class="icon blue">💊</div>
+        <div class="icon blue"><svg class="pill-ic" viewBox="0 0 24 24"><g transform="rotate(-45 12 12)"><rect x="2.8" y="7.8" width="18.4" height="8.4" rx="4.2"/><path class="half" d="M12 7.8H7a4.2 4.2 0 0 0 0 8.4h5z"/></g></svg></div>
         <div class="b">
           <div class="row1"><span class="nm">혈압약</span><span class="badge r">D-2</span></div>
-          <div class="mt"><svg class="mi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>오전 8:00 · 매일 · 1정</div>
+          <div class="mt"><svg class="mi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>오전 8:00</div><div class="mt"><svg class="mi" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/><path d="M8 13h.01M12 13h.01M16 13h.01M8 16.5h.01M12 16.5h.01"/></svg>매일<span class="dot">·</span>1정</div>
         </div>
         <div class="switch"></div>
       </div>
       <div class="med">
-        <div class="icon green">💊</div>
+        <div class="icon green"><svg class="pill-ic" viewBox="0 0 24 24"><g transform="rotate(-45 12 12)"><rect x="2.8" y="7.8" width="18.4" height="8.4" rx="4.2"/><path class="half" d="M12 7.8H7a4.2 4.2 0 0 0 0 8.4h5z"/></g></svg></div>
         <div class="b">
           <div class="row1"><span class="nm">오메가3</span><span class="badge o">D-6</span></div>
-          <div class="mt"><svg class="mi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>오후 1:00 · 매일 · 2정</div>
+          <div class="mt"><svg class="mi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>오후 1:00</div><div class="mt"><svg class="mi" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/><path d="M8 13h.01M12 13h.01M16 13h.01M8 16.5h.01M12 16.5h.01"/></svg>매일<span class="dot">·</span>2정</div>
         </div>
         <div class="switch"></div>
       </div>
       <div class="swipe-wrap">
         <div class="del">🗑<br>삭제</div>
         <div class="med swiped">
-          <div class="icon purple">💊</div>
+          <div class="icon purple"><svg class="pill-ic" viewBox="0 0 24 24"><g transform="rotate(-45 12 12)"><rect x="2.8" y="7.8" width="18.4" height="8.4" rx="4.2"/><path class="half" d="M12 7.8H7a4.2 4.2 0 0 0 0 8.4h5z"/></g></svg></div>
           <div class="b">
             <div class="row1"><span class="nm">종합비타민</span><span class="badge g">D-24</span></div>
-            <div class="mt"><svg class="mi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>오후 9:00 · 평일 · 1정</div>
+            <div class="mt"><svg class="mi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>오후 9:00</div><div class="mt"><svg class="mi" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/><path d="M8 13h.01M12 13h.01M16 13h.01M8 16.5h.01M12 16.5h.01"/></svg>평일<span class="dot">·</span>1정</div>
           </div>
           <div class="switch"></div>
         </div>
       </div>
       <div class="med" style="opacity:.55">
-        <div class="icon blue">💊</div>
+        <div class="icon blue"><svg class="pill-ic" viewBox="0 0 24 24"><g transform="rotate(-45 12 12)"><rect x="2.8" y="7.8" width="18.4" height="8.4" rx="4.2"/><path class="half" d="M12 7.8H7a4.2 4.2 0 0 0 0 8.4h5z"/></g></svg></div>
         <div class="b">
           <div class="row1"><span class="nm">수면유도제</span></div>
-          <div class="mt"><svg class="mi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>오후 11:00 · 매일 · 0.5정</div>
+          <div class="mt"><svg class="mi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>오후 11:00</div><div class="mt"><svg class="mi" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/><path d="M8 13h.01M12 13h.01M16 13h.01M8 16.5h.01M12 16.5h.01"/></svg>매일<span class="dot">·</span>0.5정</div>
         </div>
         <div class="switch off"></div>
       </div>
