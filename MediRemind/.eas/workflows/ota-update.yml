@@ -1,0 +1,19 @@
+# Publishes a JavaScript-only update (no new build, no build credit) to the
+# production channel. Each installed build only takes updates for its own
+# version (runtimeVersion = app version), so a 1.2.0 update reaches only
+# 1.2.0 builds, i.e. TestFlight until 1.2.0 ships. Runs when MediRemind/UPDATE
+# changes.
+name: OTA update
+
+on:
+  push:
+    branches: ['claude/medication-reminder-app-hlZTA']
+    paths: ['**/UPDATE']
+
+jobs:
+  publish:
+    name: Publish update
+    type: update
+    params:
+      channel: production
+      platform: ios
