@@ -356,7 +356,7 @@ async function renderStory(browser, lang, story, shot) {
     const screens = await mock.locator('.screen').all();
     if (STORY[lang]) {
       // The store frame replaces the mockup's status bar and notch.
-      await mock.addStyleTag({ content: '.notch,.status{display:none}.push{top:10px}.push+.header{padding-top:118px !important}' });
+      await mock.addStyleTag({ content: '.notch,.status{display:none}.push{top:10px}' });
       const shot = async (idx) => (await screens[idx].screenshot()).toString('base64');
       await renderStory(browser, lang, STORY[lang], shot);
       await mock.close();
