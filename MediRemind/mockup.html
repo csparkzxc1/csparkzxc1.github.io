@@ -152,9 +152,7 @@
   .d i { width:4px; height:4px; border-radius:2px; display:block; }
   .d .g { background:#10B981; } .d .r { background:#EF4444; }
   .rec { display:flex; align-items:center; gap:10px; background:#FFF; border-radius:16px; padding:12px 14px; margin-bottom:8px; box-shadow:0 4px 10px rgba(63,74,126,.06); border-left:4px solid #10B981; }
-  .rec.miss { border-left-color:#EF4444; }
   .rec .sd { width:9px; height:9px; border-radius:5px; background:#10B981; }
-  .rec.miss .sd { background:#EF4444; }
   .rec .rn { flex:1; font-size:13px; font-weight:600; color:#1A1D2B; }
   .rec .rt { font-size:11px; color:#8A91A8; }
   .rec .st { font-size:12px; font-weight:800; color:#10B981; }
@@ -465,18 +463,18 @@
         </table>
       </div>
       <div style="font-size:13px; font-weight:700; margin:2px 4px 8px;">오늘</div>
-      <div class="rec">
-        <span class="sd"></span>
+      <div class="rec" style="border-left-color:#4A6CF7">
+        <span class="sd" style="background:#4A6CF7"></span>
         <div class="rn">혈압약<div class="rt">오전 8:00 · 1정</div></div>
         <span class="st">복용</span>
       </div>
-      <div class="rec">
-        <span class="sd"></span>
+      <div class="rec" style="border-left-color:#10B981">
+        <span class="sd" style="background:#10B981"></span>
         <div class="rn">오메가3<div class="rt">오후 1:00 · 2정</div></div>
         <span class="st">복용</span>
       </div>
-      <div class="rec miss">
-        <span class="sd"></span>
+      <div class="rec miss" style="border-left-color:#8B5CF6">
+        <span class="sd" style="background:#8B5CF6"></span>
         <div class="rn">종합비타민<div class="rt">오후 9:00 · 1정</div></div>
         <span class="st">미복용</span>
       </div>
