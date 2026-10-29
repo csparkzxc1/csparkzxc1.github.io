@@ -107,13 +107,13 @@ const SHOTS = {
 //   singles: [mockup screen, small line, bold line, accented end of the bold line]
 const STORY = {
   ko: {
-    hero: [0, 3, ['복용 알림과 복약 기록,', '부모님을 위한', '가족 안심', '약 복용 알리미'], 1],
+    hero: [0, 3, ['복용 알림과 복약 기록,', '나와 내 가족,', '그리고 부모님을 위한', '약 복용 알리미'], 1],
     singles: [
-      [7, '약 시간이 30분 지나도 체크가 없으면', '가족에게 ', '바로 알림'],
+      [7, '정해진 시간이 지나도 체크가 없으면', '가족에게 ', '바로 알림'],
       [1, '재처방 D-Day와 복용 일정까지', '내 약을 한눈에 ', '관리'],
       [2, '하루 6회, 0.5정부터 직접 입력까지', '복용 시간·용량 ', '자유롭게'],
       [6, '밤에도 눈부시지 않게', '눈이 편한 ', '다크 모드'],
-      [5, '광고 없이, 구독 없이', '약 2개까지 ', '평생 무료'],
+      [5, '광고도 구독도 없이', '부담 없이 ', '무료로 시작'],
     ],
   },
 };
@@ -356,7 +356,7 @@ async function renderStory(browser, lang, story, shot) {
     const screens = await mock.locator('.screen').all();
     if (STORY[lang]) {
       // The store frame replaces the mockup's status bar and notch.
-      await mock.addStyleTag({ content: '.notch,.status{display:none}.push{top:10px}' });
+      await mock.addStyleTag({ content: '.notch,.status,.pw-status{display:none}.push{top:10px}' });
       const shot = async (idx) => (await screens[idx].screenshot()).toString('base64');
       await renderStory(browser, lang, STORY[lang], shot);
       await mock.close();
