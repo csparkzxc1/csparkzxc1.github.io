@@ -144,6 +144,14 @@ export const STRINGS: Record<string, Entry> = {
   'form.off': { ko: 'OFF', en: 'OFF' },
 
   // ── Calendar ──────────────────────────────────────────────────────────
+  'report.days': { ko: '{n}일', en: '{n} days' },
+  'report.empty': { ko: '아직 복용 기록이 없어요.', en: 'No dose history yet.' },
+  'report.rate': { ko: '복용률', en: 'Taken' },
+  'report.count': { ko: '{due}회 중 {taken}회 복용', en: '{taken} of {due} doses' },
+  'report.tapDay': { ko: '막대를 누르면 그날 보기', en: 'Tap a bar for that day' },
+  'report.byMedicine': { ko: '약별 복용률', en: 'By medicine' },
+  'report.show': { ko: '복용 리포트 보기', en: 'Show report' },
+  'report.showCalendar': { ko: '달력 보기', en: 'Show calendar' },
   'cal.title': { ko: '복용 기록', en: 'History' },
   'cal.monthRate': { ko: '이번 달 {n}%', en: 'This month {n}%' },
   'cal.today': { ko: '오늘', en: 'Today' },

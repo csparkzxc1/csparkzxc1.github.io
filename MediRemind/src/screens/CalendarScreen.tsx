@@ -1,5 +1,6 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Calendar, LocaleConfig, type DateData } from 'react-native-calendars';
 import { useFocusEffect } from '@react-navigation/native';
@@ -20,6 +21,7 @@ import { dayStatuses } from '../lib/streak';
 import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
 import { cardShadow, type Scheme, type ThemeColors } from '../theme/theme';
 import ScreenHeader from '../components/ScreenHeader';
+import AdherenceReport from '../components/AdherenceReport';
 
 type MarkedDates = Record<
   string,
@@ -40,6 +42,17 @@ export default function CalendarScreen() {
 
   const [selectedDate, setSelectedDate] = useState(today);
   const [month, setMonth] = useState(today.slice(0, 7));
+  // The menu button flips the calendar card over to my adherence report.
+  const [showReport, setShowReport] = useState(false);
+  const flip = useRef(new Animated.Value(0)).current;
+  const turn = (toReport: boolean) => {
+    Animated.timing(flip, { toValue: 1, duration: 160, useNativeDriver: true }).start(() => {
+      setShowReport(toReport);
+      flip.setValue(-1);
+      Animated.timing(flip, { toValue: 0, duration: 160, useNativeDriver: true }).start();
+    });
+  };
+  const rotate = flip.interpolate({ inputRange: [-1, 0, 1], outputRange: ['-90deg', '0deg', '90deg'] });
 
   const { rangeRecords, streak, loadDoseRecordsRange } = useDoseStore();
   const getMedicineById = useMedicineStore((s) => s.getMedicineById);
@@ -108,16 +121,37 @@ export default function CalendarScreen() {
       <ScreenHeader
         title={t('cal.title')}
         right={
-          monthlyRate !== null ? (
-            <View style={styles.rateBadge}>
-              <Text style={styles.rateText}>{t('cal.monthRate', { n: monthlyRate })}</Text>
-            </View>
-          ) : undefined
+          <View style={styles.headerRight}>
+            {monthlyRate !== null && !showReport && (
+              <View style={styles.rateBadge}>
+                <Text style={styles.rateText}>{t('cal.monthRate', { n: monthlyRate })}</Text>
+              </View>
+            )}
+            <TouchableOpacity
+              style={styles.menuBtn}
+              onPress={() => turn(!showReport)}
+              accessibilityRole="button"
+              accessibilityLabel={showReport ? t('report.showCalendar') : t('report.show')}
+            >
+              <Ionicons name={showReport ? 'calendar-outline' : 'menu'} size={22} color={colors.text} />
+            </TouchableOpacity>
+          </View>
         }
       />
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.calendarCard}>
+        <Animated.View style={[styles.calendarCard, { transform: [{ perspective: 1200 }, { rotateY: rotate }] }]}>
+          {showReport ? (
+            <AdherenceReport
+              today={today}
+              onPickDay={(d) => {
+                setSelectedDate(d);
+                setMonth(d.slice(0, 7));
+                turn(false);
+              }}
+            />
+          ) : (
+            <>
           <Calendar
             key={`${scheme}-${language}`}
             current={`${month}-01`}
@@ -147,7 +181,9 @@ export default function CalendarScreen() {
               textMonthFontSize: 16,
             }}
           />
-        </View>
+            </>
+          )}
+        </Animated.View>
 
         {streak > 0 && (
           <View style={styles.streakChip}>
@@ -195,6 +231,15 @@ export default function CalendarScreen() {
 const makeStyles = (c: ThemeColors, scheme: Scheme) =>
   StyleSheet.create({
     safe: { flex: 1, backgroundColor: c.bg },
+    headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    menuBtn: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: c.surface,
+    },
     rateBadge: { backgroundColor: c.brandSoft, borderRadius: 16, paddingHorizontal: 14, paddingVertical: 7 },
     rateText: { color: c.brand, fontSize: 13, fontWeight: '800' },
     scroll: { flex: 1 },
