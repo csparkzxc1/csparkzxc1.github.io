@@ -116,6 +116,76 @@ const STORY = {
       [6, '밤에도 눈부시지 않게', '눈이 편한 ', '다크 모드'],
     ],
   },
+  en: {
+    hero: [0, 3, ["Reminders and dose records", "for you, your family", "and your parents", "MediRemind"], 1],
+    singles: [
+      [7, "If a dose isn't checked on time", "Your family ", "gets alerted"],
+      [8, "One swipe in Settings", "Text as large ", "as you like"],
+      [1, "Refill countdowns and schedules", "All your meds ", "at a glance"],
+      [2, "Up to 6 a day, from half a tablet", "Times and doses, ", "your way"],
+      [6, "Easy on your eyes at night", "Comfortable ", "dark mode"],
+    ],
+  },
+  ja: {
+    hero: [0, 3, ["服薬リマインダーと記録", "自分と家族、", "そして両親のための", "お薬アラーム"], 1],
+    singles: [
+      [7, "時間を過ぎてもチェックがなければ", "家族に", "すぐお知らせ"],
+      [8, "設定から指でスッと", "文字の大きさを", "自由に"],
+      [1, "処方の残り日数と服薬予定まで", "お薬を", "ひと目で管理"],
+      [2, "1日6回まで、0.5錠から直接入力も", "時間も量も", "自由に"],
+      [6, "夜もまぶしくない", "目にやさしい", "ダークモード"],
+    ],
+  },
+  'zh-Hans': {
+    hero: [0, 3, ["服药提醒与记录", "为自己、为家人", "也为父母", "贴心吃药提醒"], 1],
+    singles: [
+      [7, "超过时间仍未打卡", "家人", "马上收到提醒"],
+      [8, "在设置里轻轻一滑", "字体大小", "随心调"],
+      [1, "处方到期与服药计划", "所有药品", "一目了然"],
+      [2, "每天最多6次，半片也能设", "时间剂量", "自由设定"],
+      [6, "夜里也不刺眼", "护眼的", "深色模式"],
+    ],
+  },
+  'zh-Hant': {
+    hero: [0, 3, ["服藥提醒與紀錄", "為自己、為家人", "也為爸媽", "貼心吃藥提醒"], 1],
+    singles: [
+      [7, "超過時間還沒打勾", "家人", "馬上收到通知"],
+      [8, "在設定裡輕輕一滑", "文字大小", "隨心調"],
+      [1, "回診日與服藥時間", "所有藥品", "一目了然"],
+      [2, "每天最多6次，半顆也能設", "時間劑量", "自由設定"],
+      [6, "夜裡也不刺眼", "護眼的", "深色模式"],
+    ],
+  },
+  es: {
+    hero: [0, 3, ["Recordatorios y registro", "para ti, tu familia", "y tus padres", "tu pastillero"], 1],
+    singles: [
+      [7, "Si una dosis no se marca a tiempo", "Tu familia ", "recibe un aviso"],
+      [8, "Un gesto en Ajustes", "Texto tan grande ", "como quieras"],
+      [1, "Recetas y horarios", "Tus medicamentos ", "de un vistazo"],
+      [2, "Hasta 6 tomas, desde medio comprimido", "Horas y dosis ", "a tu medida"],
+      [6, "Descansa la vista de noche", "Modo oscuro ", "para tus ojos"],
+    ],
+  },
+  fr: {
+    hero: [0, 3, ["Rappels et suivi des prises", "pour vous, votre famille", "et vos parents", "votre pilulier"], 1],
+    singles: [
+      [7, "Si une prise n'est pas cochée à l'heure", "Votre famille ", "est prévenue"],
+      [8, "Un geste dans Réglages", "Un texte aussi grand ", "que vous voulez"],
+      [1, "Renouvellements et horaires", "Vos médicaments ", "d'un coup d'œil"],
+      [2, "Jusqu'à 6 prises, dès ½ comprimé", "Horaires et doses ", "à votre façon"],
+      [6, "Reposant pour les yeux la nuit", "Le mode sombre ", "tout en douceur"],
+    ],
+  },
+  de: {
+    hero: [0, 3, ["Erinnerungen & Verlauf", "für dich, deine Familie", "und deine Eltern", "deine Pillen-Erinnerung"], 1],
+    singles: [
+      [7, "Wird eine Einnahme nicht abgehakt", "Deine Familie ", "erfährt es sofort"],
+      [8, "Einmal wischen in Einstellungen", "Text so groß ", "wie du willst"],
+      [1, "Rezept-Countdown und Zeitplan", "Medikamente ", "im Blick"],
+      [2, "Bis zu 6× täglich, ab ½ Tablette", "Zeit und Dosis ", "ganz flexibel"],
+      [6, "Angenehm für die Augen", "Bequemer ", "Dunkelmodus"],
+    ],
+  },
 };
 
 // Light device frame shared by every phone in the new layout.
@@ -207,7 +277,6 @@ const EN = {
   '다크 모드': 'Dark mode',
   '다크': 'Dark',
   '언어': 'Language',
-  '한국어': '한국어',
   '데이터': 'Data',
   '백업 내보내기': 'Export backup',
   '파일로 저장 (iCloud·파일 앱)': 'Save as a file (iCloud, Files)',
@@ -241,18 +310,50 @@ const EN = {
   '달력': 'History',
   '홈': 'Today',
   '삭제': 'Delete',
+  // Added with the current mockup ('=' keys match a whole text node only).
+  '=오늘 복용': "Today",
+  " / 3회 완료": " / 3 taken",
+  "‹ 뒤로": "‹ Back",
+  "1회 복용량 *": "Dose per intake *",
+  "1일 복용 횟수 *": "Times per day *",
+  "복용 시간 설정 * (24시간제)": "Dose times * (24-hour)",
+  "복용 요일": "Days",
+  "주말": "Weekends",
+  "색상 태그": "Color",
+  "=가족": "Family",
+  "약을 놓치면 가족에게 알림": "Notify family when a dose is missed",
+  "알림 테스트": "Test notification",
+  "5초 뒤 테스트 알림을 보내요": "Sends a test reminder in 5 seconds",
+  "글자 크기": "Text size",
+  "=가": "A",
+  "나중에": "Not now",
+  "결제는 Apple ID로 처리됩니다. 정식 버전을 사지 않아도 약 2개까지는 알림·기록을 평생 무료로 쓸 수 있어요.": "Payment is handled by your Apple ID. Without it, reminders and history for up to 2 medicines stay free forever.",
+  "정해진 복용 시간이 지나도 체크가 없으면 연결된 가족에게 알림이 가요. 알림 시점은 가족이 정할 수 있어요.": "If a dose is still unchecked after its time, your linked family gets a notification. They choose how soon.",
+  "최근 2주": "Last 2 weeks",
+  "복용률 89%": "89% taken",
+  "6자리 코드": "6-digit code",
+  "=연결": "Link",
+  "오늘 드실 약을 잊지 않게 알려 드려요.": "We'll remind you when it's time for your medicine.",
+  "=한국어": "English",
   // Calendar weekday headers (single characters, matched last).
   '일': 'S', '월': 'M', '화': 'T', '수': 'W', '목': 'T', '금': 'F', '토': 'S',
 };
 
 function translateInPage([map, lang]) {
-  const keys = Object.keys(map).sort((a, b) => b.length - a.length);
+  const keys = Object.keys(map)
+    .filter((k) => !k.startsWith('='))
+    .sort((a, b) => b.length - a.length);
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   const nodes = [];
   while (walker.nextNode()) nodes.push(walker.currentNode);
   for (const node of nodes) {
     let text = node.nodeValue;
     if (!text.trim()) continue;
+    const whole = map['=' + text.trim()];
+    if (whole !== undefined) {
+      node.nodeValue = text.replace(text.trim(), whole);
+      continue;
+    }
     // Replace via placeholders so translated output isn't re-matched.
     const hits = [];
     for (const k of keys) {
@@ -264,6 +365,19 @@ function translateInPage([map, lang]) {
     node.nodeValue = text.replace(/\u0000(\d+)\u0000/g, (_, i) => hits[Number(i)]);
   }
   document.documentElement.lang = lang;
+}
+
+/** Keeps each headline on one line by shrinking it until it fits its box. */
+function fitLines() {
+  for (const el of document.querySelectorAll('.fit')) {
+    el.style.whiteSpace = 'nowrap';
+    let size = parseFloat(getComputedStyle(el).fontSize);
+    const max = el.parentElement.clientWidth - parseFloat(getComputedStyle(el.parentElement).paddingLeft) * 2;
+    while (el.scrollWidth > max && size > 10) {
+      size -= 1;
+      el.style.fontSize = size + 'px';
+    }
+  }
 }
 
 async function renderStory(browser, lang, story, shot) {
@@ -284,9 +398,9 @@ async function renderStory(browser, lang, story, shot) {
     await page.setContent(`
       <html><head><link rel="stylesheet" href="${fontLink(lang)}"></head>
       <body style="margin:0;width:${W * 2}px;height:${H}px;overflow:hidden;position:relative;background:${bg};font-family:${font}">
-        <div style="position:absolute;left:${110 * tk}px;top:${230 * k}px;font-size:${104 * tk}px;font-weight:800;
+        <div style="position:absolute;left:${110 * tk}px;width:${W - 220 * tk}px;top:${230 * k}px;font-size:${(LATIN.has(lang) ? 84 : 104) * tk}px;font-weight:800;
           line-height:1.42;letter-spacing:${-2 * tk}px;color:#2A2F45">
-          ${heroLines.map((l, i) => `<div style="color:${i === accentLine ? '#4A6CF7' : '#2A2F45'}">${l}</div>`).join('')}
+          ${heroLines.map((l, i) => `<div class="fit" style="color:${i === accentLine ? '#4A6CF7' : '#2A2F45'}">${l}</div>`).join('')}
         </div>
         <div style="position:absolute;left:${110 * tk}px;bottom:${190 * k}px;display:flex;align-items:center;gap:${26 * tk}px">
           <img src="data:image/png;base64,${ICON}" style="width:${120 * tk}px;height:${120 * tk}px;border-radius:${28 * tk}px;
@@ -298,6 +412,7 @@ async function renderStory(browser, lang, story, shot) {
       </body></html>`);
     await page.waitForLoadState('networkidle');
     await page.evaluate(() => document.fonts.ready);
+    await page.evaluate(fitLines);
     for (let n = 0; n < 2; n++) {
       await page.screenshot({ path: path.join(OUT, dir, `${lang}-0${n + 1}.png`), clip: { x: n * W, y: 0, width: W, height: H } });
     }
@@ -312,14 +427,15 @@ async function renderStory(browser, lang, story, shot) {
         <html><head><link rel="stylesheet" href="${fontLink(lang)}"></head>
         <body style="margin:0;width:${W}px;height:${H}px;overflow:hidden;position:relative;background:${bg};font-family:${font}">
           <div style="position:absolute;left:0;right:0;top:${170 * k}px;text-align:center;padding:0 ${80 * tk}px">
-            <div style="font-size:${62 * tk}px;font-weight:500;color:#4A5068;letter-spacing:${-1 * tk}px">${small}</div>
-            <div style="margin-top:${14 * k}px;font-size:${96 * tk}px;font-weight:800;color:#1A1D2B;letter-spacing:${-3 * tk}px">
+            <div class="fit" style="font-size:${(LATIN.has(lang) ? 50 : 62) * tk}px;font-weight:500;color:#4A5068;letter-spacing:${-1 * tk}px">${small}</div>
+            <div class="fit" style="margin-top:${14 * k}px;font-size:${(LATIN.has(lang) ? 78 : 96) * tk}px;font-weight:800;color:#1A1D2B;letter-spacing:${-3 * tk}px">
               ${bold}<span style="color:#4A6CF7">${accent}</span></div>
           </div>
           ${phoneFrame(imgs[idx], phoneW, k, `left:${(W - phoneW) / 2}px;top:${top}px`)}
         </body></html>`);
       await page.waitForLoadState('networkidle');
       await page.evaluate(() => document.fonts.ready);
+    await page.evaluate(fitLines);
       await page.screenshot({ path: path.join(OUT, dir, `${lang}-0${n + 3}.png`) });
     }
     await page.close();

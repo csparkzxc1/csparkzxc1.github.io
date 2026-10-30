@@ -49,7 +49,7 @@ MediRemind는 정해진 시간에 약 복용을 알려 주고, 오늘 먹은 약
 - **Name**: MediRemind - Pill Reminder
 - **Subtitle**: Dose alerts and pill tracker
 - **Keywords**: pill,reminder,medication,medicine,dose,tracker,vitamin,refill,prescription,health,alarm
-- **Promotional text**: Free forever for 2 medicines · No ads · Unlimited with one small purchase
+- **Promotional text**: Start free, with no ads or subscription. If a dose is missed, your family gets a heads-up.
 - **Description**:
 
 ```
@@ -180,7 +180,7 @@ MediRemind, rebuilt.
 - **名前 (30)**: MediRemind - 服薬リマインダー
 - **サブタイトル (30)**: 飲み忘れ防止と家族への通知
 - **キーワード (100)**: 薬,服薬,リマインダー,飲み忘れ,お薬手帳,アラーム,サプリ,処方,通知,家族,見守り,高齢者,血圧
-- **プロモーションテキスト**: お薬2つまでずっと無料・広告なし。飲み忘れたら家族にお知らせ。
+- **プロモーションテキスト**: 広告もサブスクもなく、無料ではじめられます。飲み忘れたら家族にお知らせ。
 - **説明**:
 
 ```
@@ -224,7 +224,7 @@ MediRemindは、決まった時間にお薬の時間をお知らせし、今日�
 - **名称 (30)**: MediRemind - 吃药提醒
 - **副标题 (30)**: 按时服药，漏服时提醒家人
 - **关键词 (100)**: 吃药,服药,提醒,用药,闹钟,药盒,保健品,维生素,处方,家人,父母,老人,血压,健康
-- **推广文本**: 2种药永久免费 · 无广告。漏服时提醒家人。
+- **推广文本**: 无广告、无订阅，免费开始使用。漏服时提醒家人。
 - **描述**:
 
 ```
@@ -268,7 +268,7 @@ MediRemind 会在设定的时间提醒你吃药，并让你一眼看到今天已
 - **名稱 (30)**: MediRemind - 吃藥提醒
 - **副標題 (30)**: 按時服藥，忘記時通知家人
 - **關鍵字 (100)**: 吃藥,服藥,提醒,用藥,鬧鐘,藥盒,保健食品,維他命,處方箋,家人,長輩,血壓,健康
-- **宣傳文字**: 2 種藥永久免費・無廣告。忘了吃藥時通知家人。
+- **宣傳文字**: 沒有廣告也不用訂閱，免費開始使用。忘了吃藥時通知家人。
 - **描述**:
 
 ```
@@ -312,7 +312,7 @@ MediRemind 會在設定的時間提醒你吃藥，讓你一眼看到今天吃了
 - **Nombre (30)**: MediRemind - Pastillero
 - **Subtítulo (30)**: Recordatorio de medicamentos
 - **Palabras clave (100)**: pastillas,medicamentos,recordatorio,alarma,dosis,toma,receta,vitaminas,salud,familia,mayores
-- **Texto promocional**: Gratis para 2 medicamentos · Sin anuncios. Si olvidas una dosis, tu familia recibe un aviso.
+- **Texto promocional**: Empieza gratis, sin anuncios ni suscripción. Si olvidas una dosis, tu familia recibe un aviso.
 - **Descripción**:
 
 ```
@@ -342,7 +342,7 @@ MediRemind no es un dispositivo médico y no sustituye las indicaciones de tu m�
 - **Nom (30)**: MediRemind - Rappel médicament
 - **Sous-titre (30)**: Pilulier et alertes famille
 - **Mots-clés (100)**: médicament,rappel,pilule,pilulier,prise,ordonnance,vitamine,alarme,santé,famille,senior
-- **Texte promotionnel**: Gratuit pour 2 médicaments · Sans publicité. En cas d'oubli, vos proches sont prévenus.
+- **Texte promotionnel**: Commencez gratuitement, sans publicité ni abonnement. En cas d'oubli, vos proches sont prévenus.
 - **Description**:
 
 ```
@@ -372,7 +372,7 @@ MediRemind n'est pas un dispositif médical et ne remplace pas l'avis de votre m
 - **Name (30)**: MediRemind - Pillen-Erinnerung
 - **Untertitel (30)**: Tabletten-Wecker mit Familie
 - **Schlüsselwörter (100)**: tabletten,medikamente,erinnerung,pillen,wecker,einnahme,rezept,vitamine,gesundheit,familie,senioren
-- **Werbetext**: Für 2 Medikamente kostenlos · Keine Werbung. Wird eine Einnahme verpasst, erfährt es deine Familie.
+- **Werbetext**: Kostenlos starten, ohne Werbung und ohne Abo. Wird eine Einnahme verpasst, erfährt es deine Familie.
 - **Beschreibung**:
 
 ```
