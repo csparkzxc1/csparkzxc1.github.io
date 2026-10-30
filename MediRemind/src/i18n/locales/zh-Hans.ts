@@ -235,6 +235,8 @@ const zhHans: Record<string, string> = {
   'notif.doseBodyEarly': '{n}分钟后服用：{list}',
   'notif.actionTake': '已服用',
   'notif.refillTitle': '🏥 续方提醒',
+  'form.prescAlertToday': '当天',
+  'notif.refillBodyToday': '{name}的处方今天到期，请记得预约就诊。',
   'notif.refillBody': '{name}的处方还剩{n}天，请记得预约就诊。',
   'notif.testTitle': '💊 测试提醒',
   'notif.testBody': '提醒功能正常！',

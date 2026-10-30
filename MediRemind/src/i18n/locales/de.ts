@@ -235,6 +235,8 @@ const de: Record<string, string> = {
   'notif.doseBodyEarly': 'In {n} Min.: {list}',
   'notif.actionTake': 'Eingenommen',
   'notif.refillTitle': '🏥 Rezept-Erinnerung',
+  'form.prescAlertToday': 'Am Tag',
+  'notif.refillBodyToday': '{name} reicht nur noch heute. Denk an ein neues Rezept.',
   'notif.refillBody': '{name} reicht noch {n} Tage. Denk an ein neues Rezept.',
   'notif.testTitle': '💊 Test-Erinnerung',
   'notif.testBody': 'Erinnerungen funktionieren!',

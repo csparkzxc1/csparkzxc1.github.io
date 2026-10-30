@@ -235,6 +235,8 @@ const zhHant: Record<string, string> = {
   'notif.doseBodyEarly': '{n} 分鐘後服用：{list}',
   'notif.actionTake': '已服用',
   'notif.refillTitle': '🏥 回診拿藥提醒',
+  'form.prescAlertToday': '當天',
+  'notif.refillBodyToday': '{name} 的處方今天到期，記得預約回診。',
   'notif.refillBody': '{name} 的處方還剩 {n} 天，記得預約回診。',
   'notif.testTitle': '💊 測試通知',
   'notif.testBody': '通知運作正常！',

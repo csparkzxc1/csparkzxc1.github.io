@@ -235,6 +235,8 @@ const ja: Record<string, string> = {
   'notif.doseBodyEarly': '{n}分後に服薬：{list}',
   'notif.actionTake': '飲みました',
   'notif.refillTitle': '🏥 処方切れの通知',
+  'form.prescAlertToday': '当日',
+  'notif.refillBodyToday': '{name}の処方は今日で終わります。受診の予約をご確認ください。',
   'notif.refillBody': '{name}の処方は残り{n}日です。受診の予約をご確認ください。',
   'notif.testTitle': '💊 テスト通知',
   'notif.testBody': '通知は正しく届いています！',

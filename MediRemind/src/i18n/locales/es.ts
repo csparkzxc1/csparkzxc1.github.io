@@ -235,6 +235,8 @@ const es: Record<string, string> = {
   'notif.doseBodyEarly': 'En {n} min: {list}',
   'notif.actionTake': 'Marcar como tomada',
   'notif.refillTitle': '🏥 Renueva tu receta',
+  'form.prescAlertToday': 'El día',
+  'notif.refillBodyToday': '{name} se acaba hoy. Pide cita para renovar la receta.',
   'notif.refillBody': 'Te quedan {n} días de {name}. Pide cita para renovar la receta.',
   'notif.testTitle': '💊 Recordatorio de prueba',
   'notif.testBody': '¡Los recordatorios funcionan!',

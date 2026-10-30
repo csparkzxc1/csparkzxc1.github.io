@@ -342,6 +342,8 @@ export const STRINGS: Record<string, Entry> = {
   'notif.doseBodyEarly': { ko: '{n}분 뒤 복용: {list}', en: 'In {n} min: {list}' },
   'notif.actionTake': { ko: '복용 완료', en: 'Mark taken' },
   'notif.refillTitle': { ko: '🏥 재처방 알림', en: '🏥 Refill reminder' },
+  'form.prescAlertToday': { ko: '당일', en: 'On the day' },
+  'notif.refillBodyToday': { ko: '{name} 처방이 오늘 끝나요. 병원 예약을 확인하세요.', en: '{name} runs out today. Time to book a refill.' },
   'notif.refillBody': {
     ko: '{name} 처방이 {n}일 남았어요. 병원 예약을 확인하세요.',
     en: '{name} runs out in {n} days. Time to book a refill.',

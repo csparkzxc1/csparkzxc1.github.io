@@ -22,7 +22,7 @@ const PERIODS = [14, 30] as const;
 
 export default function AdherenceReport({ today, onPickDay }: { today: string; onPickDay: (date: string) => void }) {
   const { t } = useI18n();
-  const { colors } = useTheme();
+  const { colors, textScale } = useTheme();
   const styles = useThemedStyles(makeStyles);
   const medicines = useMedicineStore((s) => s.medicines);
   const [days, setDays] = useState<(typeof PERIODS)[number]>(14);
@@ -96,8 +96,9 @@ export default function AdherenceReport({ today, onPickDay }: { today: string; o
                     </View>
                   )}
                 </View>
-                {(days === 14 || i % 5 === 4 || i === tally.length - 1) && (
-                  <Text style={[styles.barDay, i === tally.length - 1 && styles.barToday]}>
+                {(i === tally.length - 1 ||
+                  (days === 14 ? textScale <= 1.2 || i % 2 === 1 : i % (textScale > 1.2 ? 10 : 5) === 4)) && (
+                  <Text numberOfLines={1} style={[styles.barDay, i === tally.length - 1 && styles.barToday]}>
                     {Number(d.date.slice(8))}
                   </Text>
                 )}
@@ -129,7 +130,9 @@ export default function AdherenceReport({ today, onPickDay }: { today: string; o
                       ]}
                     />
                   </View>
-                  <Text style={styles.medRate}>{m.rate === null ? '—' : `${m.rate}%`}</Text>
+                  <Text numberOfLines={1} style={styles.medRate}>
+                    {m.rate === null ? '—' : `${m.rate}%`}
+                  </Text>
                 </View>
               ))}
             </View>
@@ -150,15 +153,15 @@ const makeStyles = (c: ThemeColors) =>
     periodTextOn: { color: c.text },
     empty: { fontSize: 14, color: c.textMuted, paddingVertical: 24, textAlign: 'center' },
     summary: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-    rate: { fontSize: 44, fontWeight: '800', letterSpacing: -1 },
+    rate: { fontSize: 44, fontWeight: '800', letterSpacing: -1, flexShrink: 0 },
     rateUnit: { fontSize: 20 },
     rateLabel: { fontSize: 13, fontWeight: '700', color: c.text },
     count: { fontSize: 12, color: c.textMuted, marginTop: 2 },
     bars: { flexDirection: 'row', gap: 4, height: 110, alignItems: 'flex-end' },
     barsTight: { gap: 2 },
-    barCol: { flex: 1, height: '100%', alignItems: 'center' },
+    barCol: { flex: 1, height: '100%', alignItems: 'center', overflow: 'visible' },
     barTrack: { flex: 1, width: '100%', justifyContent: 'flex-end', borderRadius: 3, overflow: 'hidden' },
-    barDay: { fontSize: 9, color: c.textFaint, marginTop: 3 },
+    barDay: { width: 30, textAlign: 'center', fontSize: 9, color: c.textFaint, marginTop: 3 },
     barToday: { color: c.brand, fontWeight: '800' },
     legend: { flexDirection: 'row', alignItems: 'center', gap: 4 },
     dot: { width: 8, height: 8, borderRadius: 4, marginLeft: 6 },
@@ -167,8 +170,8 @@ const makeStyles = (c: ThemeColors) =>
     medicines: { gap: 10, paddingTop: 12, borderTopWidth: 1, borderTopColor: c.line },
     sectionTitle: { fontSize: 13, fontWeight: '700', color: c.text },
     medRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-    medName: { width: 90, fontSize: 13, color: c.text },
+    medName: { flexShrink: 1, maxWidth: '35%', minWidth: 60, fontSize: 13, color: c.text },
     medTrack: { flex: 1, height: 8, borderRadius: 4, backgroundColor: c.surfaceMuted, overflow: 'hidden' },
     medFill: { height: '100%', borderRadius: 4 },
-    medRate: { width: 40, textAlign: 'right', fontSize: 13, fontWeight: '700', color: c.text },
+    medRate: { minWidth: 44, flexShrink: 0, textAlign: 'right', fontSize: 13, fontWeight: '700', color: c.text },
   });

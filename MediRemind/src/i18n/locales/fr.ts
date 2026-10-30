@@ -235,6 +235,8 @@ const fr: Record<string, string> = {
   'notif.doseBodyEarly': 'Dans {n} min : {list}',
   'notif.actionTake': 'Marquer comme pris',
   'notif.refillTitle': '🏥 Rappel de renouvellement',
+  'form.prescAlertToday': 'Le jour même',
+  'notif.refillBodyToday': "{name} : dernier jour de traitement. Pensez à faire renouveler l'ordonnance.",
   'notif.refillBody': "{name} : plus que {n} jours de traitement. Pensez à faire renouveler l'ordonnance.",
   'notif.testTitle': '💊 Rappel test',
   'notif.testBody': 'Les rappels fonctionnent !',

@@ -40,7 +40,7 @@ type DayMode = 'everyday' | 'weekday' | 'weekend' | 'custom';
 
 const DEFAULT_TIMES = ['08:00', '12:00', '18:00', '21:00', '10:00', '15:00'];
 const OFFSETS = [0, 5, 10, 15, 30];
-const ALERT_DAYS = [3, 5, 7, 14];
+const ALERT_DAYS = [0, 3, 5, 7, 14];
 
 function presetDosage(amount: string): string {
   return `${amount}${DEFAULT_UNIT}`;
@@ -550,7 +550,9 @@ export default function MedicineFormScreen() {
                       style={[styles.chip, on && styles.alertChipActive]}
                       onPress={() => setAlertDays((prev) => toggle(prev, d))}
                     >
-                      <Text style={[styles.chipText, on && styles.alertChipTextActive]}>D-{d}</Text>
+                      <Text style={[styles.chipText, on && styles.alertChipTextActive]}>
+                        {d === 0 ? t('form.prescAlertToday') : `D-${d}`}
+                      </Text>
                     </TouchableOpacity>
                   );
                 })}

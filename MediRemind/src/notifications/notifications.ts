@@ -211,14 +211,18 @@ async function scheduleRefillAlerts(
   const today = dateKey(new Date());
   for (const alertDay of [...p.alertDays].sort((a, b) => b - a)) {
     if (budget <= 0) break;
-    if (daysLeft <= alertDay) continue;
+    // A past day is skipped; today's alert still fires if 9:00 hasn't passed.
+    if (daysLeft < alertDay) continue;
     const [y, m, d] = addDays(today, daysLeft - alertDay).split('-').map(Number);
     const at = new Date(y, m - 1, d, 9, 0, 0, 0);
     if (at.getTime() <= Date.now()) continue;
     await Notifications.scheduleNotificationAsync({
       content: {
         title: t('notif.refillTitle'),
-        body: t('notif.refillBody', { name: med.name, n: alertDay }),
+        body:
+          alertDay === 0
+            ? t('notif.refillBodyToday', { name: med.name })
+            : t('notif.refillBody', { name: med.name, n: alertDay }),
         sound: s.sound ? 'default' : false,
         data: { type: 'refill', medicineId: med.id, alertDay },
       },
