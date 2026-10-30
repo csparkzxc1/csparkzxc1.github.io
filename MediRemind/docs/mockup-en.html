@@ -98,9 +98,13 @@
   /* ── Medicine card ── */
   .med { display:flex; align-items:center; gap:12px; background:#FFF; border-radius:18px; padding:14px 16px; margin-bottom:10px; box-shadow:0 6px 14px rgba(63,74,126,.07); }
   .med .icon { width:42px; height:42px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:19px; flex-shrink:0; }
-  .med .icon.blue { background:rgba(74,108,247,.12); }
-  .med .icon.green { background:rgba(16,185,129,.12); }
-  .med .icon.purple { background:rgba(139,92,246,.12); }
+  .med .icon.blue { background:rgba(74,108,247,.14); color:#4A6CF7; }
+  .med .icon .pill-ic { width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:2.2; }
+  .med .icon .pill-ic .half { fill:currentColor; stroke:none; }
+  .med .mt + .mt { margin-top:2px; }
+  .med .mt .dot { margin:0 6px; color:#C3C8D6; }
+  .med .icon.green { background:rgba(16,185,129,.14); color:#10B981; }
+  .med .icon.purple { background:rgba(139,92,246,.14); color:#8B5CF6; }
   .med .b { flex:1; min-width:0; }
   .med .row1 { display:flex; align-items:center; gap:8px; margin-bottom:3px; }
   .med .nm { font-size:15px; font-weight:700; color:#1A1D2B; letter-spacing:-.2px; }
@@ -111,10 +115,10 @@
   .switch::after { content:''; position:absolute; right:3px; top:3px; width:20px; height:20px; background:#FFF; border-radius:10px; box-shadow:0 1px 3px rgba(0,0,0,.2); }
   .switch.off { background:#CCD2E0; }
   .switch.off::after { left:3px; right:auto; }
-  .med.swiped { transform:translateX(-64px); }
-  .swipe-wrap { position:relative; border-radius:18px; overflow:hidden; margin-bottom:10px; }
+  .med.swiped { transform:translateX(-82px); }
+  .swipe-wrap { position:relative; margin-bottom:10px; }
   .swipe-wrap .med { margin-bottom:0; }
-  .del { position:absolute; right:0; top:0; bottom:0; width:64px; background:#EF4444; color:#FFF; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:11px; font-weight:700; gap:2px; border-radius:0 18px 18px 0; }
+  .del { position:absolute; right:0; top:0; bottom:0; width:72px; background:#EF4444; color:#FFF; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:11px; font-weight:700; gap:2px; border-radius:18px; }
 
   /* ── Form ── */
   .sec-title { font-size:13px; font-weight:700; color:#4A6CF7; margin-bottom:11px; }
@@ -136,7 +140,8 @@
   /* ── Calendar ── */
   .rate-badge { background:#EDF1FE; color:#4A6CF7; border-radius:16px; padding:6px 13px; font-size:12px; font-weight:800; }
   .cal { background:#FFF; border-radius:20px; padding:14px; margin-bottom:12px; box-shadow:0 8px 20px rgba(63,74,126,.08); }
-  .cal .mon { text-align:center; font-weight:800; font-size:14px; margin-bottom:10px; color:#1A1D2B; }
+  .cal .mon { display:flex; justify-content:space-between; align-items:center; font-weight:800; font-size:14px; margin-bottom:10px; color:#1A1D2B; padding:0 4px; }
+  .cal .mon .ar { color:#4A6CF7; font-size:18px; font-weight:600; }
   .cal table { width:100%; border-collapse:collapse; font-size:11px; text-align:center; }
   .cal th { color:#8A91A8; font-weight:600; padding:4px 0; }
   .cal td { padding:6px 0; color:#333; position:relative; }
@@ -146,9 +151,7 @@
   .d i { width:4px; height:4px; border-radius:2px; display:block; }
   .d .g { background:#10B981; } .d .r { background:#EF4444; }
   .rec { display:flex; align-items:center; gap:10px; background:#FFF; border-radius:16px; padding:12px 14px; margin-bottom:8px; box-shadow:0 4px 10px rgba(63,74,126,.06); border-left:4px solid #10B981; }
-  .rec.miss { border-left-color:#EF4444; }
   .rec .sd { width:9px; height:9px; border-radius:5px; background:#10B981; }
-  .rec.miss .sd { background:#EF4444; }
   .rec .rn { flex:1; font-size:13px; font-weight:600; color:#1A1D2B; }
   .rec .rt { font-size:11px; color:#8A91A8; }
   .rec .st { font-size:12px; font-weight:800; color:#10B981; }
@@ -169,8 +172,13 @@
     display:flex; background:#FFF; padding:10px 8px 22px;
     box-shadow:0 -6px 20px rgba(26,34,70,.07);
   }
-  .tab { flex:1; text-align:center; font-size:10px; font-weight:600; color:#9AA1B5; }
-  .tab .ic { font-size:20px; display:block; margin-bottom:2px; }
+  .tab { flex:1; text-align:center; font-size:10px; font-weight:600; color:#8A91A8; }
+  .tab .ic { width:22px; height:22px; display:block; margin:0 auto 3px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+  .tab .ic .dots { fill:currentColor; stroke:none; }
+  .tab .ic g[transform] { stroke:none; }
+  .tab.on .ic .f { fill:currentColor; }
+  .tab.on .ic .dots, .tab.on .ic .hole { fill:#FFF; stroke:#FFF; }
+  .dark .tab.on .ic .dots, .dark .tab.on .ic .hole { fill:#161A26; stroke:#161A26; }
   .tab.on { color:#4A6CF7; }
 
   .segm { display:flex; background:#EBEEF6; border-radius:10px; padding:3px; }
@@ -228,13 +236,77 @@
   .gd-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-top:1px solid #F1F3F8; font-size:13px; }
   .gd-time { width:44px; font-weight:800; }
   .gd-med { flex:1; }
-  .gd-st { font-size:12px; font-weight:800; border-radius:10px; padding:3px 9px; }
-  .gd-st.ok { color:#0E9F6E; background:#E3F6EE; }
-  .gd-st.miss { color:#DC2626; background:#FDECEC; }
-  .gd-st.next { color:#8A91A8; background:#F1F3F8; }
+  .gd-st { font-size:12.5px; font-weight:800; }
+  .gd-st.ok { color:#10B981; }
+  .gd-st.miss { color:#EF4444; }
+  .gd-st.next { color:#8A91A8; }
+  .gd-nav { margin-top:96px; }
+  .gd-pc { width:28px; height:28px; fill:#4A6CF7; flex-shrink:0; }
+  .gd-delays { display:flex; flex-wrap:wrap; gap:5px; }
+  .gd-delays span { padding:5px 9px; border-radius:12px; background:#EBEEF6; font-size:10.5px; font-weight:600; color:#8A91A8; border:1.2px solid transparent; }
+  .gd-delays span.on { background:#EDF1FE; border-color:#4A6CF7; color:#4A6CF7; }
+  .gd-unlink { font-size:12px; color:#EF4444; font-weight:600; }
+  .gd-lbl { font-size:12px; font-weight:700; color:#1A1D2B; margin:2px 0 2px; }
+  .gd-input { display:flex; gap:8px; margin-top:12px; }
+  .gd-field { flex:1; background:#F4F6FB; border-radius:12px; padding:11px 13px; font-size:13px; color:#A9B0C5; }
+  .gd-btn { background:#4A6CF7; color:#fff; border-radius:12px; padding:11px 16px; font-size:13px; font-weight:700; }
   .gd-code { text-align:center; background:#EDF1FE; border-radius:14px; padding:12px; }
   .gd-code b { display:block; font-size:28px; letter-spacing:5px; margin-top:2px; }
   .gd-code span { font-size:11px; color:#4A6CF7; font-weight:700; }
+  .mi { width:1.05em; height:1.05em; vertical-align:-0.17em; margin-right:3px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .navbar { display:flex; justify-content:space-between; align-items:center; padding:10px 14px 12px; }
+  .navbar .back { color:#4A6CF7; font-size:14px; font-weight:500; width:60px; }
+  .navbar .nt { font-size:15px; font-weight:700; color:#1A1D2B; }
+  .navbar span:last-child { width:60px; }
+  .time-row { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+  .time-row .time-in { flex:1; margin-bottom:0; }
+  .time-in .mi { color:#4A6CF7; width:16px; height:16px; }
+  .time-in .ampm { font-size:12px; font-weight:600; color:#8A91A8; }
+  .time-row .minus { width:22px; height:22px; fill:#EF4444; flex-shrink:0; }
+  .colors { display:flex; gap:10px; }
+  .colors i { width:32px; height:32px; border-radius:16px; display:flex; align-items:center; justify-content:center; color:#fff; font-style:normal; font-size:14px; font-weight:800; }
+  .colors i:first-child { box-shadow:0 0 0 3px #fff, 0 0 0 5px #4A6CF7; }
+  .set-ic svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
+  .lchips { display:flex; flex-wrap:wrap; gap:5px; }
+  .lchips span { padding:4px 9px; border-radius:12px; background:#EBEEF6; font-size:10.5px; font-weight:600; color:#8A91A8; border:1.2px solid transparent; }
+  .lchips span.on { background:#EDF1FE; border-color:#4A6CF7; color:#4A6CF7; }
+  .banner-title { display:flex; align-items:center; gap:5px; }
+  .banner-title .al { width:15px; height:15px; fill:#F59E0B; flex-shrink:0; }
+  .pw-later { text-align:center; font-size:12px; color:#8A91A8; font-weight:600; margin-top:9px; }
+  .gd-menu { width:20px; height:20px; fill:none; stroke:#8A91A8; stroke-width:2; stroke-linecap:round; }
+  .gd-swipe { font-size:10px; color:#A9B0C5; text-align:right; margin-top:6px; }
+  .hist { margin-top:8px; padding-top:10px; border-top:1px solid #F1F3F8; }
+  .hist-h { display:flex; justify-content:space-between; align-items:baseline; }
+  .hist-h b { font-size:12px; color:#10B981; }
+  .hbars { display:flex; gap:3px; height:54px; align-items:flex-end; margin-top:4px; }
+  .hb { flex:1; height:100%; display:flex; flex-direction:column; align-items:center; }
+  .ht { flex:1; width:100%; display:flex; flex-direction:column; border-radius:3px; overflow:hidden; }
+  .ht i { display:block; width:100%; }
+  .hb span { font-size:7.5px; color:#A9B0C5; margin-top:2px; }
+  .hb span.td { color:#4A6CF7; font-weight:800; }
+  .hleg { display:flex; align-items:center; gap:4px; font-size:9.5px; color:#8A91A8; margin-top:6px; }
+  .hleg i { width:7px; height:7px; border-radius:4px; display:inline-block; margin-left:5px; }
+  .langrow { display:flex; align-items:center; gap:6px; margin-top:12px; font-size:11px; color:#8A91A8; font-weight:600; }
+  .langrow span:first-child { flex:1; }
+  .langrow b { font-size:12px; color:#1A1D2B; }
+  .tsl { display:flex; align-items:center; gap:8px; } .tsl .a1 { font-size:10px; color:#8A91A8; } .tsl .a2 { font-size:17px; color:#1A1D2B; }
+  .tsl .tr { position:relative; flex:1; height:24px; } .tsl .rl { position:absolute; left:9px; right:9px; top:10px; height:4px; border-radius:2px; background:#EBEEF6; }
+  .tsl .fl { position:absolute; left:0; top:10px; height:4px; border-radius:2px; background:#4A6CF7; } .tsl .tr i { position:absolute; top:11px; width:3px; height:3px; border-radius:2px; }
+  .tsl .th { position:absolute; top:3px; width:18px; height:18px; border-radius:9px; background:#fff; border:2px solid #4A6CF7; box-sizing:border-box; box-shadow:0 1px 4px rgba(0,0,0,.15); }
+  .screen.big .header .title { font-size:29px; } .screen.big .header .date { font-size:15px; }
+  .screen.big .body { zoom:1.22; }
+  .ts-card { background:#fff; border-radius:16px; margin:0 16px 10px; padding:10px 14px 6px; box-shadow:0 8px 20px rgba(63,74,126,.10); border:1.5px solid #DCE3FD; }
+  .ts-h { font-size:11px; font-weight:700; color:#4A6CF7; }
+  .ts-row { display:flex; align-items:center; gap:8px; } .ts-row .s { font-size:11px; color:#8A91A8; } .ts-row .l { font-size:22px; color:#1A1D2B; }
+  .ts-tr { position:relative; flex:1; height:30px; } .ts-rl { position:absolute; left:11%; right:11%; top:13px; height:5px; border-radius:3px; background:#EBEEF6; }
+  .ts-fl { position:absolute; left:0; top:13px; height:5px; border-radius:3px; background:#4A6CF7; } .ts-tr i { position:absolute; top:14px; width:3px; height:3px; border-radius:2px; margin-left:-1.5px; }
+  .ts-th { position:absolute; top:3px; width:24px; height:24px; border-radius:12px; background:#fff; border:2px solid #4A6CF7; box-sizing:border-box; box-shadow:0 2px 5px rgba(0,0,0,.15); }
+  .big-set .bs-lbl { font-size:13px; color:#8A91A8; font-weight:600; margin-bottom:7px; }
+  .big-set .segm span { font-size:13px; padding:8px 0; }
+  .big-set .bs-pv { word-break:keep-all; font-size:19px; line-height:1.4; color:#1A1D2B; margin-top:6px; font-weight:500; }
+  .big-set .bs-lang { font-size:13px; margin-top:14px; } .big-set .bs-lang b { font-size:16px; }
+  .big-set .set-tt { font-size:16px; } .big-set .set-tt small { font-size:12.5px; }
+  .big-set .set-lbl { font-size:12px; }
 </style>
 </head>
 <body>
@@ -269,16 +341,16 @@
       </div>
 
       <div class="banner">
-        <div class="banner-title">⚠️ Refill soon</div>
-        <span class="pill urgent"><span class="dot" style="background:#EF4444"></span>Blood pressure <span class="dday">D-2</span></span>
-        <span class="pill"><span class="dot"></span>Omega-3 <span class="dday">D-6</span></span>
+        <div class="banner-title"><svg class="al" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 7v6M12 16.5v.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round"></path></svg>Refill soon</div>
+        <span class="pill urgent"><span class="dot" style="background:#4A6CF7"></span>Blood pressure <span class="dday">D-2</span></span>
+        <span class="pill"><span class="dot" style="background:#10B981"></span>Omega-3 <span class="dday">D-6</span></span>
       </div>
 
       <div class="dose">
         <div class="bar" style="background:#4A6CF7"></div>
         <div class="info">
           <div class="name done">Blood pressure</div>
-          <div class="meta">🕗 8:00 AM · 1 tab · <span class="accent">🔔 10 min early</span></div>
+          <div class="meta"><svg class="mi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>8:00 AM · 1 tab · <span class="accent"><svg class="mi" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"></path><path d="M10 20.5a2 2 0 0 0 4 0"></path></svg>10 min early</span></div>
         </div>
         <div class="check done">✓</div>
       </div>
@@ -286,7 +358,7 @@
         <div class="bar" style="background:#10B981"></div>
         <div class="info">
           <div class="name done">Omega-3</div>
-          <div class="meta">🕐 1:00 PM · 2 tab</div>
+          <div class="meta"><svg class="mi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>1:00 PM · 2 tab</div>
         </div>
         <div class="check done">✓</div>
       </div>
@@ -294,16 +366,16 @@
         <div class="bar" style="background:#8B5CF6"></div>
         <div class="info">
           <div class="name">Multivitamin</div>
-          <div class="meta">🕘 9:00 PM · 1 tab · <span class="accent">🔔 5 min early</span></div>
+          <div class="meta"><svg class="mi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>9:00 PM · 1 tab · <span class="accent"><svg class="mi" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"></path><path d="M10 20.5a2 2 0 0 0 4 0"></path></svg>5 min early</span></div>
         </div>
         <div class="check">✓</div>
       </div>
     </div>
     <div class="tabbar">
-      <div class="tab on"><span class="ic">🏠</span>Today</div>
-      <div class="tab"><span class="ic">💊</span>Meds</div>
-      <div class="tab"><span class="ic">📅</span>History</div>
-      <div class="tab"><span class="ic">⚙️</span>Settings</div>
+      <div class="tab on"><svg class="ic" viewBox="0 0 24 24"><path class="f" d="M3.5 10.6 12 3.8l8.5 6.8V19.5a1.5 1.5 0 0 1-1.5 1.5h-4.2v-6.2H9.2V21H5a1.5 1.5 0 0 1-1.5-1.5z"></path></svg>Today</div>
+      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><g transform="rotate(-45 12 12)"><rect x="2.5" y="7.5" width="19" height="9" rx="4.5" fill="currentColor" opacity=".9"></rect><path d="M12 7.5h5a4.5 4.5 0 0 1 0 9h-5z" fill="#fff" opacity=".45"></path></g></svg>Meds</div>
+      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><rect class="f" x="3.5" y="5" width="17" height="15.5" rx="2.5"></rect><path d="M3.5 9.5h17M8 3v4M16 3v4"></path><g class="dots"><circle cx="8" cy="13" r="1"></circle><circle cx="12" cy="13" r="1"></circle><circle cx="16" cy="13" r="1"></circle><circle cx="8" cy="16.6" r="1"></circle><circle cx="12" cy="16.6" r="1"></circle><circle cx="16" cy="16.6" r="1"></circle></g></svg>History</div>
+      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><path class="f" d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path><circle class="hole" cx="12" cy="12" r="3"></circle></svg>Settings</div>
     </div>
   </div></div>
 
@@ -318,47 +390,46 @@
     </div>
     <div class="body">
       <div class="med">
-        <div class="icon blue">💊</div>
+        <div class="icon blue"><svg class="pill-ic" viewBox="0 0 24 24"><g transform="rotate(-45 12 12)"><rect x="2.8" y="7.8" width="18.4" height="8.4" rx="4.2"></rect><path class="half" d="M12 7.8H7a4.2 4.2 0 0 0 0 8.4h5z"></path></g></svg></div>
         <div class="b">
           <div class="row1"><span class="nm">Blood pressure</span><span class="badge r">D-2</span></div>
-          <div class="mt">🕗 8:00 AM · Every day · 1 tab</div>
+          <div class="mt"><svg class="mi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>8:00 AM</div><div class="mt"><svg class="mi" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"></rect><path d="M3.5 9.5h17M8 3v4M16 3v4"></path><path d="M8 13h.01M12 13h.01M16 13h.01M8 16.5h.01M12 16.5h.01"></path></svg>Every day<span class="dot">·</span>1 tab</div>
         </div>
         <div class="switch"></div>
       </div>
       <div class="med">
-        <div class="icon green">💊</div>
+        <div class="icon green"><svg class="pill-ic" viewBox="0 0 24 24"><g transform="rotate(-45 12 12)"><rect x="2.8" y="7.8" width="18.4" height="8.4" rx="4.2"></rect><path class="half" d="M12 7.8H7a4.2 4.2 0 0 0 0 8.4h5z"></path></g></svg></div>
         <div class="b">
           <div class="row1"><span class="nm">Omega-3</span><span class="badge o">D-6</span></div>
-          <div class="mt">🕐 1:00 PM · Every day · 2 tab</div>
+          <div class="mt"><svg class="mi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>1:00 PM</div><div class="mt"><svg class="mi" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"></rect><path d="M3.5 9.5h17M8 3v4M16 3v4"></path><path d="M8 13h.01M12 13h.01M16 13h.01M8 16.5h.01M12 16.5h.01"></path></svg>Every day<span class="dot">·</span>2 tab</div>
         </div>
         <div class="switch"></div>
       </div>
       <div class="swipe-wrap">
-        <div class="del">🗑<br>Delete</div>
+        <div class="del"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:#fff"><path d="M9 3h6l1 2h4v2H4V5h4zM6 9h12l-1 11a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2z"></path></svg><span>Delete</span></div>
         <div class="med swiped">
-          <div class="icon purple">💊</div>
+          <div class="icon purple"><svg class="pill-ic" viewBox="0 0 24 24"><g transform="rotate(-45 12 12)"><rect x="2.8" y="7.8" width="18.4" height="8.4" rx="4.2"></rect><path class="half" d="M12 7.8H7a4.2 4.2 0 0 0 0 8.4h5z"></path></g></svg></div>
           <div class="b">
             <div class="row1"><span class="nm">Multivitamin</span><span class="badge g">D-24</span></div>
-            <div class="mt">🕘 9:00 PM · Weekdays · 1 tab</div>
+            <div class="mt"><svg class="mi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>9:00 PM</div><div class="mt"><svg class="mi" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"></rect><path d="M3.5 9.5h17M8 3v4M16 3v4"></path><path d="M8 13h.01M12 13h.01M16 13h.01M8 16.5h.01M12 16.5h.01"></path></svg>Weekdays<span class="dot">·</span>1 tab</div>
           </div>
           <div class="switch"></div>
         </div>
       </div>
       <div class="med" style="opacity:.55">
-        <div class="icon blue">💊</div>
+        <div class="icon blue"><svg class="pill-ic" viewBox="0 0 24 24"><g transform="rotate(-45 12 12)"><rect x="2.8" y="7.8" width="18.4" height="8.4" rx="4.2"></rect><path class="half" d="M12 7.8H7a4.2 4.2 0 0 0 0 8.4h5z"></path></g></svg></div>
         <div class="b">
           <div class="row1"><span class="nm">Sleep aid</span></div>
-          <div class="mt">🕚 11:00 PM · Every day · 0.5 tab</div>
+          <div class="mt"><svg class="mi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>11:00 PM</div><div class="mt"><svg class="mi" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"></rect><path d="M3.5 9.5h17M8 3v4M16 3v4"></path><path d="M8 13h.01M12 13h.01M16 13h.01M8 16.5h.01M12 16.5h.01"></path></svg>Every day<span class="dot">·</span>0.5 tab</div>
         </div>
         <div class="switch off"></div>
       </div>
-      <p style="text-align:center; font-size:11px; color:#9AA1B5; margin-top:8px">← Swipe left to delete</p>
     </div>
     <div class="tabbar">
-      <div class="tab"><span class="ic">🏠</span>Today</div>
-      <div class="tab on"><span class="ic">💊</span>Meds</div>
-      <div class="tab"><span class="ic">📅</span>History</div>
-      <div class="tab"><span class="ic">⚙️</span>Settings</div>
+      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><path class="f" d="M3.5 10.6 12 3.8l8.5 6.8V19.5a1.5 1.5 0 0 1-1.5 1.5h-4.2v-6.2H9.2V21H5a1.5 1.5 0 0 1-1.5-1.5z"></path></svg>Today</div>
+      <div class="tab on"><svg class="ic" viewBox="0 0 24 24"><g transform="rotate(-45 12 12)"><rect x="2.5" y="7.5" width="19" height="9" rx="4.5" fill="currentColor" opacity=".9"></rect><path d="M12 7.5h5a4.5 4.5 0 0 1 0 9h-5z" fill="#fff" opacity=".45"></path></g></svg>Meds</div>
+      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><rect class="f" x="3.5" y="5" width="17" height="15.5" rx="2.5"></rect><path d="M3.5 9.5h17M8 3v4M16 3v4"></path><g class="dots"><circle cx="8" cy="13" r="1"></circle><circle cx="12" cy="13" r="1"></circle><circle cx="16" cy="13" r="1"></circle><circle cx="8" cy="16.6" r="1"></circle><circle cx="12" cy="16.6" r="1"></circle><circle cx="16" cy="16.6" r="1"></circle></g></svg>History</div>
+      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><path class="f" d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path><circle class="hole" cx="12" cy="12" r="3"></circle></svg>Settings</div>
     </div>
   </div></div>
 
@@ -367,7 +438,7 @@
     <div class="notch"></div>
     <div class="status"><span>9:41</span><span>📶 🔋</span></div>
     <div class="screen-label">Add / Edit</div>
-    <div class="header"><div><div class="title" style="font-size:19px">Add Medicine</div></div></div>
+    <div class="navbar"><span class="back">‹ Back</span><span class="nt">Add Medicine</span><span></span></div>
     <div class="body" style="overflow-y:hidden">
       <div class="card" style="padding:15px">
         <div class="sec-title">Basics</div>
@@ -387,20 +458,20 @@
           <div class="f">1×</div><div class="f on">2×</div><div class="f">3×</div>
           <div class="f">4×</div><div class="f">5×</div><div class="f">6×</div><div class="f">Custom</div>
         </div>
-        <div class="lbl">Dose times — tap to type</div>
-        <div class="time-in"><span>🕐</span><span class="t">08:00</span></div>
-        <div class="time-in" style="border-color:#4A6CF7">
-          <span>🕐</span><span class="t">13:3<span class="cursor"></span></span><span class="minus">⊖</span>
+        <div class="lbl">Dose times * (24-hour)</div>
+        <div class="time-row"><div class="time-in"><svg class="mi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg><span class="t">08:00</span><span class="ampm">8:00 AM</span></div><svg class="minus" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M7.5 12h9" stroke="#fff" stroke-width="2.2" stroke-linecap="round"></path></svg></div>
+        <div class="time-row"><div class="time-in"><svg class="mi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg><span class="t">13:00</span><span class="ampm">1:00 PM</span></div><svg class="minus" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M7.5 12h9" stroke="#fff" stroke-width="2.2" stroke-linecap="round"></path></svg></div>
+      </div>
+      <div class="card" style="padding:15px">
+        <div class="sec-title">Days</div>
+        <div class="freq">
+          <div class="f on">Every day</div><div class="f">Weekdays</div><div class="f">Weekends</div><div class="f">Custom</div>
         </div>
       </div>
       <div class="card" style="padding:15px">
-        <div class="sec-title">Reminder timing</div>
-        <div class="chips" style="margin-bottom:4px">
-          <span class="chip">On time</span><span class="chip">5 min early</span><span class="chip on">10 min early</span>
-          <span class="chip">15 min early</span><span class="chip">30 min early</span>
-        </div>
+        <div class="sec-title">Color</div>
+        <div class="colors"><i style="background:#4A6CF7">✓</i><i style="background:#10B981"></i><i style="background:#F59E0B"></i><i style="background:#EF4444"></i><i style="background:#8B5CF6"></i><i style="background:#14B8A6"></i></div>
       </div>
-      <div class="save">💾 Add medicine</div>
     </div>
   </div></div>
 
@@ -415,7 +486,7 @@
     </div>
     <div class="body">
       <div class="cal">
-        <div class="mon">‹&nbsp;&nbsp;July 2026&nbsp;&nbsp;›</div>
+        <div class="mon"><span class="ar">‹</span>July 2026<span class="ar">›</span></div>
         <table>
           <tbody><tr><th>S</th><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th></tr>
           <tr><td class="dis">28</td><td class="dis">29</td><td class="dis">30</td><td>1<span class="d"><i class="g"></i></span></td><td>2<span class="d"><i class="g"></i></span></td><td>3<span class="d"><i class="g"></i><i class="r"></i></span></td><td>4<span class="d"><i class="g"></i></span></td></tr>
@@ -423,28 +494,29 @@
           <tr><td>12</td><td>13</td><td>14</td><td>15</td><td>16</td><td>17</td><td>18</td></tr>
         </tbody></table>
       </div>
+      <div class="streak" style="margin:0 0 10px">🔥 12-day streak</div>
       <div style="font-size:13px; font-weight:700; margin:2px 4px 8px;">Today</div>
-      <div class="rec">
-        <span class="sd"></span>
+      <div class="rec" style="border-left-color:#4A6CF7">
+        <span class="sd" style="background:#4A6CF7"></span>
         <div class="rn">Blood pressure<div class="rt">8:00 AM · 1 tab</div></div>
         <span class="st">Taken</span>
       </div>
-      <div class="rec">
-        <span class="sd"></span>
+      <div class="rec" style="border-left-color:#10B981">
+        <span class="sd" style="background:#10B981"></span>
         <div class="rn">Omega-3<div class="rt">1:00 PM · 2 tab</div></div>
         <span class="st">Taken</span>
       </div>
-      <div class="rec miss">
-        <span class="sd"></span>
+      <div class="rec miss" style="border-left-color:#A9B0C5">
+        <span class="sd" style="background:#A9B0C5"></span>
         <div class="rn">Multivitamin<div class="rt">9:00 PM · 1 tab</div></div>
         <span class="st">Missed</span>
       </div>
     </div>
     <div class="tabbar">
-      <div class="tab"><span class="ic">🏠</span>Today</div>
-      <div class="tab"><span class="ic">💊</span>Meds</div>
-      <div class="tab on"><span class="ic">📅</span>History</div>
-      <div class="tab"><span class="ic">⚙️</span>Settings</div>
+      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><path class="f" d="M3.5 10.6 12 3.8l8.5 6.8V19.5a1.5 1.5 0 0 1-1.5 1.5h-4.2v-6.2H9.2V21H5a1.5 1.5 0 0 1-1.5-1.5z"></path></svg>Today</div>
+      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><g transform="rotate(-45 12 12)"><rect x="2.5" y="7.5" width="19" height="9" rx="4.5" fill="currentColor" opacity=".9"></rect><path d="M12 7.5h5a4.5 4.5 0 0 1 0 9h-5z" fill="#fff" opacity=".45"></path></g></svg>Meds</div>
+      <div class="tab on"><svg class="ic" viewBox="0 0 24 24"><rect class="f" x="3.5" y="5" width="17" height="15.5" rx="2.5"></rect><path d="M3.5 9.5h17M8 3v4M16 3v4"></path><g class="dots"><circle cx="8" cy="13" r="1"></circle><circle cx="12" cy="13" r="1"></circle><circle cx="16" cy="13" r="1"></circle><circle cx="8" cy="16.6" r="1"></circle><circle cx="12" cy="16.6" r="1"></circle><circle cx="16" cy="16.6" r="1"></circle></g></svg>History</div>
+      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><path class="f" d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path><circle class="hole" cx="12" cy="12" r="3"></circle></svg>Settings</div>
     </div>
   </div></div>
 
@@ -457,51 +529,32 @@
     <div class="body">
       <div class="set-lbl">Plan</div>
       <div class="set-card">
-        <div class="set-row">
-          <div class="set-ic" style="background:rgba(74,108,247,.12)">✨</div>
-          <div class="set-tt">Free version · up to 2 medicines<small>Unlimited with one purchase · Tap to see</small></div>
-          <span class="chev">›</span>
-        </div>
-        <div class="set-row">
-          <div class="set-ic" style="background:rgba(136,136,136,.12)">🔄</div>
-          <div class="set-tt">Restore purchase</div>
-          <span class="chev">›</span>
-        </div>
+        <div class="set-row"><div class="set-ic" style="background:rgba(74,108,247,.13);color:#4A6CF7"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"></path><path d="M18.5 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"></path></svg></div><div class="set-tt">Free version · up to 2 medicines<small>Unlimited with one purchase · Tap to see</small></div><span class="chev">›</span></div>
+        <div class="set-row"><div class="set-ic" style="background:rgba(138,145,168,.13);color:#8A91A8"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7"></path><path d="M20 4v7h-7"></path></svg></div><div class="set-tt">Restore purchase</div><span class="chev">›</span></div>
+      </div>
+      <div class="set-lbl">Family</div>
+      <div class="set-card">
+        <div class="set-row"><div class="set-ic" style="background:rgba(16,185,129,.13);color:#10B981"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"></circle><path d="M3 19c.6-3.3 3-5 6-5s5.4 1.7 6 5"></path><circle cx="17" cy="9" r="2.5"></circle><path d="M16.5 14c2.4.2 4 1.7 4.5 4.5"></path></svg></div><div class="set-tt">Family alerts<small>Notify family when a dose is missed</small></div><span class="chev">›</span></div>
       </div>
       <div class="set-lbl">Notifications</div>
       <div class="set-card">
-        <div class="set-row">
-          <div class="set-ic" style="background:rgba(74,108,247,.12)">🔊</div>
-          <div class="set-tt">Sound</div>
-          <div class="switch"></div>
-        </div>
+        <div class="set-row"><div class="set-ic" style="background:rgba(74,108,247,.13);color:#4A6CF7"><svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"></path><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"></path></svg></div><div class="set-tt">Sound</div><div class="switch"></div></div>
+        <div class="set-row"><div class="set-ic" style="background:rgba(16,185,129,.13);color:#10B981"><svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"></path><path d="M10 20.5a2 2 0 0 0 4 0"></path></svg></div><div class="set-tt">Test notification<small>Sends a test reminder in 5 seconds</small></div><span class="chev">›</span></div>
       </div>
       <div class="set-lbl">Display</div>
       <div class="set-card" style="padding:12px 14px">
         <div class="set-tt" style="font-size:11px;color:#8A91A8;font-weight:600;margin-bottom:6px">Theme</div>
         <div class="segm"><span class="on">System</span><span>Light</span><span>Dark</span></div>
-        <div class="set-tt" style="font-size:11px;color:#8A91A8;font-weight:600;margin:10px 0 6px">Language</div>
-        <div class="segm"><span>System</span><span class="on">한국어</span><span>English</span></div>
-      </div>
-      <div class="set-lbl">Data</div>
-      <div class="set-card">
-        <div class="set-row">
-          <div class="set-ic" style="background:rgba(20,184,166,.12)">📤</div>
-          <div class="set-tt">Export backup<small>Save as a file (iCloud, Files)</small></div>
-          <span class="chev">›</span>
-        </div>
-        <div class="set-row">
-          <div class="set-ic" style="background:rgba(74,108,247,.12)">📥</div>
-          <div class="set-tt">Import backup<small>Restore on a new device</small></div>
-          <span class="chev">›</span>
-        </div>
+        <div class="set-tt" style="font-size:11px;color:#8A91A8;font-weight:600;margin:10px 0 6px">Text size</div>
+        <div class="tsl"><b class="a1">A</b><div class="tr"><div class="rl"></div><div class="fl" style="width:51.9px"></div><i style="left:7.0px;background:#fff"></i><i style="left:21.3px;background:#fff"></i><i style="left:35.6px;background:#fff"></i><i style="left:49.9px;background:#fff"></i><i style="left:64.1px;background:#A9B0C5"></i><i style="left:78.4px;background:#A9B0C5"></i><i style="left:92.7px;background:#A9B0C5"></i><i style="left:107.0px;background:#A9B0C5"></i><div class="th" style="left:42.9px"></div></div><b class="a2">A</b></div>
+        <div class="langrow"><span>Language</span><b>English</b><span class="chev">›</span></div>
       </div>
     </div>
     <div class="tabbar">
-      <div class="tab"><span class="ic">🏠</span>Today</div>
-      <div class="tab"><span class="ic">💊</span>Meds</div>
-      <div class="tab"><span class="ic">📅</span>History</div>
-      <div class="tab on"><span class="ic">⚙️</span>Settings</div>
+      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><path class="f" d="M3.5 10.6 12 3.8l8.5 6.8V19.5a1.5 1.5 0 0 1-1.5 1.5h-4.2v-6.2H9.2V21H5a1.5 1.5 0 0 1-1.5-1.5z"></path></svg>Today</div>
+      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><g transform="rotate(-45 12 12)"><rect x="2.5" y="7.5" width="19" height="9" rx="4.5" fill="currentColor" opacity=".9"></rect><path d="M12 7.5h5a4.5 4.5 0 0 1 0 9h-5z" fill="#fff" opacity=".45"></path></g></svg>Meds</div>
+      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><rect class="f" x="3.5" y="5" width="17" height="15.5" rx="2.5"></rect><path d="M3.5 9.5h17M8 3v4M16 3v4"></path><g class="dots"><circle cx="8" cy="13" r="1"></circle><circle cx="12" cy="13" r="1"></circle><circle cx="16" cy="13" r="1"></circle><circle cx="8" cy="16.6" r="1"></circle><circle cx="12" cy="16.6" r="1"></circle><circle cx="16" cy="16.6" r="1"></circle></g></svg>History</div>
+      <div class="tab on"><svg class="ic" viewBox="0 0 24 24"><path class="f" d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path><circle class="hole" cx="12" cy="12" r="3"></circle></svg>Settings</div>
     </div>
   </div></div>
 
@@ -526,7 +579,8 @@
       <div class="pw-price">₩1,900<small>One-time purchase, not a subscription</small></div>
       <div class="pw-buy">Unlock the full version</div>
       <div class="pw-restore">Restore purchase</div>
-      <div class="pw-foot">Payment is handled by your Apple ID.<br>Up to 2 medicines stay free forever.</div>
+      <div class="pw-later">Not now</div>
+      <div class="pw-foot">Payment is handled by your Apple ID. Without it, reminders and history for up to 2 medicines stay free forever.</div>
     </div>
   </div></div>
 
@@ -556,16 +610,16 @@
       </div>
 
       <div class="banner">
-        <div class="banner-title">⚠️ Refill soon</div>
-        <span class="pill urgent"><span class="dot" style="background:#EF4444"></span>Blood pressure <span class="dday">D-2</span></span>
-        <span class="pill"><span class="dot"></span>Omega-3 <span class="dday">D-6</span></span>
+        <div class="banner-title"><svg class="al" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 7v6M12 16.5v.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round"></path></svg>Refill soon</div>
+        <span class="pill urgent"><span class="dot" style="background:#4A6CF7"></span>Blood pressure <span class="dday">D-2</span></span>
+        <span class="pill"><span class="dot" style="background:#10B981"></span>Omega-3 <span class="dday">D-6</span></span>
       </div>
 
       <div class="dose">
         <div class="bar" style="background:#4A6CF7"></div>
         <div class="info">
           <div class="name done">Blood pressure</div>
-          <div class="meta">🕗 8:00 AM · 1 tab · <span class="accent">🔔 10 min early</span></div>
+          <div class="meta"><svg class="mi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>8:00 AM · 1 tab · <span class="accent"><svg class="mi" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"></path><path d="M10 20.5a2 2 0 0 0 4 0"></path></svg>10 min early</span></div>
         </div>
         <div class="check done">✓</div>
       </div>
@@ -573,7 +627,7 @@
         <div class="bar" style="background:#10B981"></div>
         <div class="info">
           <div class="name done">Omega-3</div>
-          <div class="meta">🕐 1:00 PM · 2 tab</div>
+          <div class="meta"><svg class="mi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>1:00 PM · 2 tab</div>
         </div>
         <div class="check done">✓</div>
       </div>
@@ -581,16 +635,16 @@
         <div class="bar" style="background:#8B5CF6"></div>
         <div class="info">
           <div class="name">Multivitamin</div>
-          <div class="meta">🕘 9:00 PM · 1 tab · <span class="accent">🔔 5 min early</span></div>
+          <div class="meta"><svg class="mi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>9:00 PM · 1 tab · <span class="accent"><svg class="mi" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"></path><path d="M10 20.5a2 2 0 0 0 4 0"></path></svg>5 min early</span></div>
         </div>
         <div class="check">✓</div>
       </div>
     </div>
     <div class="tabbar">
-      <div class="tab on"><span class="ic">🏠</span>Today</div>
-      <div class="tab"><span class="ic">💊</span>Meds</div>
-      <div class="tab"><span class="ic">📅</span>History</div>
-      <div class="tab"><span class="ic">⚙️</span>Settings</div>
+      <div class="tab on"><svg class="ic" viewBox="0 0 24 24"><path class="f" d="M3.5 10.6 12 3.8l8.5 6.8V19.5a1.5 1.5 0 0 1-1.5 1.5h-4.2v-6.2H9.2V21H5a1.5 1.5 0 0 1-1.5-1.5z"></path></svg>Today</div>
+      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><g transform="rotate(-45 12 12)"><rect x="2.5" y="7.5" width="19" height="9" rx="4.5" fill="currentColor" opacity=".9"></rect><path d="M12 7.5h5a4.5 4.5 0 0 1 0 9h-5z" fill="#fff" opacity=".45"></path></g></svg>Meds</div>
+      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><rect class="f" x="3.5" y="5" width="17" height="15.5" rx="2.5"></rect><path d="M3.5 9.5h17M8 3v4M16 3v4"></path><g class="dots"><circle cx="8" cy="13" r="1"></circle><circle cx="12" cy="13" r="1"></circle><circle cx="16" cy="13" r="1"></circle><circle cx="8" cy="16.6" r="1"></circle><circle cx="12" cy="16.6" r="1"></circle><circle cx="16" cy="16.6" r="1"></circle></g></svg>History</div>
+      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><path class="f" d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path><circle class="hole" cx="12" cy="12" r="3"></circle></svg>Settings</div>
     </div>
   </div></div>
 
@@ -607,18 +661,50 @@
         <div class="push-bd">Mom hasn't taken her blood pressure pill (19:00) yet.</div>
       </div>
     </div>
-    <div class="header" style="padding-top:96px"><div><div class="title">Family alerts</div></div></div>
+    <div class="navbar gd-nav"><span class="back">‹ Back</span><span class="nt">Family alerts</span><span></span></div>
     <div class="body">
-      <div class="gd-intro">If a dose is still unchecked 30 minutes after its time, your linked family gets a notification.</div>
+      <div class="gd-intro">If a dose is still unchecked after its time, your linked family gets a notification. They choose how soon.</div>
       <div class="set-lbl">Family I watch</div>
       <div class="card">
-        <div class="gd-person"><div class="gd-av">👩</div><div class="gd-name">Mom</div><span class="chev">›</span></div>
+        <div class="gd-person"><svg class="gd-pc" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11"></circle><circle cx="12" cy="9.5" r="3.6" fill="#fff"></circle><path d="M5.6 18.6c1.3-2.4 3.7-3.8 6.4-3.8s5.1 1.4 6.4 3.8" fill="#fff"></path></svg><div class="gd-name">Mom</div><svg class="gd-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></div>
+        <div class="gd-lbl">Today</div>
         <div class="gd-row"><span class="gd-time">08:00</span><span class="gd-med">Blood pressure</span><span class="gd-st ok">Taken</span></div>
         <div class="gd-row"><span class="gd-time">13:00</span><span class="gd-med">Omega-3</span><span class="gd-st ok">Taken</span></div>
         <div class="gd-row"><span class="gd-time">19:00</span><span class="gd-med">Blood pressure</span><span class="gd-st miss">Missed</span></div>
         <div class="gd-row"><span class="gd-time">22:00</span><span class="gd-med">Multivitamin</span><span class="gd-st next">Upcoming</span></div>
+        <div class="hist"><div class="hist-h"><span class="gd-lbl">Last 2 weeks</span><b>89% taken</b></div><div class="hbars"><div class="hb"><div class="ht"><i style="flex:0;background:#EBEEF6"></i><i style="flex:0;background:#EF4444"></i><i style="flex:3;background:#10B981"></i></div><span class="">23</span></div><div class="hb"><div class="ht"><i style="flex:0;background:#EBEEF6"></i><i style="flex:0;background:#EF4444"></i><i style="flex:3;background:#10B981"></i></div><span class="">24</span></div><div class="hb"><div class="ht"><i style="flex:0;background:#EBEEF6"></i><i style="flex:1;background:#EF4444"></i><i style="flex:2;background:#10B981"></i></div><span class="">25</span></div><div class="hb"><div class="ht"><i style="flex:0;background:#EBEEF6"></i><i style="flex:0;background:#EF4444"></i><i style="flex:3;background:#10B981"></i></div><span class="">26</span></div><div class="hb"><div class="ht"><i style="flex:0;background:#EBEEF6"></i><i style="flex:0;background:#EF4444"></i><i style="flex:3;background:#10B981"></i></div><span class="">27</span></div><div class="hb"><div class="ht"><i style="flex:0;background:#EBEEF6"></i><i style="flex:0;background:#EF4444"></i><i style="flex:3;background:#10B981"></i></div><span class="">28</span></div><div class="hb"><div class="ht"><i style="flex:0;background:#EBEEF6"></i><i style="flex:2;background:#EF4444"></i><i style="flex:1;background:#10B981"></i></div><span class="">29</span></div><div class="hb"><div class="ht"><i style="flex:0;background:#EBEEF6"></i><i style="flex:0;background:#EF4444"></i><i style="flex:3;background:#10B981"></i></div><span class="">30</span></div><div class="hb"><div class="ht"><i style="flex:0;background:#EBEEF6"></i><i style="flex:0;background:#EF4444"></i><i style="flex:3;background:#10B981"></i></div><span class="">1</span></div><div class="hb"><div class="ht"><i style="flex:0;background:#EBEEF6"></i><i style="flex:0;background:#EF4444"></i><i style="flex:3;background:#10B981"></i></div><span class="">2</span></div><div class="hb"><div class="ht"><i style="flex:0;background:#EBEEF6"></i><i style="flex:1;background:#EF4444"></i><i style="flex:2;background:#10B981"></i></div><span class="">3</span></div><div class="hb"><div class="ht"><i style="flex:0;background:#EBEEF6"></i><i style="flex:0;background:#EF4444"></i><i style="flex:3;background:#10B981"></i></div><span class="">4</span></div><div class="hb"><div class="ht"><i style="flex:0;background:#EBEEF6"></i><i style="flex:0;background:#EF4444"></i><i style="flex:3;background:#10B981"></i></div><span class="">5</span></div><div class="hb"><div class="ht"><i style="flex:1;background:#EBEEF6"></i><i style="flex:1;background:#EF4444"></i><i style="flex:1;background:#10B981"></i></div><span class="td">6</span></div></div><div class="hleg"><i style="background:#10B981"></i>Taken<i style="background:#EF4444"></i>Missed</div></div>
       </div>
-      <div class="gd-code"><span>Invite code</span><b>482 913</b></div>
+      <div class="card" style="padding:12px 14px"><div class="gd-input" style="margin-top:0"><span class="gd-field">6-digit code</span><span class="gd-btn">Link</span></div></div>
+    </div>
+  </div></div>
+
+  <!-- ═══ 9. SETTINGS — TEXT SIZE ═══ -->
+  <div class="phone"><div class="screen big-set">
+    <div class="notch"></div>
+    <div class="status"><span>9:41</span><span>📶 🔋</span></div>
+    <div class="screen-label">Text size</div>
+    <div class="header"><div><div class="title">Settings</div></div></div>
+    <div class="body">
+      <div class="set-lbl">Display</div>
+      <div class="set-card" style="padding:14px">
+        <div class="bs-lbl">Theme</div>
+        <div class="segm"><span class="on">System</span><span>Light</span><span>Dark</span></div>
+        <div class="bs-lbl" style="margin-top:14px">Text size</div>
+        <div class="ts-row"><b class="s">A</b><div class="ts-tr"><div class="ts-rl"></div><div class="ts-fl" style="width:calc(55.7% + 11%)"></div><i style="left:11.0%;background:#fff"></i><i style="left:22.1%;background:#fff"></i><i style="left:33.3%;background:#fff"></i><i style="left:44.4%;background:#fff"></i><i style="left:55.6%;background:#fff"></i><i style="left:66.7%;background:#fff"></i><i style="left:77.9%;background:#A9B0C5"></i><i style="left:89.0%;background:#A9B0C5"></i><div class="ts-th" style="left:calc(55.7% + 11% - 13px)"></div></div><b class="l">A</b></div>
+        <div class="bs-pv">We'll remind you when it's time for your medicine.</div>
+        <div class="langrow bs-lang"><span>Language</span><b>English</b><span class="chev">›</span></div>
+      </div>
+      <div class="set-lbl">Data</div>
+      <div class="set-card">
+        <div class="set-row"><div class="set-ic" style="background:rgba(20,184,166,.13);color:#14B8A6"><svg viewBox="0 0 24 24"><path d="M12 15V4M8 8l4-4 4 4"></path><path d="M6 12v7a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-7"></path></svg></div><div class="set-tt">Export backup<small>Save as a file (iCloud, Files)</small></div><span class="chev">›</span></div>
+        <div class="set-row"><div class="set-ic" style="background:rgba(74,108,247,.13);color:#4A6CF7"><svg viewBox="0 0 24 24"><path d="M12 4v11M8 11l4 4 4-4"></path><path d="M6 12v7a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-7"></path></svg></div><div class="set-tt">Import backup<small>Restore on a new device</small></div><span class="chev">›</span></div>
+      </div>
+    </div>
+    <div class="tabbar">
+      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><path class="f" d="M3.5 10.6 12 3.8l8.5 6.8V19.5a1.5 1.5 0 0 1-1.5 1.5h-4.2v-6.2H9.2V21H5a1.5 1.5 0 0 1-1.5-1.5z"></path></svg>Today</div>
+      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><g transform="rotate(-45 12 12)"><rect x="2.5" y="7.5" width="19" height="9" rx="4.5" fill="currentColor" opacity=".9"></rect><path d="M12 7.5h5a4.5 4.5 0 0 1 0 9h-5z" fill="#fff" opacity=".45"></path></g></svg>Meds</div>
+      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><rect class="f" x="3.5" y="5" width="17" height="15.5" rx="2.5"></rect><path d="M3.5 9.5h17M8 3v4M16 3v4"></path><g class="dots"><circle cx="8" cy="13" r="1"></circle><circle cx="12" cy="13" r="1"></circle><circle cx="16" cy="13" r="1"></circle><circle cx="8" cy="16.6" r="1"></circle><circle cx="12" cy="16.6" r="1"></circle><circle cx="16" cy="16.6" r="1"></circle></g></svg>History</div>
+      <div class="tab on"><svg class="ic" viewBox="0 0 24 24"><path class="f" d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path><circle class="hole" cx="12" cy="12" r="3"></circle></svg>Settings</div>
     </div>
   </div></div>
 
