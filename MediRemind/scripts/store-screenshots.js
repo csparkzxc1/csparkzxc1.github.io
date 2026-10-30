@@ -407,8 +407,9 @@ async function renderStory(browser, lang, story, shot) {
             box-shadow:0 ${8 * k}px ${24 * k}px rgba(40,52,120,.2)">
           <span style="font-size:${84 * tk}px;font-weight:800;color:#2A2F45;letter-spacing:${-2 * tk}px">MediRemind</span>
         </div>
-        ${phoneFrame(imgs[heroA], heroW, k, `left:${W * 0.52}px;top:${H * 0.47}px;transform:rotate(-24deg);transform-origin:0 0`)}
-        ${phoneFrame(imgs[heroB], heroW * 1.08, k, `left:${W * 1.02}px;top:${H * 0.30}px;transform:rotate(-24deg);transform-origin:0 0`)}
+        <!-- Same-size pair: the second phone overlaps the first across the cut. -->
+        ${phoneFrame(imgs[heroA], heroW, k, `left:${W * 0.5}px;top:${H * 0.44}px;transform:rotate(-20deg);transform-origin:0 0`)}
+        ${phoneFrame(imgs[heroB], heroW, k, `left:${W * 0.86}px;top:${H * 0.34}px;transform:rotate(-20deg);transform-origin:0 0`)}
       </body></html>`);
     await page.waitForLoadState('networkidle');
     await page.evaluate(() => document.fonts.ready);
