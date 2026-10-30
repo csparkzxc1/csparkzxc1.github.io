@@ -10,6 +10,8 @@ import {
   Linking,
   Platform,
   ActivityIndicator,
+  Modal,
+  Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -112,6 +114,8 @@ function Segmented<T extends string>({
 export default function SettingsScreen() {
   const navigation = useNavigation<Nav>();
   const { t, pref: langPref, setLanguage } = useI18n();
+  const [langOpen, setLangOpen] = useState(false);
+  const langName = (v: LanguagePref) => (v === 'system' ? t('settings.langSystem') : LANGUAGE_NAMES[v]);
   const { colors, mode, setMode, textSize, setTextSize } = useTheme();
   const styles = useThemedStyles(makeStyles);
   const { isPro, product, restore } = useEntitlement();
@@ -350,25 +354,16 @@ export default function SettingsScreen() {
               { value: 'xlarge', label: t('settings.textXLarge') },
             ]}
           />
-          <Text style={[styles.inlineLabel, { marginTop: 16 }]}>{t('settings.language')}</Text>
-          <View style={styles.chips}>
-            {(['system', ...LANGUAGES] as LanguagePref[]).map((value) => {
-              const active = langPref === value;
-              return (
-                <TouchableOpacity
-                  key={value}
-                  style={[styles.chip, active && styles.chipActive]}
-                  onPress={() => setLanguage(value)}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: active }}
-                >
-                  <Text style={[styles.chipText, active && styles.chipTextActive]}>
-                    {value === 'system' ? t('settings.langSystem') : LANGUAGE_NAMES[value]}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
+          <TouchableOpacity
+            style={styles.langRow}
+            onPress={() => setLangOpen(true)}
+            accessibilityRole="button"
+            accessibilityLabel={`${t('settings.language')}: ${langName(langPref)}`}
+          >
+            <Text style={[styles.inlineLabel, styles.langLabel]}>{t('settings.language')}</Text>
+            <Text style={styles.langValue}>{langName(langPref)}</Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
+          </TouchableOpacity>
         </View>
 
         {/* ─ Data ─ */}
@@ -436,6 +431,32 @@ export default function SettingsScreen() {
 
         <Text style={styles.footer}>{t('settings.footer')}</Text>
       </ScrollView>
+
+      <Modal visible={langOpen} transparent animationType="slide" onRequestClose={() => setLangOpen(false)}>
+        <Pressable style={styles.sheetDim} onPress={() => setLangOpen(false)} />
+        <View style={styles.sheet}>
+          <View style={styles.sheetGrip} />
+          <Text style={styles.sheetTitle}>{t('settings.language')}</Text>
+          {(['system', ...LANGUAGES] as LanguagePref[]).map((value) => {
+            const active = langPref === value;
+            return (
+              <TouchableOpacity
+                key={value}
+                style={styles.sheetRow}
+                onPress={() => {
+                  setLanguage(value);
+                  setLangOpen(false);
+                }}
+                accessibilityRole="button"
+                accessibilityState={{ selected: active }}
+              >
+                <Text style={[styles.sheetText, active && styles.sheetTextOn]}>{langName(value)}</Text>
+                {active && <Ionicons name="checkmark" size={20} color={colors.brand} />}
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -475,23 +496,35 @@ const makeStyles = (c: ThemeColors, scheme: Scheme) =>
     rowSubtitle: { fontSize: 12, color: c.textMuted, marginTop: 2 },
     divider: { height: StyleSheet.hairlineWidth, backgroundColor: c.line, marginLeft: 66 },
     inlineLabel: { fontSize: 13, fontWeight: '600', color: c.textMuted, marginBottom: 8 },
+    langRow: { flexDirection: 'row', alignItems: 'center', marginTop: 18, gap: 6 },
+    langLabel: { flex: 1, marginBottom: 0 },
+    langValue: { fontSize: 15, fontWeight: '600', color: c.text },
+    sheetDim: { flex: 1, backgroundColor: c.overlay },
+    sheet: {
+      backgroundColor: c.surface,
+      borderTopLeftRadius: 22,
+      borderTopRightRadius: 22,
+      paddingHorizontal: 20,
+      paddingTop: 10,
+      paddingBottom: 36,
+    },
+    sheetGrip: { alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: c.line, marginBottom: 12 },
+    sheetTitle: { fontSize: 17, fontWeight: '800', color: c.text, marginBottom: 6 },
+    sheetRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: 13,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: c.line,
+    },
+    sheetText: { fontSize: 16, color: c.text },
+    sheetTextOn: { color: c.brand, fontWeight: '700' },
     segment: { flexDirection: 'row', backgroundColor: c.surfaceMuted, borderRadius: 12, padding: 3 },
     segmentItem: { flex: 1, paddingVertical: 9, alignItems: 'center', borderRadius: 10 },
     segmentItemActive: { backgroundColor: c.surface },
     segmentText: { fontSize: 13, fontWeight: '600', color: c.textMuted },
     segmentTextActive: { color: c.text },
-    chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-    chip: {
-      paddingVertical: 8,
-      paddingHorizontal: 14,
-      borderRadius: 18,
-      backgroundColor: c.surfaceMuted,
-      borderWidth: 1.5,
-      borderColor: 'transparent',
-    },
-    chipActive: { backgroundColor: c.brandSoft, borderColor: c.brand },
-    chipText: { fontSize: 14, fontWeight: '600', color: c.textMuted },
-    chipTextActive: { color: c.brand },
     footer: {
       marginTop: 32,
       fontSize: 12,
