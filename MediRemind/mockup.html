@@ -302,6 +302,12 @@
   .ts-tr { position:relative; flex:1; height:30px; } .ts-rl { position:absolute; left:11%; right:11%; top:13px; height:5px; border-radius:3px; background:#EBEEF6; }
   .ts-fl { position:absolute; left:0; top:13px; height:5px; border-radius:3px; background:#4A6CF7; } .ts-tr i { position:absolute; top:14px; width:3px; height:3px; border-radius:2px; margin-left:-1.5px; }
   .ts-th { position:absolute; top:3px; width:24px; height:24px; border-radius:12px; background:#fff; border:2px solid #4A6CF7; box-sizing:border-box; box-shadow:0 2px 5px rgba(0,0,0,.15); }
+  .big-set .bs-lbl { font-size:13px; color:#8A91A8; font-weight:600; margin-bottom:7px; }
+  .big-set .segm span { font-size:13px; padding:8px 0; }
+  .big-set .bs-pv { word-break:keep-all; font-size:19px; line-height:1.4; color:#1A1D2B; margin-top:6px; font-weight:500; }
+  .big-set .bs-lang { font-size:13px; margin-top:14px; } .big-set .bs-lang b { font-size:16px; }
+  .big-set .set-tt { font-size:16px; } .big-set .set-tt small { font-size:12.5px; }
+  .big-set .set-lbl { font-size:12px; }
 </style>
 </head>
 <body>
@@ -673,68 +679,33 @@
     </div>
   </div></div>
 
-  <!-- ═══ 9. LARGE TEXT ═══ -->
-  <div class="phone"><div class="screen big">
+  <!-- ═══ 9. SETTINGS — TEXT SIZE ═══ -->
+  <div class="phone"><div class="screen big-set">
     <div class="notch"></div>
     <div class="status"><span>9:41</span><span>📶 🔋</span></div>
-    <div class="screen-label">큰 글씨</div>
-    <div class="header">
-      <div>
-        <div class="date">7월 6일 월요일</div>
-        <div class="title">오늘의 복용 현황</div>
-      </div>
-      <div class="fab">+</div>
-    </div>
-    <div class="ts-card"><div class="ts-h">글자 크기</div><div class="ts-row"><b class="s">가</b><div class="ts-tr"><div class="ts-rl"></div><div class="ts-fl" style="width:calc(55.7% + 11%)"></div><i style="left:11.0%;background:#fff"></i><i style="left:22.1%;background:#fff"></i><i style="left:33.3%;background:#fff"></i><i style="left:44.4%;background:#fff"></i><i style="left:55.6%;background:#fff"></i><i style="left:66.7%;background:#fff"></i><i style="left:77.9%;background:#A9B0C5"></i><i style="left:89.0%;background:#A9B0C5"></i><div class="ts-th" style="left:calc(55.7% + 11% - 13px)"></div></div><b class="l">가</b></div></div>
+    <div class="screen-label">글자 크기</div>
+    <div class="header"><div><div class="title">설정</div></div></div>
     <div class="body">
-      <div class="card">
-        <div class="prog-head">
-          <div>
-            <div class="prog-label">오늘 복용 현황</div>
-            <div class="prog-count"><b>2</b> / 3회 완료</div>
-          </div>
-          <div class="prog-pct">66<span>%</span></div>
-        </div>
-        <div class="track"><div class="fill"></div></div>
-        <div class="streak">🔥 12일 연속 복용</div>
+      <div class="set-lbl">화면</div>
+      <div class="set-card" style="padding:14px">
+        <div class="bs-lbl">테마</div>
+        <div class="segm"><span class="on">시스템</span><span>라이트</span><span>다크</span></div>
+        <div class="bs-lbl" style="margin-top:14px">글자 크기</div>
+        <div class="ts-row"><b class="s">가</b><div class="ts-tr"><div class="ts-rl"></div><div class="ts-fl" style="width:calc(55.7% + 11%)"></div><i style="left:11.0%;background:#fff"></i><i style="left:22.1%;background:#fff"></i><i style="left:33.3%;background:#fff"></i><i style="left:44.4%;background:#fff"></i><i style="left:55.6%;background:#fff"></i><i style="left:66.7%;background:#fff"></i><i style="left:77.9%;background:#A9B0C5"></i><i style="left:89.0%;background:#A9B0C5"></i><div class="ts-th" style="left:calc(55.7% + 11% - 13px)"></div></div><b class="l">가</b></div>
+        <div class="bs-pv">오늘 드실 약을 잊지 않게 알려 드려요.</div>
+        <div class="langrow bs-lang"><span>언어</span><b>한국어</b><span class="chev">›</span></div>
       </div>
-
-      <div class="banner">
-        <div class="banner-title"><svg class="al" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 7v6M12 16.5v.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>재처방 임박 알림</div>
-        <span class="pill urgent"><span class="dot" style="background:#4A6CF7"></span>혈압약 <span class="dday">D-2</span></span>
-        <span class="pill"><span class="dot" style="background:#10B981"></span>오메가3 <span class="dday">D-6</span></span>
-      </div>
-
-      <div class="dose">
-        <div class="bar" style="background:#4A6CF7"></div>
-        <div class="info">
-          <div class="name done">혈압약</div>
-          <div class="meta"><svg class="mi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>오전 8:00 · 1정 · <span class="accent"><svg class="mi" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg>10분 전</span></div>
-        </div>
-        <div class="check done">✓</div>
-      </div>
-      <div class="dose">
-        <div class="bar" style="background:#10B981"></div>
-        <div class="info">
-          <div class="name done">오메가3</div>
-          <div class="meta"><svg class="mi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>오후 1:00 · 2정</div>
-        </div>
-        <div class="check done">✓</div>
-      </div>
-      <div class="dose">
-        <div class="bar" style="background:#8B5CF6"></div>
-        <div class="info">
-          <div class="name">종합비타민</div>
-          <div class="meta"><svg class="mi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>오후 9:00 · 1정 · <span class="accent"><svg class="mi" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg>5분 전</span></div>
-        </div>
-        <div class="check">✓</div>
+      <div class="set-lbl">알림</div>
+      <div class="set-card">
+        <div class="set-row"><div class="set-ic" style="background:rgba(74,108,247,.13);color:#4A6CF7"><svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg></div><div class="set-tt">알림 소리</div><div class="switch"></div></div>
+        <div class="set-row"><div class="set-ic" style="background:rgba(16,185,129,.13);color:#10B981"><svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg></div><div class="set-tt">알림 테스트<small>5초 뒤 테스트 알림을 보내요</small></div><span class="chev">›</span></div>
       </div>
     </div>
     <div class="tabbar">
-      <div class="tab on"><svg class="ic" viewBox="0 0 24 24"><path class="f" d="M3.5 10.6 12 3.8l8.5 6.8V19.5a1.5 1.5 0 0 1-1.5 1.5h-4.2v-6.2H9.2V21H5a1.5 1.5 0 0 1-1.5-1.5z"/></svg>홈</div>
+      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><path class="f" d="M3.5 10.6 12 3.8l8.5 6.8V19.5a1.5 1.5 0 0 1-1.5 1.5h-4.2v-6.2H9.2V21H5a1.5 1.5 0 0 1-1.5-1.5z"/></svg>홈</div>
       <div class="tab"><svg class="ic" viewBox="0 0 24 24"><g transform="rotate(-45 12 12)"><rect x="2.5" y="7.5" width="19" height="9" rx="4.5" fill="currentColor" opacity=".9"/><path d="M12 7.5h5a4.5 4.5 0 0 1 0 9h-5z" fill="#fff" opacity=".45"/></g></svg>내 약</div>
       <div class="tab"><svg class="ic" viewBox="0 0 24 24"><rect class="f" x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/><g class="dots"><circle cx="8" cy="13" r="1"/><circle cx="12" cy="13" r="1"/><circle cx="16" cy="13" r="1"/><circle cx="8" cy="16.6" r="1"/><circle cx="12" cy="16.6" r="1"/><circle cx="16" cy="16.6" r="1"/></g></svg>달력</div>
-      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><path class="f" d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/><circle class="hole" cx="12" cy="12" r="3"/></svg>설정</div>
+      <div class="tab on"><svg class="ic" viewBox="0 0 24 24"><path class="f" d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/><circle class="hole" cx="12" cy="12" r="3"/></svg>설정</div>
     </div>
   </div></div>
 
