@@ -372,8 +372,9 @@ function fitLines() {
   for (const el of document.querySelectorAll('.fit')) {
     el.style.whiteSpace = 'nowrap';
     let size = parseFloat(getComputedStyle(el).fontSize);
-    const max = el.parentElement.clientWidth - parseFloat(getComputedStyle(el.parentElement).paddingLeft) * 2;
-    while (el.scrollWidth > max && size > 10) {
+    // A block line overflows only when its text is wider than the line box;
+    // allow a pixel for sub-pixel rounding so fitting lines aren't shrunk.
+    while (el.scrollWidth > el.clientWidth + 1 && size > 10) {
       size -= 1;
       el.style.fontSize = size + 'px';
     }
