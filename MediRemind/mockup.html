@@ -117,10 +117,10 @@
   .switch::after { content:''; position:absolute; right:3px; top:3px; width:20px; height:20px; background:#FFF; border-radius:10px; box-shadow:0 1px 3px rgba(0,0,0,.2); }
   .switch.off { background:#CCD2E0; }
   .switch.off::after { left:3px; right:auto; }
-  .med.swiped { transform:translateX(-64px); }
-  .swipe-wrap { position:relative; border-radius:18px; overflow:hidden; margin-bottom:10px; }
+  .med.swiped { transform:translateX(-82px); }
+  .swipe-wrap { position:relative; margin-bottom:10px; }
   .swipe-wrap .med { margin-bottom:0; }
-  .del { position:absolute; right:0; top:0; bottom:0; width:64px; background:#EF4444; color:#FFF; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:11px; font-weight:700; gap:2px; border-radius:0 18px 18px 0; }
+  .del { position:absolute; right:0; top:0; bottom:0; width:72px; background:#EF4444; color:#FFF; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:11px; font-weight:700; gap:2px; border-radius:18px; }
 
   /* ── Form ── */
   .sec-title { font-size:13px; font-weight:700; color:#4A6CF7; margin-bottom:11px; }
@@ -142,7 +142,8 @@
   /* ── Calendar ── */
   .rate-badge { background:#EDF1FE; color:#4A6CF7; border-radius:16px; padding:6px 13px; font-size:12px; font-weight:800; }
   .cal { background:#FFF; border-radius:20px; padding:14px; margin-bottom:12px; box-shadow:0 8px 20px rgba(63,74,126,.08); }
-  .cal .mon { text-align:center; font-weight:800; font-size:14px; margin-bottom:10px; color:#1A1D2B; }
+  .cal .mon { display:flex; justify-content:space-between; align-items:center; font-weight:800; font-size:14px; margin-bottom:10px; color:#1A1D2B; padding:0 4px; }
+  .cal .mon .ar { color:#4A6CF7; font-size:18px; font-weight:600; }
   .cal table { width:100%; border-collapse:collapse; font-size:11px; text-align:center; }
   .cal th { color:#8A91A8; font-weight:600; padding:4px 0; }
   .cal td { padding:6px 0; color:#333; position:relative; }
@@ -407,7 +408,7 @@
         <div class="switch"></div>
       </div>
       <div class="swipe-wrap">
-        <div class="del">🗑<br>삭제</div>
+        <div class="del"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:#fff"><path d="M9 3h6l1 2h4v2H4V5h4zM6 9h12l-1 11a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2z"/></svg><span>삭제</span></div>
         <div class="med swiped">
           <div class="icon purple"><svg class="pill-ic" viewBox="0 0 24 24"><g transform="rotate(-45 12 12)"><rect x="2.8" y="7.8" width="18.4" height="8.4" rx="4.2"/><path class="half" d="M12 7.8H7a4.2 4.2 0 0 0 0 8.4h5z"/></g></svg></div>
           <div class="b">
@@ -425,7 +426,6 @@
         </div>
         <div class="switch off"></div>
       </div>
-      <p style="text-align:center; font-size:11px; color:#9AA1B5; margin-top:8px">← 왼쪽으로 밀면 삭제</p>
     </div>
     <div class="tabbar">
       <div class="tab"><svg class="ic" viewBox="0 0 24 24"><path class="f" d="M3.5 10.6 12 3.8l8.5 6.8V19.5a1.5 1.5 0 0 1-1.5 1.5h-4.2v-6.2H9.2V21H5a1.5 1.5 0 0 1-1.5-1.5z"/></svg>홈</div>
@@ -488,7 +488,7 @@
     </div>
     <div class="body">
       <div class="cal">
-        <div class="mon">‹&nbsp;&nbsp;2026년 7월&nbsp;&nbsp;›</div>
+        <div class="mon"><span class="ar">‹</span>2026년 7월<span class="ar">›</span></div>
         <table>
           <tr><th>일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th></tr>
           <tr><td class="dis">28</td><td class="dis">29</td><td class="dis">30</td><td>1<span class="d"><i class="g"></i></span></td><td>2<span class="d"><i class="g"></i></span></td><td>3<span class="d"><i class="g"></i><i class="r"></i></span></td><td>4<span class="d"><i class="g"></i></span></td></tr>
@@ -496,6 +496,7 @@
           <tr><td>12</td><td>13</td><td>14</td><td>15</td><td>16</td><td>17</td><td>18</td></tr>
         </table>
       </div>
+      <div class="streak" style="margin:0 0 10px">🔥 12일 연속 복용</div>
       <div style="font-size:13px; font-weight:700; margin:2px 4px 8px;">오늘</div>
       <div class="rec" style="border-left-color:#4A6CF7">
         <span class="sd" style="background:#4A6CF7"></span>
@@ -674,8 +675,8 @@
         <div class="gd-row"><span class="gd-time">19:00</span><span class="gd-med">혈압약</span><span class="gd-st miss">안 먹음</span></div>
         <div class="gd-row"><span class="gd-time">22:00</span><span class="gd-med">종합비타민</span><span class="gd-st next">예정</span></div>
         <div class="hist"><div class="hist-h"><span class="gd-lbl">최근 2주</span><b>복용률 89%</b></div><div class="hbars"><div class="hb"><div class="ht"><i style="flex:0;background:#EBEEF6"></i><i style="flex:0;background:#EF4444"></i><i style="flex:3;background:#10B981"></i></div><span class="">23</span></div><div class="hb"><div class="ht"><i style="flex:0;background:#EBEEF6"></i><i style="flex:0;background:#EF4444"></i><i style="flex:3;background:#10B981"></i></div><span class="">24</span></div><div class="hb"><div class="ht"><i style="flex:0;background:#EBEEF6"></i><i style="flex:1;background:#EF4444"></i><i style="flex:2;background:#10B981"></i></div><span class="">25</span></div><div class="hb"><div class="ht"><i style="flex:0;background:#EBEEF6"></i><i style="flex:0;background:#EF4444"></i><i style="flex:3;background:#10B981"></i></div><span class="">26</span></div><div class="hb"><div class="ht"><i style="flex:0;background:#EBEEF6"></i><i style="flex:0;background:#EF4444"></i><i style="flex:3;background:#10B981"></i></div><span class="">27</span></div><div class="hb"><div class="ht"><i style="flex:0;background:#EBEEF6"></i><i style="flex:0;background:#EF4444"></i><i style="flex:3;background:#10B981"></i></div><span class="">28</span></div><div class="hb"><div class="ht"><i style="flex:0;background:#EBEEF6"></i><i style="flex:2;background:#EF4444"></i><i style="flex:1;background:#10B981"></i></div><span class="">29</span></div><div class="hb"><div class="ht"><i style="flex:0;background:#EBEEF6"></i><i style="flex:0;background:#EF4444"></i><i style="flex:3;background:#10B981"></i></div><span class="">30</span></div><div class="hb"><div class="ht"><i style="flex:0;background:#EBEEF6"></i><i style="flex:0;background:#EF4444"></i><i style="flex:3;background:#10B981"></i></div><span class="">1</span></div><div class="hb"><div class="ht"><i style="flex:0;background:#EBEEF6"></i><i style="flex:0;background:#EF4444"></i><i style="flex:3;background:#10B981"></i></div><span class="">2</span></div><div class="hb"><div class="ht"><i style="flex:0;background:#EBEEF6"></i><i style="flex:1;background:#EF4444"></i><i style="flex:2;background:#10B981"></i></div><span class="">3</span></div><div class="hb"><div class="ht"><i style="flex:0;background:#EBEEF6"></i><i style="flex:0;background:#EF4444"></i><i style="flex:3;background:#10B981"></i></div><span class="">4</span></div><div class="hb"><div class="ht"><i style="flex:0;background:#EBEEF6"></i><i style="flex:0;background:#EF4444"></i><i style="flex:3;background:#10B981"></i></div><span class="">5</span></div><div class="hb"><div class="ht"><i style="flex:1;background:#EBEEF6"></i><i style="flex:1;background:#EF4444"></i><i style="flex:1;background:#10B981"></i></div><span class="td">6</span></div></div><div class="hleg"><i style="background:#10B981"></i>복용<i style="background:#EF4444"></i>안 먹음</div></div>
-        <div class="gd-input"><span class="gd-field">6자리 코드</span><span class="gd-btn">연결</span></div>
       </div>
+      <div class="card" style="padding:12px 14px"><div class="gd-input" style="margin-top:0"><span class="gd-field">6자리 코드</span><span class="gd-btn">연결</span></div></div>
     </div>
   </div></div>
 
@@ -695,10 +696,10 @@
         <div class="bs-pv">오늘 드실 약을 잊지 않게 알려 드려요.</div>
         <div class="langrow bs-lang"><span>언어</span><b>한국어</b><span class="chev">›</span></div>
       </div>
-      <div class="set-lbl">알림</div>
+      <div class="set-lbl">데이터</div>
       <div class="set-card">
-        <div class="set-row"><div class="set-ic" style="background:rgba(74,108,247,.13);color:#4A6CF7"><svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg></div><div class="set-tt">알림 소리</div><div class="switch"></div></div>
-        <div class="set-row"><div class="set-ic" style="background:rgba(16,185,129,.13);color:#10B981"><svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg></div><div class="set-tt">알림 테스트<small>5초 뒤 테스트 알림을 보내요</small></div><span class="chev">›</span></div>
+        <div class="set-row"><div class="set-ic" style="background:rgba(20,184,166,.13);color:#14B8A6"><svg viewBox="0 0 24 24"><path d="M12 15V4M8 8l4-4 4 4"/><path d="M6 12v7a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-7"/></svg></div><div class="set-tt">백업 내보내기<small>파일로 저장 (iCloud·파일 앱)</small></div><span class="chev">›</span></div>
+        <div class="set-row"><div class="set-ic" style="background:rgba(74,108,247,.13);color:#4A6CF7"><svg viewBox="0 0 24 24"><path d="M12 4v11M8 11l4 4 4-4"/><path d="M6 12v7a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-7"/></svg></div><div class="set-tt">백업 불러오기<small>기기 변경 시 복원</small></div><span class="chev">›</span></div>
       </div>
     </div>
     <div class="tabbar">
