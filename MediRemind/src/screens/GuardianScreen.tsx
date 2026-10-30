@@ -470,7 +470,6 @@ function HistoryChart({
   const now = new Date();
   const tally = dailyTally(slots, dateKey(now), now, delay);
   const rate = adherenceRate(tally);
-  const max = Math.max(1, ...tally.map((d) => d.total));
   return (
     <View style={styles.history}>
       <View style={styles.historyHead}>
@@ -495,16 +494,17 @@ function HistoryChart({
               accessibilityState={{ selected: isSelected }}
               accessibilityLabel={`${formatShortDate(d.date)} ${d.taken}/${d.total}`}
             >
+              {/* Full-height track per day, filled by that day's share. */}
               <View style={styles.barTrack}>
                 {d.total > 0 && (
-                  <View style={{ height: `${(d.total / max) * 100}%`, width: '100%', justifyContent: 'flex-end' }}>
-                    <View style={[styles.barPart, { flex: d.total - d.taken - d.missed, backgroundColor: colors.surfaceMuted }]} />
+                  <>
+                    <View style={[styles.barPart, { flex: d.total - d.taken - d.missed, backgroundColor: colors.line }]} />
                     <View style={[styles.barPart, { flex: d.missed, backgroundColor: colors.danger }]} />
                     <View style={[styles.barPart, { flex: d.taken, backgroundColor: colors.success }]} />
-                  </View>
+                  </>
                 )}
               </View>
-              <Text style={[styles.barDay, (isToday || isSelected) && styles.barToday]}>
+              <Text numberOfLines={1} style={[styles.barDay, (isToday || isSelected) && styles.barToday]}>
                 {Number(d.date.slice(8))}
               </Text>
             </TouchableOpacity>
@@ -655,15 +655,15 @@ const makeStyles = (c: ThemeColors, scheme: Scheme) =>
     history: { marginTop: 4, paddingTop: 12, borderTopWidth: 1, borderTopColor: c.line },
     historyHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
     historyRate: { fontSize: 13, fontWeight: '800' },
-    bars: { flexDirection: 'row', gap: 3, height: 72, alignItems: 'flex-end', marginTop: 4 },
+    bars: { flexDirection: 'row', gap: 3, height: 86, marginTop: 4 },
     barCol: { flex: 1, alignItems: 'center', height: '100%', borderRadius: 4, paddingHorizontal: 1 },
     barColOn: { backgroundColor: c.brandSoft },
     legendHint: { fontSize: 11, color: c.textFaint, marginLeft: 'auto' },
     listHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
     backToday: { fontSize: 12, fontWeight: '700', color: c.brand },
-    barTrack: { flex: 1, width: '100%', justifyContent: 'flex-end', borderRadius: 3, overflow: 'hidden' },
+    barTrack: { flex: 1, width: '100%', borderRadius: 3, overflow: 'hidden', backgroundColor: c.surfaceMuted },
     barPart: { width: '100%' },
-    barDay: { fontSize: 9, color: c.textFaint, marginTop: 3 },
+    barDay: { width: 28, textAlign: 'center', fontSize: 9, color: c.textFaint, marginTop: 3 },
     barToday: { color: c.brand, fontWeight: '800' },
     legend: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 8 },
     legendDot: { width: 8, height: 8, borderRadius: 4, marginLeft: 6 },

@@ -40,7 +40,6 @@ export default function AdherenceReport({ today, onPickDay }: { today: string; o
   const tally = recordTally(records, today, now, days);
   const rate = adherenceRate(tally);
   const perMedicine = medicineRates(records, medicines, today, now, days);
-  const max = Math.max(1, ...tally.map((d) => d.total));
   const tone = (n: number) => (n >= 80 ? colors.success : n >= 50 ? colors.warning : colors.danger);
   const taken = tally.reduce((n, d) => n + d.taken, 0);
   const due = tally.reduce((n, d) => n + d.taken + d.missed, 0);
@@ -78,8 +77,10 @@ export default function AdherenceReport({ today, onPickDay }: { today: string; o
             </View>
           </View>
 
+          {/* Every day is a full-height track; the fill shows that day's share
+              taken (green), missed (red) and still to come (grey). */}
           <View style={[styles.bars, days === 30 && styles.barsTight]}>
-            {tally.map((d, i) => (
+            {tally.map((d) => (
               <TouchableOpacity
                 key={d.date}
                 style={styles.barCol}
@@ -87,23 +88,31 @@ export default function AdherenceReport({ today, onPickDay }: { today: string; o
                 onPress={() => onPickDay(d.date)}
                 accessibilityLabel={`${formatShortDate(d.date)} ${d.taken}/${d.total}`}
               >
-                <View style={styles.barTrack}>
-                  {d.total > 0 && (
-                    <View style={{ height: `${(d.total / max) * 100}%`, width: '100%' }}>
-                      <View style={{ flex: d.total - d.taken - d.missed, backgroundColor: colors.surfaceMuted }} />
-                      <View style={{ flex: d.missed, backgroundColor: colors.danger }} />
-                      <View style={{ flex: d.taken, backgroundColor: colors.success }} />
-                    </View>
-                  )}
-                </View>
-                {(i === tally.length - 1 ||
-                  (days === 14 ? textScale <= 1.2 || i % 2 === 1 : i % (textScale > 1.2 ? 10 : 5) === 4)) && (
-                  <Text numberOfLines={1} style={[styles.barDay, i === tally.length - 1 && styles.barToday]}>
-                    {Number(d.date.slice(8))}
-                  </Text>
-                )}
+                {d.total > 0 ? (
+                  <>
+                    <View style={{ flex: d.total - d.taken - d.missed, backgroundColor: colors.line }} />
+                    <View style={{ flex: d.missed, backgroundColor: colors.danger }} />
+                    <View style={{ flex: d.taken, backgroundColor: colors.success }} />
+                  </>
+                ) : null}
               </TouchableOpacity>
             ))}
+          </View>
+          <View style={[styles.days, days === 30 && styles.barsTight]}>
+            {tally.map((d, i) => {
+              const last = i === tally.length - 1;
+              const show =
+                last || (days === 14 ? textScale <= 1.2 || i % 2 === 1 : i % (textScale > 1.2 ? 10 : 5) === 4);
+              return (
+                <View key={d.date} style={styles.dayCell}>
+                  {show && (
+                    <Text numberOfLines={1} style={[styles.barDay, last && styles.barToday]}>
+                      {Number(d.date.slice(8))}
+                    </Text>
+                  )}
+                </View>
+              );
+            })}
           </View>
           <View style={styles.legend}>
             <View style={[styles.dot, { backgroundColor: colors.success }]} />
@@ -157,11 +166,12 @@ const makeStyles = (c: ThemeColors) =>
     rateUnit: { fontSize: 20 },
     rateLabel: { fontSize: 13, fontWeight: '700', color: c.text },
     count: { fontSize: 12, color: c.textMuted, marginTop: 2 },
-    bars: { flexDirection: 'row', gap: 4, height: 110, alignItems: 'flex-end' },
+    bars: { flexDirection: 'row', gap: 4, height: 110 },
     barsTight: { gap: 2 },
-    barCol: { flex: 1, height: '100%', alignItems: 'center', overflow: 'visible' },
-    barTrack: { flex: 1, width: '100%', justifyContent: 'flex-end', borderRadius: 3, overflow: 'hidden' },
-    barDay: { width: 30, textAlign: 'center', fontSize: 9, color: c.textFaint, marginTop: 3 },
+    barCol: { flex: 1, borderRadius: 4, overflow: 'hidden', backgroundColor: c.surfaceMuted },
+    days: { flexDirection: 'row', gap: 4, marginTop: -8 },
+    dayCell: { flex: 1, alignItems: 'center', overflow: 'visible' },
+    barDay: { width: 32, textAlign: 'center', fontSize: 10, color: c.textFaint },
     barToday: { color: c.brand, fontWeight: '800' },
     legend: { flexDirection: 'row', alignItems: 'center', gap: 4 },
     dot: { width: 8, height: 8, borderRadius: 4, marginLeft: 6 },
