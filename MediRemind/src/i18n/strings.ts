@@ -2,11 +2,24 @@
  * UI string catalog. Every entry carries both languages inline so a missing
  * translation is easy to spot. `{name}` placeholders are filled by t().
  */
-export const LANGUAGES = ['ko', 'en'] as const;
+export const LANGUAGES = ['ko', 'en', 'ja', 'zh-Hans', 'zh-Hant', 'es', 'fr', 'de'] as const;
 export type Language = (typeof LANGUAGES)[number];
 export const FALLBACK_LANGUAGE: Language = 'en';
 
-type Entry = Record<Language, string>;
+/** Name of each language in itself, for the language picker. */
+export const LANGUAGE_NAMES: Record<Language, string> = {
+  ko: '한국어',
+  en: 'English',
+  ja: '日本語',
+  'zh-Hans': '简体中文',
+  'zh-Hant': '繁體中文',
+  es: 'Español',
+  fr: 'Français',
+  de: 'Deutsch',
+};
+
+/** Korean and English live inline below; other languages in ./locales. */
+type Entry = Record<'ko' | 'en', string>;
 
 export const STRINGS: Record<string, Entry> = {
   // ── Navigation ────────────────────────────────────────────────────────
@@ -45,6 +58,7 @@ export const STRINGS: Record<string, Entry> = {
   },
   'home.emptyCta': { ko: '+ 약 등록하기', en: '+ Add a medicine' },
   'home.allDone': { ko: '🎉 오늘 약을 모두 드셨어요!', en: "🎉 All done for today!" },
+  'home.permEnable': { ko: '켜기', en: 'Turn on' },
   'home.streak': { ko: '🔥 {n}일 연속 복용', en: '🔥 {n}-day streak' },
 
   // ── Progress ──────────────────────────────────────────────────────────
@@ -96,7 +110,7 @@ export const STRINGS: Record<string, Entry> = {
   'form.freqCustomPlaceholder': { ko: '횟수', en: 'Count' },
   'form.freqCustomHint': { ko: '회 (최대 20)', en: 'times (max 20)' },
   'form.apply': { ko: '적용', en: 'Apply' },
-  'form.times': { ko: '복용 시간 설정 *', en: 'Dose times *' },
+  'form.times': { ko: '복용 시간 설정 * (24시간제)', en: 'Dose times * (24-hour)' },
   'form.addTime': { ko: '시간 추가', en: 'Add time' },
   'form.days': { ko: '복용 요일', en: 'Days' },
   'form.color': { ko: '색상 태그', en: 'Color' },
@@ -113,6 +127,7 @@ export const STRINGS: Record<string, Entry> = {
   'form.prescDaysPlaceholder': { ko: '예: 30', en: 'e.g. 30' },
   'form.prescAlert': { ko: '알림 시점 (복수 선택)', en: 'Remind me (pick any)' },
   'form.saveNew': { ko: '약 등록하기', en: 'Add medicine' },
+  'form.delete': { ko: '이 약 삭제', en: 'Delete this medicine' },
   'form.saveEdit': { ko: '수정 완료', en: 'Save changes' },
   'form.errTitle': { ko: '입력 오류', en: 'Check your input' },
   'form.errName': { ko: '약 이름을 입력해주세요.', en: 'Please enter a name.' },
@@ -152,6 +167,13 @@ export const STRINGS: Record<string, Entry> = {
   'settings.sectionNotif': { ko: '알림', en: 'Notifications' },
   'settings.sound': { ko: '알림 소리', en: 'Sound' },
   'settings.vibration': { ko: '알림 진동', en: 'Vibration' },
+  'settings.testNotif': { ko: '알림 테스트', en: 'Test notification' },
+  'settings.testNotifSub': { ko: '5초 뒤 테스트 알림을 보내요', en: 'Sends a test reminder in 5 seconds' },
+  'settings.testSentTitle': { ko: '테스트 알림을 보냈어요', en: 'Test reminder scheduled' },
+  'settings.testSentBody': {
+    ko: '5초 뒤에 알림이 와요. 홈 화면으로 나가거나 화면을 꺼 보세요.\n\n예약된 복용 알림: {n}개',
+    en: 'It arrives in 5 seconds. Try leaving the app or locking the screen.\n\nScheduled dose reminders: {n}',
+  },
   'settings.sectionDisplay': { ko: '화면', en: 'Display' },
   'settings.theme': { ko: '테마', en: 'Theme' },
   'settings.themeSystem': { ko: '시스템', en: 'System' },
@@ -187,6 +209,79 @@ export const STRINGS: Record<string, Entry> = {
   'settings.updateDev': { ko: '개발 환경에서는 OTA 업데이트를 사용할 수 없습니다.', en: 'OTA updates are not available in development.' },
   'settings.updateFail': { ko: '네트워크 연결을 확인해 주세요.', en: 'Please check your connection.' },
   'settings.updateLatest': { ko: '현재 최신 버전을 사용 중입니다.', en: "You're on the latest version." },
+  'settings.textSample': { ko: '가', en: 'A' },
+  'settings.textPreview': { ko: '오늘 드실 약을 잊지 않게 알려 드려요.', en: "We'll remind you when it's time for your medicine." },
+  'settings.textSize': { ko: '글자 크기', en: 'Text size' },
+  'settings.sectionFamily': { ko: '가족', en: 'Family' },
+  'settings.guardian': { ko: '보호자 연결', en: 'Family alerts' },
+  'settings.guardianSub': { ko: '약을 놓치면 가족에게 알림', en: 'Notify family when a dose is missed' },
+
+  // ── Guardian ──────────────────────────────────────────────────────────
+  'nav.guardian': { ko: '보호자 연결', en: 'Family Alerts' },
+  'guardian.intro': {
+    ko: '정해진 복용 시간이 지나도 체크가 없으면 연결된 가족에게 알림이 가요. 알림 시점은 가족이 정할 수 있어요.',
+    en: 'If a dose is still unchecked after its time, your linked family gets a notification. They choose how soon.',
+  },
+  'guardian.delayLabel': { ko: '알림 받을 시점', en: 'Alert me after' },
+  'guardian.delayMin': { ko: '{n}분 후', en: '{n} min' },
+  'guardian.delayHour': { ko: '{n}시간 후', en: '{n} hr' },
+  'guardian.myName': { ko: '가족에게 보일 내 이름', en: 'Your name shown to family' },
+  'guardian.myNamePlaceholder': { ko: '예: 엄마, 아빠, 김영희', en: 'e.g. Mom, Dad, Alex' },
+  'guardian.save': { ko: '저장', en: 'Save' },
+  'guardian.sectionMine': { ko: '나를 지켜보는 가족', en: 'Family watching my doses' },
+  'guardian.noGuardians': { ko: '아직 연결된 가족이 없어요.', en: 'No family linked yet.' },
+  'guardian.invite': { ko: '초대 코드 만들기', en: 'Create invite code' },
+  'guardian.inviteTitle': { ko: '초대 코드', en: 'Invite code' },
+  'guardian.inviteBody': {
+    ko: '가족이 MediRemind 앱의 설정 → 보호자 연결에서 이 코드를 입력하면 연결돼요. 30분 동안 유효해요.',
+    en: 'Have your family enter this code in MediRemind → Settings → Family alerts. Valid for 30 minutes.',
+  },
+  'guardian.share': { ko: '코드 보내기', en: 'Send code' },
+  'guardian.shareMessage': {
+    ko: 'MediRemind 보호자 연결 코드: {code}\n앱 설정 → 보호자 연결에서 입력해 주세요 (30분 유효).\nhttps://apps.apple.com/app/id6762364088',
+    en: 'MediRemind family code: {code}\nEnter it in Settings → Family alerts (valid 30 minutes).\nhttps://apps.apple.com/app/id6762364088',
+  },
+  'guardian.sectionWatching': { ko: '내가 돌보는 가족', en: 'Family I watch' },
+  'guardian.noPatients': { ko: '가족에게 받은 코드를 입력해 연결하세요.', en: 'Enter a code from your family member to link.' },
+  'guardian.codePlaceholder': { ko: '6자리 코드', en: '6-digit code' },
+  'guardian.connect': { ko: '연결', en: 'Link' },
+  'guardian.linked': { ko: '연결됐어요. 약을 놓치면 알려 드릴게요.', en: "Linked. We'll let you know when a dose is missed." },
+  'guardian.linkedNoPush': {
+    ko: '연결됐지만 알림이 꺼져 있어요. 설정에서 알림을 켜야 놓친 약을 알려 드릴 수 있어요.',
+    en: "Linked, but notifications are off. Turn them on in Settings to get missed-dose alerts.",
+  },
+  'guardian.invalidCode': { ko: '코드가 맞지 않거나 만료됐어요. 새 코드를 받아 주세요.', en: 'That code is wrong or expired. Ask for a new one.' },
+  'guardian.ownCode': { ko: '내가 만든 코드는 다른 가족의 폰에서 입력해야 해요.', en: 'Enter your own code on your family member\'s phone.' },
+  'guardian.unnamed': { ko: '이름 없음', en: 'Unnamed' },
+  'guardian.today': { ko: '오늘 복용', en: 'Today' },
+  'guardian.noDosesToday': { ko: '오늘 예정된 약이 없어요.', en: 'No doses scheduled today.' },
+  'guardian.state.taken': { ko: '복용', en: 'Taken' },
+  'guardian.state.upcoming': { ko: '예정', en: 'Upcoming' },
+  'guardian.state.late': { ko: '확인 중', en: 'Pending' },
+  'guardian.state.missed': { ko: '안 먹음', en: 'Missed' },
+  'guardian.unlink': { ko: '연결 끊기', en: 'Unlink' },
+  'guardian.details': { ko: '연결 정보', en: 'Link details' },
+  'guardian.close': { ko: '닫기', en: 'Close' },
+  'guardian.linkedSince': { ko: '{date}부터 연결됨', en: 'Linked since {date}' },
+  'guardian.unlinkNamed': { ko: '{name} 님과 연결 끊기', en: 'Unlink {name}' },
+  'guardian.swipeHint': { ko: '← 밀어서 연결 끊기', en: '← Swipe to unlink' },
+  'guardian.history': { ko: '최근 2주', en: 'Last 2 weeks' },
+  'guardian.historyRate': { ko: '복용률 {n}%', en: '{n}% taken' },
+  'guardian.dayDoses': { ko: '{date} 복용', en: 'Doses on {date}' },
+  'guardian.backToday': { ko: '오늘 보기', en: 'Back to today' },
+  'guardian.noDosesDay': { ko: '이 날 기록이 없어요.', en: 'No doses on this day.' },
+  'guardian.tapDay': { ko: '막대를 누르면 그날 보기', en: 'Tap a bar for that day' },
+  'guardian.unlinkConfirm': { ko: '{name} 님과의 연결을 끊을까요?', en: 'Unlink {name}?' },
+  'guardian.deleteAll': { ko: '연결 해제 및 서버 데이터 삭제', en: 'Unlink all & delete server data' },
+  'guardian.deleteConfirm': {
+    ko: '모든 가족 연결과 서버에 공유된 복용 기록이 삭제돼요. 이 폰의 약과 기록은 그대로 남아요.',
+    en: 'All family links and the doses shared on the server will be deleted. Medicines and history on this phone stay.',
+  },
+  'guardian.privacy': {
+    ko: '연결하면 약 이름과 복용 시간·여부가 연결된 가족에게만 공유돼요.',
+    en: 'Linking shares medicine names and dose times/status only with your linked family.',
+  },
+  'guardian.error': { ko: '연결에 실패했어요. 인터넷 연결을 확인하고 다시 시도해 주세요.', en: "Couldn't reach the server. Check your connection and try again." },
   'settings.sectionInfo': { ko: '앱 정보', en: 'About' },
   'settings.privacy': { ko: '개인정보처리방침', en: 'Privacy policy' },
   'settings.version': { ko: '앱 버전', en: 'Version' },
@@ -207,7 +302,7 @@ export const STRINGS: Record<string, Entry> = {
   'paywall.active': { ko: '정식 버전 이용 중', en: 'Full version active' },
   'paywall.f1': { ko: '약 무제한 등록 (무료 버전은 {n}개까지)', en: 'Unlimited medicines (free version: up to {n})' },
   'paywall.f2': { ko: '한 번 결제로 평생 사용 · 자동 결제 없음', en: 'Pay once, keep it forever — never billed again' },
-  'paywall.f3': { ko: '가족 공유로 최대 6명이 함께 사용', en: 'Family Sharing: up to 6 family members' },
+  'paywall.f3': { ko: '같은 Apple ID라면 새 기기에서도 구매 복원', en: 'Restore on any device with the same Apple ID' },
   'paywall.f4': { ko: '앞으로 추가되는 기능도 모두 포함', en: 'Includes every future feature' },
   'paywall.limitReached': { ko: '무료 버전은 약 {n}개까지 등록할 수 있어요', en: 'The free version holds up to {n} medicines' },
   'paywall.freeUsage': { ko: '무료 버전 · 약 {n}/{max}개 사용 중', en: 'Free version · {n}/{max} medicines used' },
@@ -221,6 +316,10 @@ export const STRINGS: Record<string, Entry> = {
     en: "Couldn't load the product from the store. Please check your connection.",
   },
   'paywall.failTitle': { ko: '구매 실패', en: 'Purchase failed' },
+  'paywall.failStoreBody': {
+    ko: 'App Store에서 상품 정보를 불러오지 못했어요. 네트워크를 확인한 뒤 다시 시도해 주세요.',
+    en: "Couldn't load the product from the App Store. Check your connection and try again.",
+  },
   'paywall.failBody': { ko: '결제를 완료하지 못했어요. 잠시 후 다시 시도해 주세요.', en: "The purchase didn't go through. Please try again." },
   'paywall.footer': { ko: '결제는 Apple ID로 처리됩니다. 정식 버전을 사지 않아도 약 {n}개까지는 알림·기록을 평생 무료로 쓸 수 있어요.', en: 'Payment is handled by your Apple ID. Without it, reminders and history for up to {n} medicines stay free forever.' },
 
@@ -236,6 +335,8 @@ export const STRINGS: Record<string, Entry> = {
     ko: '{name} 처방이 {n}일 남았어요. 병원 예약을 확인하세요.',
     en: '{name} runs out in {n} days. Time to book a refill.',
   },
+  'notif.testTitle': { ko: '💊 테스트 알림', en: '💊 Test reminder' },
+  'notif.testBody': { ko: '알림이 정상적으로 도착했어요!', en: 'Reminders are working!' },
   'notif.permTitle': { ko: '알림이 꺼져 있어요', en: 'Notifications are off' },
   'notif.permBody': {
     ko: '설정에서 알림을 허용해야 복용 시간에 알려드릴 수 있어요.',

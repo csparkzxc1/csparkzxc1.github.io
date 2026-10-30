@@ -28,9 +28,9 @@
 |------|----|
 | 유형 | **비소모성 (Non-Consumable)** |
 | 참조 이름 | `MediRemind Full` |
-| 제품 ID | **`com.csparkzxc.mediremind.full`** (한 글자도 다르면 안 됨) |
+| 제품 ID | **`01`** (생성 후 변경 불가, 앱 코드와 일치해야 함) — 참조 이름은 com.csparkzxc.mediremind.full |
 | 가격 | **₩1,900** (다른 나라는 Apple 자동 환산, 미국 약 $1.49) |
-| **가족 공유** | **켜기** ← 결제 화면에 "가족 공유로 최대 6명"이라고 적혀 있으므로 반드시 켜야 함 |
+| **가족 공유** | 선택 사항. 켜려다 오류가 나서 결제 화면의 가족 공유 문구는 뺐음. 켜는 데 성공하면 `paywall.f3` 문구를 다시 바꿀 수 있음 |
 | 표시 이름 (한국어) | `MediRemind 정식 버전` |
 | 설명 (한국어) | `약을 무제한으로 등록합니다. 1회 결제.` |
 | 표시 이름 (영어) | `MediRemind Full Version` |
@@ -47,9 +47,9 @@
 MediRemind is a medication reminder app. All data stays on the device; there is no account or server.
 
 Monetization: the app is free to use with up to 2 medicines. A one-time non-consumable
-in-app purchase, "MediRemind Full Version" (com.csparkzxc.mediremind.full), removes the
+in-app purchase, "MediRemind Full Version" (product ID 01), removes the
 limit. To see the paywall, add a third medicine. Restore Purchase is on the paywall and in
-Settings. Family Sharing is enabled for the purchase.
+Settings.
 
 To test reminders: add a medicine with a time 1-2 minutes ahead and lock the device. The
 reminder offers a "Mark taken" action.

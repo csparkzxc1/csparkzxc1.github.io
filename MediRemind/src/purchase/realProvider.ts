@@ -74,6 +74,35 @@ function isUserCancel(error: PurchaseError | undefined): boolean {
   return /cancel/i.test(code) || /cancel/i.test(msg);
 }
 
+function errorCode(error: unknown): string {
+  return String((error as { code?: string } | undefined)?.code ?? '');
+}
+
+/** A store error carrying its code so the paywall can explain what went wrong. */
+export class PurchaseFailure extends Error {
+  constructor(message: string, readonly code: string) {
+    super(message);
+  }
+}
+
+/**
+ * Settles a failed request. "Already owned" means the store holds a purchase
+ * the device lost track of, so it is restored instead of reported as an error.
+ */
+async function settleError(p: Pending, error: unknown): Promise<void> {
+  const code = errorCode(error);
+  if (isUserCancel(error as PurchaseError)) return p.resolve(false);
+  if (/already-owned/i.test(code)) {
+    try {
+      if (await applyHistory(await getAvailablePurchases())) return p.resolve(true);
+    } catch (e) {
+      console.warn('[iap] restore after already-owned failed', e);
+    }
+  }
+  const message = (error as { message?: string } | undefined)?.message || 'Purchase failed';
+  p.reject(new PurchaseFailure(message, code));
+}
+
 function bindListeners(): void {
   if (listenersBound) return;
   listenersBound = true;
@@ -98,9 +127,7 @@ function bindListeners(): void {
     if (!p) return;
     pending = null;
     clearTimeout(p.timer);
-    // Cancelling is a normal outcome; real errors surface as "purchase failed".
-    if (isUserCancel(error)) p.resolve(false);
-    else p.reject(new Error(error?.message || 'Purchase failed'));
+    settleError(p, error);
   });
 }
 
@@ -126,8 +153,7 @@ async function buy(sku: string): Promise<boolean> {
     });
   } catch (e) {
     const p = take(sku);
-    if (isUserCancel(e as PurchaseError)) p?.resolve(false);
-    else p?.reject(e);
+    if (p) await settleError(p, e);
   }
   return result;
 }

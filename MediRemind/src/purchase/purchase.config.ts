@@ -4,7 +4,8 @@
  * App Store Connect (see docs/IAP_SETUP.md).
  */
 export const PURCHASE_CONFIG = {
-  productId: 'com.csparkzxc.mediremind.full',
+  // The App Store product ID chosen at creation (fixed); the reverse-DNS name is only its reference name.
+  productId: '01',
   productTitle: 'MediRemind 정식 버전',
   /** Shown only when the store price can't be fetched (mock / offline). */
   fallbackPriceLabel: '₩1,900',

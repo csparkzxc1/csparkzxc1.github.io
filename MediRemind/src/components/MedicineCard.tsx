@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Switch, TouchableOpacity } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import type { Medicine } from '../types';
-import { daysLabel, formatTime } from '../i18n/core';
+import { daysLabel, formatDosage, formatTime } from '../i18n/core';
 import { useI18n } from '../i18n/I18nProvider';
 import {
   isPrescriptionExpired,
@@ -60,7 +60,7 @@ export default function MedicineCard({ medicine, onPress, onToggleActive }: Medi
           <Ionicons name="calendar-outline" size={13} color={colors.textMuted} />
           <Text style={styles.meta}> {daysLabel(medicine.days)}</Text>
           <Text style={styles.metaDot}>  ·  </Text>
-          <Text style={styles.meta}>{medicine.dosage}</Text>
+          <Text style={styles.meta}>{formatDosage(medicine.dosage)}</Text>
         </View>
         {expired && <Text style={styles.expiredLabel}>{t('presc.expired')}</Text>}
       </View>

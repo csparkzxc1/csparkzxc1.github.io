@@ -7,7 +7,7 @@ import { Linking, Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import type { Medicine } from '../types';
 import { kvGet, kvSet, KV_KEYS } from '../db/kv';
-import { t } from '../i18n/core';
+import { formatDosage, t } from '../i18n/core';
 import {
   buildNotificationPlan,
   SCHEDULE_BUDGET,
@@ -64,6 +64,18 @@ export async function ensurePermission(): Promise<boolean> {
   } catch (e) {
     console.warn('[notif] permission check failed', e);
     return false;
+  }
+}
+
+export type ReminderPermission = 'granted' | 'ask' | 'denied';
+
+export async function getReminderPermission(): Promise<ReminderPermission> {
+  try {
+    const p = await Notifications.getPermissionsAsync();
+    if (p.granted) return 'granted';
+    return p.canAskAgain ? 'ask' : 'denied';
+  } catch {
+    return 'denied';
   }
 }
 
@@ -150,7 +162,7 @@ async function scheduleDoseSlot(slot: PlannedNotification, s: ReminderSettings) 
   const body = allEarly
     ? t('notif.doseBodyEarly', { n: first.offset, list: names.join(', ') })
     : slot.doses.length === 1
-      ? t('notif.doseBodyOne', { name: first.name, dosage: first.dosage })
+      ? t('notif.doseBodyOne', { name: first.name, dosage: formatDosage(first.dosage) })
       : names.join(', ');
 
   const trigger: Notifications.NotificationTriggerInput =
@@ -219,6 +231,29 @@ async function scheduleRefillAlerts(
     budget -= 1;
   }
   return budget;
+}
+
+/**
+ * Schedules a one-off notification a few seconds out so users can check that
+ * reminders reach them. Reports how many dose reminders are scheduled.
+ */
+export async function sendTestNotification(): Promise<
+  { status: 'denied' } | { status: 'sent'; scheduledDoses: number }
+> {
+  if (!(await ensurePermission())) return { status: 'denied' };
+  await Notifications.scheduleNotificationAsync({
+    content: { title: t('notif.testTitle'), body: t('notif.testBody'), sound: 'default' },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+      seconds: 5,
+      channelId: DOSE_CHANNEL,
+    },
+  });
+  const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+  const scheduledDoses = scheduled.filter(
+    (n) => (n.content.data as { type?: string } | undefined)?.type === 'dose'
+  ).length;
+  return { status: 'sent', scheduledDoses };
 }
 
 export async function cancelAllReminders(): Promise<void> {

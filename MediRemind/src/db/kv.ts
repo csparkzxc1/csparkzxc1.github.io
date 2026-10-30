@@ -30,6 +30,7 @@ export const KV_KEYS = {
   notifSound: 'notif.sound',
   notifVibration: 'notif.vibration',
   themeMode: 'theme.mode',
+  textSize: 'display.textSize',
   language: 'app.language',
   lastGeneratedDate: 'dose.lastGeneratedDate',
   handledResponses: 'notif.handledResponses',

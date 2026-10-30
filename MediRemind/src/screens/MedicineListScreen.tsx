@@ -1,14 +1,6 @@
-import React, { useRef, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  Alert,
-  Animated,
-  PanResponder,
-} from 'react-native';
+import React, { useRef } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Animated } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -26,68 +18,79 @@ import ScreenHeader from '../components/ScreenHeader';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
-const OPEN_OFFSET = -84;
+const ACTION_WIDTH = 84;
 
+/**
+ * Swipe left to reveal Delete. Uses gesture-handler's native swipe so the row
+ * tracks the finger smoothly and doesn't fight the list's vertical scroll.
+ */
 function SwipeableRow({
   medicine,
   onPress,
   onToggleActive,
   onDelete,
+  onOpen,
 }: {
   medicine: Medicine;
   onPress: () => void;
   onToggleActive: () => void;
   onDelete: () => void;
+  /** Lets the list close the previously open row. */
+  onOpen: (row: Swipeable) => void;
 }) {
   const { t } = useI18n();
   const styles = useThemedStyles(makeStyles);
-  const translateX = useRef(new Animated.Value(0)).current;
-  const [open, setOpen] = useState(false);
-  const openRef = useRef(false);
+  const ref = useRef<Swipeable>(null);
+  const open = useRef(false);
 
-  const animateTo = (toValue: number) => {
-    openRef.current = toValue !== 0;
-    setOpen(openRef.current);
-    Animated.spring(translateX, { toValue, useNativeDriver: true }).start();
-  };
-
-  const panResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (_, { dx, dy }) =>
-        Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 8,
-      onPanResponderMove: (_, { dx }) => {
-        const base = openRef.current ? OPEN_OFFSET : 0;
-        translateX.setValue(Math.max(Math.min(base + dx, 0), -120));
-      },
-      onPanResponderRelease: (_, { dx }) => {
-        const x = (openRef.current ? OPEN_OFFSET : 0) + dx;
-        animateTo(x < OPEN_OFFSET / 2 ? OPEN_OFFSET : 0);
-      },
-      onPanResponderTerminate: () => animateTo(openRef.current ? OPEN_OFFSET : 0),
-    })
-  ).current;
-
-  return (
-    <View style={styles.swipeWrapper}>
+  const renderRightActions = (_: unknown, dragX: Animated.AnimatedInterpolation<number>) => {
+    const scale = dragX.interpolate({
+      inputRange: [-ACTION_WIDTH, -20, 0],
+      outputRange: [1, 0.7, 0.7],
+      extrapolate: 'clamp',
+    });
+    return (
       <TouchableOpacity
         style={styles.deleteBtn}
         onPress={() => {
-          animateTo(0);
+          ref.current?.close();
           onDelete();
         }}
         accessibilityLabel={t('common.delete')}
       >
-        <Ionicons name="trash" size={22} color="#FFF" />
-        <Text style={styles.deleteBtnText}>{t('common.delete')}</Text>
+        <Animated.View style={[styles.deleteInner, { transform: [{ scale }] }]}>
+          <Ionicons name="trash" size={22} color="#FFF" />
+          <Text style={styles.deleteBtnText}>{t('common.delete')}</Text>
+        </Animated.View>
       </TouchableOpacity>
+    );
+  };
 
-      <Animated.View style={{ transform: [{ translateX }] }} {...panResponder.panHandlers}>
+  return (
+    <View style={styles.row}>
+      <Swipeable
+        ref={ref}
+        friction={1.6}
+        rightThreshold={ACTION_WIDTH / 2}
+        overshootRight={false}
+        renderRightActions={renderRightActions}
+        // An opaque backing so a dimmed (inactive) card doesn't show the button behind it.
+        childrenContainerStyle={styles.rowBacking}
+        onSwipeableWillOpen={() => {
+          open.current = true;
+          Haptics.selectionAsync().catch(() => {});
+          if (ref.current) onOpen(ref.current);
+        }}
+        onSwipeableWillClose={() => {
+          open.current = false;
+        }}
+      >
         <MedicineCard
           medicine={medicine}
-          onPress={() => (open ? animateTo(0) : onPress())}
+          onPress={() => (open.current ? ref.current?.close() : onPress())}
           onToggleActive={onToggleActive}
         />
-      </Animated.View>
+      </Swipeable>
     </View>
   );
 }
@@ -99,6 +102,7 @@ export default function MedicineListScreen() {
   const styles = useThemedStyles(makeStyles);
   const { medicines, isLoading, deleteMedicine, toggleActive } = useMedicineStore();
   const addMedicine = useAddMedicine();
+  const openRow = useRef<Swipeable | null>(null);
 
   const handleDelete = (medicine: Medicine) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
@@ -156,6 +160,10 @@ export default function MedicineListScreen() {
                 toggleActive(item.id);
               }}
               onDelete={() => handleDelete(item)}
+              onOpen={(row) => {
+                if (openRow.current && openRow.current !== row) openRow.current.close();
+                openRow.current = row;
+              }}
             />
           )}
         />
@@ -181,18 +189,17 @@ const makeStyles = (c: ThemeColors) =>
       elevation: 6,
     },
     list: { padding: 16, paddingBottom: 32 },
-    swipeWrapper: { borderRadius: 18, marginVertical: 6, overflow: 'hidden' },
+    row: { marginVertical: 6 },
+    rowBacking: { backgroundColor: c.bg, borderRadius: 18 },
     deleteBtn: {
-      position: 'absolute',
-      right: 0,
-      top: 0,
-      bottom: 0,
-      width: 84,
+      width: ACTION_WIDTH,
+      marginLeft: 10,
       backgroundColor: c.danger,
+      borderRadius: 18,
       alignItems: 'center',
       justifyContent: 'center',
-      borderRadius: 18,
     },
+    deleteInner: { alignItems: 'center' },
     deleteBtnText: { color: '#FFF', fontSize: 12, fontWeight: '600', marginTop: 2 },
     empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 },
     emptyTitle: { fontSize: 20, fontWeight: '700', color: c.text, marginTop: 20, marginBottom: 10 },

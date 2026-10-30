@@ -18,7 +18,7 @@ import * as Haptics from 'expo-haptics';
 import { COLOR_TAGS, type ColorTag, type Medicine, type RootStackParamList } from '../types';
 import { useMedicineStore } from '../store/medicineStore';
 import { useI18n } from '../i18n/I18nProvider';
-import { weekdayLabels } from '../i18n/core';
+import { DOSAGE_UNITS, formatDosage, formatTime, unitLabel, weekdayLabels } from '../i18n/core';
 import { uid } from '../lib/id';
 import { useEntitlement } from '../purchase/EntitlementProvider';
 import { canAddMedicine } from '../purchase/limits';
@@ -33,7 +33,6 @@ type RouteParams = RouteProp<RootStackParamList, 'MedicineForm'>;
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const DOSAGE_AMOUNTS = ['0.5', '1', '1.5', '2', '3', '5', '10'];
-const DOSAGE_UNITS = ['정', '캡슐', '포', 'mg', 'mL'];
 const DEFAULT_UNIT = '정';
 
 type FreqOption = '1' | '2' | '3' | '4' | '5' | '6' | 'custom';
@@ -72,7 +71,7 @@ export default function MedicineFormScreen() {
   const styles = useThemedStyles(makeStyles);
 
   const medicineId = route.params?.medicineId;
-  const { medicines, getMedicineById, addMedicine, updateMedicine } = useMedicineStore();
+  const { medicines, getMedicineById, addMedicine, updateMedicine, deleteMedicine } = useMedicineStore();
   const { isPro } = useEntitlement();
   const existing = medicineId ? getMedicineById(medicineId) : undefined;
 
@@ -172,6 +171,28 @@ export default function MedicineFormScreen() {
 
   // ─── Save ────────────────────────────────────────────────────────────────
 
+  // Deleting also removes the dose history, so it always asks first.
+  const handleDelete = () => {
+    if (!existing) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+    Alert.alert(t('list.deleteTitle'), t('list.deleteBody', { name: existing.name }), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('common.delete'),
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await deleteMedicine(existing.id);
+            navigation.goBack();
+          } catch (e) {
+            console.warn('[form] delete failed', e);
+            Alert.alert(t('common.error'), t('form.errSave'));
+          }
+        },
+      },
+    ]);
+  };
+
   const handleSave = async () => {
     if (!existing && !canAddMedicine(isPro, medicines.length)) {
       navigation.navigate('Paywall', { reason: 'limit' });
@@ -267,7 +288,7 @@ export default function MedicineFormScreen() {
               return (
                 <Chip
                   key={value}
-                  label={value}
+                  label={formatDosage(value)}
                   active={!dosageCustom && dosage === value}
                   onPress={() => {
                     setDosageCustom(false);
@@ -303,7 +324,7 @@ export default function MedicineFormScreen() {
                 {DOSAGE_UNITS.map((unit) => (
                   <Chip
                     key={unit}
-                    label={unit}
+                    label={unitLabel(unit)}
                     active={customUnit === unit}
                     onPress={() => updateCustomDosage(customAmount, unit)}
                   />
@@ -382,6 +403,7 @@ export default function MedicineFormScreen() {
                   maxLength={5}
                   accessibilityLabel={`${t('form.times')} ${idx + 1}`}
                 />
+                {time.length > 0 && <Text style={styles.timeAmPm}>{formatTime(normalizeTime(time))}</Text>}
               </View>
               {times.length > 1 && (
                 <TouchableOpacity style={styles.removeTimeBtn} onPress={() => removeTime(idx)}>
@@ -541,6 +563,13 @@ export default function MedicineFormScreen() {
           <Ionicons name="checkmark-circle" size={20} color={colors.onBrand} />
           <Text style={styles.saveText}>{existing ? t('form.saveEdit') : t('form.saveNew')}</Text>
         </TouchableOpacity>
+
+        {existing && (
+          <TouchableOpacity style={styles.deleteBtn} onPress={handleDelete} accessibilityRole="button">
+            <Ionicons name="trash-outline" size={18} color={colors.danger} />
+            <Text style={styles.deleteText}>{t('form.delete')}</Text>
+          </TouchableOpacity>
+        )}
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -633,6 +662,7 @@ const makeStyles = (c: ThemeColors, scheme: Scheme) =>
       borderColor: c.brandBorder,
     },
     timeInput: { flex: 1, fontSize: 18, fontWeight: '700', color: c.brand, paddingVertical: 10 },
+    timeAmPm: { fontSize: 14, fontWeight: '600', color: c.textMuted, marginLeft: 8 },
     removeTimeBtn: { padding: 4 },
     addTimeBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
     addTimeText: { color: c.brand, fontSize: 14, fontWeight: '600' },
@@ -687,4 +717,16 @@ const makeStyles = (c: ThemeColors, scheme: Scheme) =>
       gap: 10,
     },
     saveText: { color: c.onBrand, fontSize: 17, fontWeight: '700' },
+    deleteBtn: {
+      marginTop: 14,
+      paddingVertical: 14,
+      borderRadius: 16,
+      borderWidth: 1.5,
+      borderColor: c.dangerSoft,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
+    },
+    deleteText: { color: c.danger, fontSize: 15, fontWeight: '700' },
   });

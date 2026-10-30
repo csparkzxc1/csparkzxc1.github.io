@@ -1,0 +1,277 @@
+<title>MediRemind 홍보 자료집</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+  /* Layout: a pharmacy envelope (약봉투) — one narrow reading column, sections set off like dose slots, copy blocks as tear-off slips. */
+  :root {
+    --bg: #F6F7FB;
+    --paper: #FFFFFF;
+    --ink: #1A1D2B;
+    --muted: #5E667E;
+    --line: #DDE1EC;
+    --brand: #4A6CF7;
+    --brand-soft: #EAEFFE;
+    --ok: #0E9F6E;
+    --ok-soft: #E3F6EE;
+    --wait: #B45309;
+    --wait-soft: #FDF1E2;
+    --font-display: "Gowun Batang", "Nanum Myeongjo", "AppleMyungjo", serif;
+    --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0F1220; --paper: #171B2C; --ink: #EEF0F7; --muted: #A2A9C0; --line: #2A3048;
+      --brand: #8EA2FF; --brand-soft: #1F2747; --ok: #34D399; --ok-soft: #12302A; --wait: #FBBF6B; --wait-soft: #33261A;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0F1220; --paper: #171B2C; --ink: #EEF0F7; --muted: #A2A9C0; --line: #2A3048;
+    --brand: #8EA2FF; --brand-soft: #1F2747; --ok: #34D399; --ok-soft: #12302A; --wait: #FBBF6B; --wait-soft: #33261A;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font: 400 16px/1.7 var(--font-body);
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding-block: 40px 72px; display: grid; gap: 40px; }
+  h1, h2 { font-family: var(--font-display); font-weight: 700; text-wrap: balance; margin: 0; line-height: 1.3; }
+  h1 { font-size: clamp(30px, 6vw, 44px); }
+  h2 { font-size: 24px; }
+  h3 { font-size: 17px; margin: 0; }
+  p { margin: 0; }
+  .eyebrow { font: 500 12px/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--brand); }
+  .lede { font-size: 18px; color: var(--muted); max-width: 62ch; }
+  section { display: grid; gap: 16px; }
+  .head { display: grid; gap: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+
+  /* dose-slot strip: the subject's own detail */
+  .slots { display: grid; grid-template-columns: repeat(4, 1fr); border: 1.5px solid var(--ink); border-radius: 4px; overflow: hidden; }
+  .slots div { padding: 10px 8px; text-align: center; font-size: 13px; border-right: 1.5px solid var(--ink); }
+  .slots div:last-child { border-right: 0; }
+  .slots b { display: block; font: 500 15px/1.4 var(--font-mono); }
+
+  .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+  .fact { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 2px; }
+  .fact b { font: 500 22px/1.2 var(--font-mono); font-variant-numeric: tabular-nums; }
+  .fact span { font-size: 13px; color: var(--muted); }
+
+  ul.list { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; }
+  ul.list li { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; align-items: start; }
+  ul.list li > div { min-width: 0; }
+  .tag { font: 500 11px/1 var(--font-mono); padding: 5px 7px; border-radius: 999px; white-space: nowrap; margin-top: 4px; }
+  .tag.live { background: var(--ok-soft); color: var(--ok); }
+  .tag.soon { background: var(--wait-soft); color: var(--wait); }
+  .muted { color: var(--muted); font-size: 14px; }
+
+  .feature { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 20px; display: grid; gap: 10px; }
+  .feature.star { border: 2px solid var(--brand); }
+  .flow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .flow div { background: var(--brand-soft); border-radius: 8px; padding: 12px; font-size: 14px; min-width: 0; }
+  .flow b { display: block; font: 500 12px/1.4 var(--font-mono); color: var(--brand); margin-bottom: 4px; }
+
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); }
+  table { border-collapse: collapse; width: 100%; min-width: 520px; font-size: 14px; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-weight: 700; background: var(--brand-soft); }
+  tr:last-child td { border-bottom: 0; }
+  td.us { font-weight: 700; color: var(--brand); }
+
+  /* tear-off copy slips */
+  .slip { background: var(--paper); border: 1.5px dashed var(--line); border-radius: 10px; padding: 16px 18px; display: grid; gap: 10px; }
+  .slip-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .slip-top h3 { font-size: 14px; color: var(--muted); font-weight: 500; }
+  .slip pre { margin: 0; white-space: pre-wrap; word-break: keep-all; overflow-wrap: anywhere; font: 400 15px/1.7 var(--font-body); }
+  button.copy {
+    font: 500 13px/1 var(--font-body); color: var(--brand); background: var(--brand-soft);
+    border: 0; border-radius: 999px; padding: 8px 14px; cursor: pointer;
+  }
+  button.copy:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+  .persona { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+  .persona div { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 6px; min-width: 0; }
+  footer { font-size: 13px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; }
+  @media (max-width: 520px) {
+    .flow { grid-template-columns: 1fr; }
+    .slots div { font-size: 12px; padding: 8px 4px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+
+  <header class="head">
+    <span class="eyebrow">MediRemind · 약 복용 알리미 · iOS</span>
+    <h1>약 먹을 시간, 놓치지 않게. 놓치면 가족이 알게.</h1>
+    <p class="lede">매일 약을 챙겨야 하는 사람을 위한 복약 알림 앱입니다. 광고 없이 기기 안에서 조용히 동작하고, 1.2부터는 부모님이 약을 놓치면 자녀에게 알림이 갑니다.</p>
+    <div class="slots" aria-label="하루 복용 시간대 예시">
+      <div><b>08:00</b>아침</div>
+      <div><b>13:00</b>점심</div>
+      <div><b>19:00</b>저녁</div>
+      <div><b>22:30</b>취침 전</div>
+    </div>
+  </header>
+
+  <section>
+    <div class="head"><span class="eyebrow">한눈에 보기</span><h2>숫자로 말하는 MediRemind</h2></div>
+    <div class="facts">
+      <div class="fact"><b>₩0</b><span>약 2개까지 평생 무료</span></div>
+      <div class="fact"><b>₩1,900</b><span>1회 결제로 무제한 (구독 아님)</span></div>
+      <div class="fact"><b>0개</b><span>광고·추적·분석 도구</span></div>
+      <div class="fact"><b>30분</b><span>놓친 약을 가족에게 알리는 기준</span></div>
+      <div class="fact"><b>6자리</b><span>가족 연결 초대 코드</span></div>
+      <div class="fact"><b>2개 언어</b><span>한국어 · English</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><span class="eyebrow">문제와 해결</span><h2>왜 필요한가</h2></div>
+    <ul class="list">
+      <li><span class="tag live">문제</span><div><h3>"먹었나, 안 먹었나" 기억이 안 난다</h3><p class="muted">하루 여러 번, 여러 종류의 약을 먹다 보면 방금 먹었는지 헷갈립니다.</p></div></li>
+      <li><span class="tag live">문제</span><div><h3>멀리 사는 부모님이 걱정된다</h3><p class="muted">전화로 매번 "약 드셨어요?" 묻기는 어렵고, 부모님도 부담스러워합니다.</p></div></li>
+      <li><span class="tag live">문제</span><div><h3>복약 앱은 광고투성이거나 가입이 복잡하다</h3><p class="muted">어르신에게 회원가입·광고 팝업은 그 자체로 진입 장벽입니다.</p></div></li>
+      <li><span class="tag soon">해결</span><div><h3>알림 한 번, 체크 한 번, 놓치면 가족에게</h3><p class="muted">가입 없이 바로 쓰고, 알림에서 바로 "복용 완료"를 누르고, 놓치면 연결된 가족이 압니다.</p></div></li>
+    </ul>
+  </section>
+
+  <section>
+    <div class="head"><span class="eyebrow">핵심 기능</span><h2>무엇을 할 수 있나</h2></div>
+
+    <div class="feature star">
+      <span class="eyebrow">신규 · 1.2.0 · 테스트 중</span>
+      <h3>보호자 연결 (가족 알림)</h3>
+      <p>부모님이 약 시간에서 30분이 지나도 체크하지 않으면 자녀 폰으로 "엄마님이 08:00 혈압약을 아직 복용하지 않았어요" 알림이 갑니다. 자녀는 앱에서 부모님의 오늘 복용 현황(복용·예정·확인 중·안 먹음)을 바로 볼 수 있습니다.</p>
+      <div class="flow">
+        <div><b>1. 부모님 폰</b>설정 → 보호자 연결 → 초대 코드 만들기</div>
+        <div><b>2. 자녀 폰</b>같은 앱에서 6자리 코드 입력 → 연결</div>
+        <div><b>3. 놓치면</b>30분 뒤 자녀에게 알림, 한 번만</div>
+      </div>
+      <p class="muted">이름·이메일 없는 익명 연결. 약 이름과 복용 시간·여부만 연결된 가족에게 공유되고, 언제든 연결 해제와 서버 데이터 삭제가 가능합니다.</p>
+    </div>
+
+    <ul class="list">
+      <li><span class="tag live">1.1.0</span><div><h3>시간대별 복약 알림</h3><p class="muted">하루 최대 20회, 요일 지정(매일·평일·주말·직접 선택), 복용 몇 분 전 미리 알림. 같은 시간 약은 한 알림으로 묶어 보냅니다.</p></div></li>
+      <li><span class="tag live">1.1.0</span><div><h3>알림에서 바로 "복용 완료"</h3><p class="muted">앱을 열지 않고 알림의 버튼으로 체크합니다.</p></div></li>
+      <li><span class="tag live">1.1.0</span><div><h3>자유로운 용량 입력</h3><p class="muted">0.5정부터 10정까지 빠른 선택, 직접 입력(정·캡슐·포·mg·mL).</p></div></li>
+      <li><span class="tag live">1.1.0</span><div><h3>복용 달력과 연속 복용 기록</h3><p class="muted">날짜별 복용 기록과 며칠째 빠짐없이 먹었는지 보여 주는 연속 기록.</p></div></li>
+      <li><span class="tag live">1.1.0</span><div><h3>처방 기간과 재처방 알림</h3><p class="muted">처방이 끝나기 며칠 전에 병원 갈 때를 알려 줍니다.</p></div></li>
+      <li><span class="tag live">1.1.0</span><div><h3>백업과 복원</h3><p class="muted">새 폰으로 바꿔도 파일 하나로 약과 기록을 옮깁니다.</p></div></li>
+      <li><span class="tag live">1.1.0</span><div><h3>다크 모드 · 한국어/영어</h3><p class="muted">시스템 설정을 따라가고, 언어는 앱에서 바로 바꿉니다.</p></div></li>
+      <li><span class="tag live">1.1.0</span><div><h3>알림 꺼짐 경고와 알림 테스트</h3><p class="muted">iPhone 설정에서 알림이 꺼져 있으면 홈 화면에서 바로 알려 주고, 설정에서 테스트 알림을 보내 볼 수 있습니다.</p></div></li>
+    </ul>
+    <p class="muted">1.1.0은 App Store 심사 중, 1.2.0(보호자 연결)은 TestFlight 테스트 중입니다. 홍보물에는 출시된 기능만 "지금 사용 가능"으로 표기해 주세요.</p>
+  </section>
+
+  <section>
+    <div class="head"><span class="eyebrow">차별점</span><h2>다른 복약 앱과 무엇이 다른가</h2></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>항목</th><th>MediRemind</th><th>일반 복약 앱</th></tr></thead>
+        <tbody>
+          <tr><td>가입</td><td class="us">필요 없음</td><td>이메일·전화번호 가입</td></tr>
+          <tr><td>광고</td><td class="us">없음</td><td>배너·전면 광고가 흔함</td></tr>
+          <tr><td>가격</td><td class="us">약 2개 무료, ₩1,900 1회 결제</td><td>월 구독이 많음</td></tr>
+          <tr><td>데이터 보관</td><td class="us">기본은 기기 안에만</td><td>서버 저장이 기본</td></tr>
+          <tr><td>가족 알림</td><td class="us">놓쳤을 때만 자녀에게 (1.2.0)</td><td>없거나 유료 상위 요금제</td></tr>
+          <tr><td>인터넷</td><td class="us">없어도 알림 동작</td><td>연결 필요한 경우 있음</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><span class="eyebrow">타깃</span><h2>누구에게 파는가</h2></div>
+    <div class="persona">
+      <div><h3>걱정하는 자녀 (30~50대)</h3><p class="muted">혈압·당뇨약을 드시는 부모님과 떨어져 산다. 결제하는 사람은 이쪽. 핵심 메시지: "전화 안 해도 알 수 있어요."</p></div>
+      <div><h3>매일 약을 챙기는 본인</h3><p class="muted">만성질환, 영양제, 피임약, 단기 처방약. 핵심 메시지: "광고 없이, 가입 없이, 바로."</p></div>
+      <div><h3>어린 자녀를 둔 부모</h3><p class="muted">아이 감기약·항생제를 시간 맞춰 먹여야 한다. 핵심 메시지: "하루 세 번, 헷갈리지 않게."</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><span class="eyebrow">바로 쓰는 문구</span><h2>복사해서 쓰는 홍보 문구</h2></div>
+
+    <div class="slip">
+      <div class="slip-top"><h3>한 줄 소개</h3><button class="copy" type="button" data-copy="c1">복사</button></div>
+      <pre id="c1">약 먹을 시간을 알려 주고, 놓치면 가족에게 알려 주는 광고 없는 복약 알리미, MediRemind.</pre>
+    </div>
+
+    <div class="slip">
+      <div class="slip-top"><h3>App Store 부제 (30자 이내)</h3><button class="copy" type="button" data-copy="c2">복사</button></div>
+      <pre id="c2">광고 없는 복약 알림 · 가족 알림</pre>
+    </div>
+
+    <div class="slip">
+      <div class="slip-top"><h3>카카오톡·지인 공유용</h3><button class="copy" type="button" data-copy="c3">복사</button></div>
+      <pre id="c3">부모님 약 잘 챙겨 드시는지 걱정될 때 써 보세요.
+MediRemind는 약 시간에 알림을 보내고, 30분이 지나도 체크를 안 하면 자녀 폰으로 알려 줘요.
+가입도 광고도 없고, 약 2개까지는 평생 무료예요.
+https://apps.apple.com/app/id6762364088</pre>
+    </div>
+
+    <div class="slip">
+      <div class="slip-top"><h3>인스타그램·블로그 본문</h3><button class="copy" type="button" data-copy="c4">복사</button></div>
+      <pre id="c4">"엄마, 약 드셨어요?" 매일 묻기 어려웠다면.
+
+MediRemind는
+✔ 정해진 시간에 약 알림
+✔ 알림에서 바로 '복용 완료'
+✔ 30분 지나도 안 드시면 자녀에게 알림
+✔ 가입·광고 없음, 약 2개까지 평생 무료
+
+부모님 폰에는 약 알림을, 내 폰에는 안심을.
+#복약알림 #부모님건강 #효도앱 #약알림 #MediRemind</pre>
+    </div>
+
+    <div class="slip">
+      <div class="slip-top"><h3>English one-liner</h3><button class="copy" type="button" data-copy="c5">복사</button></div>
+      <pre id="c5">MediRemind reminds you when it's time for your medicine, and lets your family know if a dose is missed. No ads, no sign-up, free for up to 2 medicines.</pre>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><span class="eyebrow">신뢰 요소</span><h2>믿고 쓸 수 있는 이유</h2></div>
+    <ul class="list">
+      <li><span class="tag live">개인정보</span><div><p>기본 기능은 아무것도 수집하지 않습니다. 보호자 연결을 켠 경우에만 약 이름·복용 시간·복용 여부가 연결된 가족에게만 공유되고, 서버 기록은 14일 뒤 자동 삭제됩니다.</p></div></li>
+      <li><span class="tag live">결제</span><div><p>App Store 인앱 결제(1회)라 결제 정보는 Apple이 처리합니다. 같은 Apple ID라면 새 기기에서 구매 복원이 됩니다.</p></div></li>
+      <li><span class="tag live">안정성</span><div><p>iOS 알림 개수 제한(64개)을 고려해 반복 알림으로 설계해, 약이 많아도 알림이 빠지지 않습니다. 핵심 로직은 자동 테스트 46개로 검증합니다.</p></div></li>
+      <li><span class="tag live">면책</span><div><p class="muted">MediRemind는 의료 기기가 아니며, 복약 알림은 의사·약사의 지시를 대신하지 않습니다. 홍보물에 "치료", "의료용" 같은 표현은 쓰지 마세요.</p></div></li>
+    </ul>
+  </section>
+
+  <section>
+    <div class="head"><span class="eyebrow">로드맵</span><h2>다음에 나올 것</h2></div>
+    <ul class="list">
+      <li><span class="tag soon">다음</span><div><h3>1.2.0 보호자 연결 정식 출시</h3><p class="muted">TestFlight 검증 후 App Store 제출.</p></div></li>
+      <li><span class="tag soon">검토</span><div><h3>가족 알림 구독 (예: 월 ₩2,900)</h3><p class="muted">초기에는 무료로 사용자를 모은 뒤 반응을 보고 결정.</p></div></li>
+      <li><span class="tag soon">검토</span><div><h3>사진으로 복용 인증, 일본어 등 다국어 확대</h3><p class="muted">고령화가 빠른 일본·대만 시장 진출을 염두에 둔 확장.</p></div></li>
+    </ul>
+  </section>
+
+  <footer>
+    App Store: apps.apple.com/app/id6762364088 · 개인정보처리방침: csparkzxc1.github.io/MediRemind/legal/privacy.html<br>
+    기준일 2026-10-29. 1.1.0 심사 중, 1.2.0 테스트 중인 상태를 반영했습니다.
+  </footer>
+</div>
+
+<script>
+  document.querySelectorAll('button.copy').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var el = document.getElementById(btn.dataset.copy);
+      var done = function () { btn.textContent = '복사됨'; setTimeout(function () { btn.textContent = '복사'; }, 1500); };
+      var select = function () {
+        var r = document.createRange(); r.selectNodeContents(el);
+        var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+        btn.textContent = '선택됨 · 길게 눌러 복사';
+      };
+      try {
+        navigator.clipboard.writeText(el.innerText).then(done, select);
+      } catch (e) { select(); }
+    });
+  });
+</script>

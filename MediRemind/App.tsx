@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, ActivityIndicator, StyleSheet, Text, Alert } from 'react-native';
+import { View, ActivityIndicator, StyleSheet, Text, Alert, AppState } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -20,6 +20,7 @@ import { dateKey } from './src/lib/schedule';
 import { EntitlementProvider, useEntitlement } from './src/purchase/EntitlementProvider';
 import { I18nProvider, useI18n } from './src/i18n/I18nProvider';
 import { ThemeProvider, useTheme } from './src/theme/ThemeProvider';
+import { scheduleSlotSync } from './src/guardian/guardian';
 
 export default function App() {
   return (
@@ -36,6 +37,8 @@ export default function App() {
     </GestureHandlerRootView>
   );
 }
+
+const medicinesNow = () => useMedicineStore.getState().medicines;
 
 async function handleResponse(response: Notifications.NotificationResponse) {
   const take = await readTakeResponse(response);
@@ -77,7 +80,23 @@ function Root() {
     const sub = Notifications.addNotificationResponseReceivedListener((r) => {
       handleResponse(r).catch((e) => console.warn('[App] response failed', e));
     });
-    return () => sub.remove();
+    // Notifications may have been switched on in iOS Settings meanwhile; the
+    // schedule is skipped while permission is off, so rebuild it on return.
+    const appState = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        syncNotifications(useMedicineStore.getState().medicines);
+        scheduleSlotSync(medicinesNow);
+      }
+    });
+    // Keep family members' view current when doses or medicines change.
+    const unsubDoses = useDoseStore.subscribe(() => scheduleSlotSync(medicinesNow));
+    const unsubMeds = useMedicineStore.subscribe(() => scheduleSlotSync(medicinesNow));
+    return () => {
+      sub.remove();
+      appState.remove();
+      unsubDoses();
+      unsubMeds();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

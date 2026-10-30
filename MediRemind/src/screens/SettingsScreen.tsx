@@ -10,6 +10,8 @@ import {
   Linking,
   Platform,
   ActivityIndicator,
+  Modal,
+  Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -26,7 +28,9 @@ import { useEntitlement } from '../purchase/EntitlementProvider';
 import { FREE_MEDICINE_LIMIT, PURCHASE_CONFIG } from '../purchase/purchase.config';
 import {
   loadReminderSettings,
+  openSystemSettings,
   saveReminderSettings,
+  sendTestNotification,
   syncNotifications,
   type ReminderSettings,
 } from '../notifications/notifications';
@@ -34,10 +38,12 @@ import { exportBackup, importBackup } from '../lib/backup';
 import { dateKey } from '../lib/schedule';
 import { checkAndApplyUpdate, getBuildInfo } from '../utils/updateUtils';
 import { useI18n } from '../i18n/I18nProvider';
-import type { LanguagePref } from '../i18n/core';
+import { LANGUAGES, LANGUAGE_NAMES, type LanguagePref } from '../i18n/core';
 import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
 import { cardShadow, type Scheme, type ThemeColors, type ThemeMode } from '../theme/theme';
+import TextSizeSlider from '../components/TextSizeSlider';
 import ScreenHeader from '../components/ScreenHeader';
+import { guardianAvailable } from '../guardian/config';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
@@ -109,6 +115,8 @@ function Segmented<T extends string>({
 export default function SettingsScreen() {
   const navigation = useNavigation<Nav>();
   const { t, pref: langPref, setLanguage } = useI18n();
+  const [langOpen, setLangOpen] = useState(false);
+  const langName = (v: LanguagePref) => (v === 'system' ? t('settings.langSystem') : LANGUAGE_NAMES[v]);
   const { colors, mode, setMode } = useTheme();
   const styles = useThemedStyles(makeStyles);
   const { isPro, product, restore } = useEntitlement();
@@ -130,6 +138,20 @@ export default function SettingsScreen() {
     Haptics.selectionAsync().catch(() => {});
     await saveReminderSettings(next);
     await syncNotifications(useMedicineStore.getState().medicines);
+  };
+
+  const handleTestNotification = async () => {
+    const result = await sendTestNotification();
+    if (result.status === 'denied') {
+      Alert.alert(t('notif.permTitle'), t('notif.permBody'), [
+        { text: t('common.cancel'), style: 'cancel' },
+        { text: t('notif.openSettings'), onPress: openSystemSettings },
+      ]);
+      return;
+    }
+    // Make sure the real schedule is in place too.
+    await syncNotifications(useMedicineStore.getState().medicines);
+    Alert.alert(t('settings.testSentTitle'), t('settings.testSentBody', { n: result.scheduledDoses }));
   };
 
   const handleRestore = async () => {
@@ -249,6 +271,22 @@ export default function SettingsScreen() {
           />
         </View>
 
+        {/* ─ Family ─ */}
+        {guardianAvailable() && (
+          <>
+            <Text style={styles.sectionLabel}>{t('settings.sectionFamily')}</Text>
+            <View style={styles.card}>
+              <SettingRow
+                icon="people"
+                iconColor={colors.success}
+                title={t('settings.guardian')}
+                subtitle={t('settings.guardianSub')}
+                onPress={() => navigation.navigate('Guardian')}
+              />
+            </View>
+          </>
+        )}
+
         {/* ─ Notifications ─ */}
         <Text style={styles.sectionLabel}>{t('settings.sectionNotif')}</Text>
         <View style={styles.card}>
@@ -264,6 +302,14 @@ export default function SettingsScreen() {
                 thumbColor="#FFF"
               />
             }
+          />
+          <View style={styles.divider} />
+          <SettingRow
+            icon="notifications-outline"
+            iconColor={colors.success}
+            title={t('settings.testNotif')}
+            subtitle={t('settings.testNotifSub')}
+            onPress={handleTestNotification}
           />
           {/* iOS decides notification vibration itself; the toggle only works on Android. */}
           {Platform.OS === 'android' && (
@@ -299,16 +345,19 @@ export default function SettingsScreen() {
               { value: 'dark', label: t('settings.themeDark') },
             ]}
           />
-          <Text style={[styles.inlineLabel, { marginTop: 16 }]}>{t('settings.language')}</Text>
-          <Segmented<LanguagePref>
-            value={langPref}
-            onChange={setLanguage}
-            options={[
-              { value: 'system', label: t('settings.langSystem') },
-              { value: 'ko', label: '한국어' },
-              { value: 'en', label: 'English' },
-            ]}
-          />
+          <Text style={[styles.inlineLabel, { marginTop: 16 }]}>{t('settings.textSize')}</Text>
+          <TextSizeSlider />
+          <Text style={styles.textPreview}>{t('settings.textPreview')}</Text>
+          <TouchableOpacity
+            style={styles.langRow}
+            onPress={() => setLangOpen(true)}
+            accessibilityRole="button"
+            accessibilityLabel={`${t('settings.language')}: ${langName(langPref)}`}
+          >
+            <Text style={[styles.inlineLabel, styles.langLabel]}>{t('settings.language')}</Text>
+            <Text style={styles.langValue}>{langName(langPref)}</Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
+          </TouchableOpacity>
         </View>
 
         {/* ─ Data ─ */}
@@ -376,6 +425,32 @@ export default function SettingsScreen() {
 
         <Text style={styles.footer}>{t('settings.footer')}</Text>
       </ScrollView>
+
+      <Modal visible={langOpen} transparent animationType="slide" onRequestClose={() => setLangOpen(false)}>
+        <Pressable style={styles.sheetDim} onPress={() => setLangOpen(false)} />
+        <View style={styles.sheet}>
+          <View style={styles.sheetGrip} />
+          <Text style={styles.sheetTitle}>{t('settings.language')}</Text>
+          {(['system', ...LANGUAGES] as LanguagePref[]).map((value) => {
+            const active = langPref === value;
+            return (
+              <TouchableOpacity
+                key={value}
+                style={styles.sheetRow}
+                onPress={() => {
+                  setLanguage(value);
+                  setLangOpen(false);
+                }}
+                accessibilityRole="button"
+                accessibilityState={{ selected: active }}
+              >
+                <Text style={[styles.sheetText, active && styles.sheetTextOn]}>{langName(value)}</Text>
+                {active && <Ionicons name="checkmark" size={20} color={colors.brand} />}
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -415,6 +490,31 @@ const makeStyles = (c: ThemeColors, scheme: Scheme) =>
     rowSubtitle: { fontSize: 12, color: c.textMuted, marginTop: 2 },
     divider: { height: StyleSheet.hairlineWidth, backgroundColor: c.line, marginLeft: 66 },
     inlineLabel: { fontSize: 13, fontWeight: '600', color: c.textMuted, marginBottom: 8 },
+    textPreview: { fontSize: 15, color: c.text, marginTop: 6, lineHeight: 21 },
+    langRow: { flexDirection: 'row', alignItems: 'center', marginTop: 18, gap: 6 },
+    langLabel: { flex: 1, marginBottom: 0 },
+    langValue: { fontSize: 15, fontWeight: '600', color: c.text },
+    sheetDim: { flex: 1, backgroundColor: c.overlay },
+    sheet: {
+      backgroundColor: c.surface,
+      borderTopLeftRadius: 22,
+      borderTopRightRadius: 22,
+      paddingHorizontal: 20,
+      paddingTop: 10,
+      paddingBottom: 36,
+    },
+    sheetGrip: { alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: c.line, marginBottom: 12 },
+    sheetTitle: { fontSize: 17, fontWeight: '800', color: c.text, marginBottom: 6 },
+    sheetRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: 13,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: c.line,
+    },
+    sheetText: { fontSize: 16, color: c.text },
+    sheetTextOn: { color: c.brand, fontWeight: '700' },
     segment: { flexDirection: 'row', backgroundColor: c.surfaceMuted, borderRadius: 12, padding: 3 },
     segmentItem: { flex: 1, paddingVertical: 9, alignItems: 'center', borderRadius: 10 },
     segmentItemActive: { backgroundColor: c.surface },

@@ -1,0 +1,25 @@
+# Builds the iOS app and uploads it to App Store Connect, so a release doesn't
+# need the Mac. Runs only when MediRemind/RELEASE changes (bump the number in
+# it to release), not on every push. Requires the GitHub repo to be linked in
+# expo.dev (Project settings → GitHub, base directory MediRemind).
+name: iOS release
+
+on:
+  push:
+    branches: ['claude/medication-reminder-app-hlZTA']
+    paths: ['**/RELEASE']
+
+jobs:
+  build_ios:
+    name: Build iOS
+    type: build
+    params:
+      platform: ios
+      profile: production
+
+  submit_ios:
+    name: Submit to App Store Connect
+    needs: [build_ios]
+    type: submit
+    params:
+      build_id: ${{ needs.build_ios.outputs.build_id }}

@@ -2,7 +2,7 @@
   "expo": {
     "name": "MediRemind",
     "slug": "mediremind",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -10,12 +10,18 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.csparkzxc.mediremind",
-      "buildNumber": "15",
+      "buildNumber": "18",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "CFBundleLocalizations": [
           "ko",
-          "en"
+          "en",
+          "ja",
+          "zh-Hans",
+          "zh-Hant",
+          "es",
+          "fr",
+          "de"
         ],
         "CFBundleAllowMixedLocalizations": true
       },
@@ -84,7 +90,8 @@
         "expo-notifications",
         {
           "icon": "./assets/notification-icon.png",
-          "color": "#4A6CF7"
+          "color": "#4A6CF7",
+          "mode": "production"
         }
       ],
       "expo-updates"

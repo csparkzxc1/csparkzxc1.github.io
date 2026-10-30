@@ -2,7 +2,7 @@
  * Full-version purchase screen, opened from Settings or when a free user tries
  * to add more medicines than the free limit.
  */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useEntitlement } from '../purchase/EntitlementProvider';
+import { PurchaseFailure } from '../purchase/realProvider';
 import { FREE_MEDICINE_LIMIT, PURCHASE_CONFIG } from '../purchase/purchase.config';
 import { useMedicineStore } from '../store/medicineStore';
 import { useI18n } from '../i18n/I18nProvider';
@@ -30,12 +31,18 @@ interface Props {
 }
 
 export default function Paywall({ reason, onDismiss }: Props) {
-  const { isPro, product, purchase, restore } = useEntitlement();
+  const { isPro, product, purchase, restore, refreshProduct } = useEntitlement();
   const count = useMedicineStore((s) => s.medicines.length);
   const { t } = useI18n();
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
   const [busy, setBusy] = useState<null | 'buy' | 'restore'>(null);
+
+  // The launch-time fetch may have failed (offline, store not ready yet).
+  useEffect(() => {
+    if (!isPro && product?.available !== true) refreshProduct().catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const price = product?.priceLabel ?? PURCHASE_CONFIG.fallbackPriceLabel;
 
@@ -46,7 +53,11 @@ export default function Paywall({ reason, onDismiss }: Props) {
       if (await purchase()) onDismiss();
     } catch (e) {
       console.warn('[paywall] purchase failed', e);
-      Alert.alert(t('paywall.failTitle'), t('paywall.failBody'));
+      const code = e instanceof PurchaseFailure ? e.code : '';
+      const body = /sku-not-found|item-unavailable|not-prepared|init-connection/i.test(code)
+        ? t('paywall.failStoreBody')
+        : t('paywall.failBody');
+      Alert.alert(t('paywall.failTitle'), code ? `${body}\n(${code})` : body);
     } finally {
       setBusy(null);
     }

@@ -14,6 +14,8 @@ interface EntitlementContextValue {
   purchase: () => Promise<boolean>;
   restore: () => Promise<boolean>;
   reload: () => Promise<void>;
+  /** Re-reads the price, e.g. when the paywall opens after a failed load. */
+  refreshProduct: () => Promise<void>;
 }
 
 const EntitlementContext = createContext<EntitlementContextValue | null>(null);
@@ -55,6 +57,10 @@ export function EntitlementProvider({ children }: { children: React.ReactNode })
 
   useEffect(() => activeProvider.subscribe?.(() => reload().catch(() => {})), [reload]);
 
+  const refreshProduct = useCallback(async () => {
+    setProduct(await activeProvider.getProduct());
+  }, []);
+
   const purchase = useCallback(async () => {
     const ok = await activeProvider.purchase();
     if (ok) await reload();
@@ -68,8 +74,8 @@ export function EntitlementProvider({ children }: { children: React.ReactNode })
   }, [reload]);
 
   const value = useMemo(
-    () => ({ loading, status, isPro: status === 'pro', product, purchase, restore, reload }),
-    [loading, status, product, purchase, restore, reload]
+    () => ({ loading, status, isPro: status === 'pro', product, purchase, restore, reload, refreshProduct }),
+    [loading, status, product, purchase, restore, reload, refreshProduct]
   );
 
   return <EntitlementContext.Provider value={value}>{children}</EntitlementContext.Provider>;

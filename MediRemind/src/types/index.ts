@@ -35,6 +35,7 @@ export type RootStackParamList = {
   Main: undefined;
   MedicineForm: { medicineId?: string } | undefined;
   Paywall: { reason?: 'limit' } | undefined;
+  Guardian: undefined;
 };
 
 export type BottomTabParamList = {

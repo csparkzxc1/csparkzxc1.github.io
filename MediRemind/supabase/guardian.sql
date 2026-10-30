@@ -1,0 +1,282 @@
+-- MediRemind guardian link: lets a family member get a push when a dose is
+-- missed. Paste this whole file into Supabase → SQL Editor → Run. It is safe
+-- to run again after edits (everything is create-or-replace / if-not-exists).
+--
+-- Model: the patient's app uploads its upcoming dose slots (next 7 days, with
+-- taken state). Every 15 seconds a cron job finds slots still untaken after
+-- each guardian's chosen delay (5 minutes to 2 hours, default 30) and pushes
+-- an alert to that guardian through the Expo push service. Users are Supabase
+-- anonymous users.
+
+create extension if not exists pg_cron;
+create extension if not exists pg_net;
+
+-- ─── Tables ──────────────────────────────────────────────────────────────────
+
+create table if not exists public.profiles (
+  user_id uuid primary key references auth.users on delete cascade,
+  display_name text not null default '',
+  push_token text,
+  language text not null default 'ko',
+  timezone text not null default 'Asia/Seoul',
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.guardian_links (
+  patient_id uuid not null references auth.users on delete cascade,
+  guardian_id uuid not null references auth.users on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (patient_id, guardian_id),
+  check (patient_id <> guardian_id)
+);
+create index if not exists guardian_links_guardian on public.guardian_links (guardian_id);
+-- How long after a dose's time this guardian is alerted (chosen by the guardian).
+alter table public.guardian_links add column if not exists alert_delay_min integer not null default 30;
+alter table public.guardian_links drop constraint if exists guardian_links_delay_check;
+alter table public.guardian_links add constraint guardian_links_delay_check
+  check (alert_delay_min in (5, 10, 15, 30, 60, 120));
+
+create table if not exists public.invites (
+  code text primary key,
+  patient_id uuid not null references auth.users on delete cascade,
+  expires_at timestamptz not null
+);
+
+create table if not exists public.dose_slots (
+  patient_id uuid not null references auth.users on delete cascade,
+  id text not null,
+  medicine_name text not null,
+  due_at timestamptz not null,
+  taken_at timestamptz,
+  alerted_at timestamptz,
+  primary key (patient_id, id)
+);
+create index if not exists dose_slots_untaken
+  on public.dose_slots (due_at) where taken_at is null;
+
+-- One row per alert sent, so each guardian is told once per dose.
+create table if not exists public.slot_alerts (
+  patient_id uuid not null,
+  slot_id text not null,
+  guardian_id uuid not null references auth.users on delete cascade,
+  sent_at timestamptz not null default now(),
+  primary key (patient_id, slot_id, guardian_id),
+  foreign key (patient_id, slot_id) references public.dose_slots (patient_id, id) on delete cascade
+);
+
+-- ─── Row level security ──────────────────────────────────────────────────────
+
+alter table public.profiles enable row level security;
+alter table public.guardian_links enable row level security;
+alter table public.invites enable row level security;
+alter table public.dose_slots enable row level security;
+alter table public.slot_alerts enable row level security;  -- no policies: server only
+
+create or replace function public.is_linked(a uuid, b uuid) returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (
+    select 1 from guardian_links
+    where (patient_id = a and guardian_id = b) or (patient_id = b and guardian_id = a)
+  );
+$$;
+
+drop policy if exists profiles_read on public.profiles;
+create policy profiles_read on public.profiles for select to authenticated
+  using (user_id = auth.uid() or public.is_linked(user_id, auth.uid()));
+drop policy if exists profiles_write on public.profiles;
+create policy profiles_write on public.profiles for all to authenticated
+  using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+drop policy if exists links_read on public.guardian_links;
+create policy links_read on public.guardian_links for select to authenticated
+  using (patient_id = auth.uid() or guardian_id = auth.uid());
+-- Either side may end the link; links are only created through redeem_invite.
+drop policy if exists links_delete on public.guardian_links;
+create policy links_delete on public.guardian_links for delete to authenticated
+  using (patient_id = auth.uid() or guardian_id = auth.uid());
+
+-- invites: no policies, reachable only through the functions below.
+
+drop policy if exists slots_own on public.dose_slots;
+create policy slots_own on public.dose_slots for all to authenticated
+  using (patient_id = auth.uid()) with check (patient_id = auth.uid());
+drop policy if exists slots_guardian_read on public.dose_slots;
+create policy slots_guardian_read on public.dose_slots for select to authenticated
+  using (exists (
+    select 1 from guardian_links l
+    where l.patient_id = dose_slots.patient_id and l.guardian_id = auth.uid()
+  ));
+
+-- ─── Functions called by the app ─────────────────────────────────────────────
+
+-- A fresh 6-digit code, valid for 30 minutes. Earlier codes stay valid, so a
+-- parent can hand one code to each child without invalidating the first.
+create or replace function public.create_invite() returns text
+language plpgsql security definer set search_path = public as $$
+declare
+  new_code text;
+begin
+  if auth.uid() is null then raise exception 'not signed in'; end if;
+  delete from invites where expires_at < now();
+  loop
+    new_code := lpad((floor(random() * 1000000))::int::text, 6, '0');
+    begin
+      insert into invites (code, patient_id, expires_at)
+      values (new_code, auth.uid(), now() + interval '30 minutes');
+      return new_code;
+    exception when unique_violation then
+      -- try another code
+    end;
+  end loop;
+end;
+$$;
+
+-- Links the caller as a guardian of the code's owner; returns the patient id.
+create or replace function public.redeem_invite(p_code text) returns uuid
+language plpgsql security definer set search_path = public as $$
+declare
+  target uuid;
+begin
+  if auth.uid() is null then raise exception 'not signed in'; end if;
+  select patient_id into target from invites
+  where code = trim(p_code) and expires_at > now();
+  if target is null then raise exception 'invalid_code'; end if;
+  if target = auth.uid() then raise exception 'own_code'; end if;
+  insert into guardian_links (patient_id, guardian_id) values (target, auth.uid())
+  on conflict do nothing;
+  delete from invites where code = trim(p_code);
+  return target;
+end;
+$$;
+
+-- Replaces the caller's slots from p_from on with p_slots
+-- ([{id, medicine_name, due_at, taken_at}]). Existing slots are updated in
+-- place, so their sent alerts (slot_alerts) survive and a resync never alerts twice.
+create or replace function public.sync_slots(p_from timestamptz, p_slots jsonb) returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if auth.uid() is null then raise exception 'not signed in'; end if;
+  delete from dose_slots
+  where patient_id = auth.uid() and due_at >= p_from
+    and id not in (select s->>'id' from jsonb_array_elements(p_slots) s);
+  insert into dose_slots (patient_id, id, medicine_name, due_at, taken_at)
+  select auth.uid(), s->>'id', s->>'medicine_name', (s->>'due_at')::timestamptz,
+         nullif(s->>'taken_at', '')::timestamptz
+  from jsonb_array_elements(p_slots) s
+  on conflict (patient_id, id) do update
+    set medicine_name = excluded.medicine_name,
+        due_at = excluded.due_at,
+        taken_at = excluded.taken_at;
+  -- History older than two weeks isn't needed by guardians.
+  delete from dose_slots where patient_id = auth.uid() and due_at < now() - interval '14 days';
+end;
+$$;
+
+-- The caller (a guardian) chooses how late a dose may be before they're alerted.
+create or replace function public.set_alert_delay(p_patient uuid, p_minutes integer) returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if auth.uid() is null then raise exception 'not signed in'; end if;
+  update guardian_links set alert_delay_min = p_minutes
+  where patient_id = p_patient and guardian_id = auth.uid();
+end;
+$$;
+
+-- Deletes the caller's account and everything linked to it.
+create or replace function public.delete_my_data() returns void
+language plpgsql security definer set search_path = public, auth as $$
+begin
+  if auth.uid() is null then raise exception 'not signed in'; end if;
+  delete from auth.users where id = auth.uid();
+end;
+$$;
+
+revoke all on function public.create_invite() from public, anon;
+revoke all on function public.redeem_invite(text) from public, anon;
+revoke all on function public.sync_slots(timestamptz, jsonb) from public, anon;
+revoke all on function public.delete_my_data() from public, anon;
+revoke all on function public.set_alert_delay(uuid, integer) from public, anon;
+grant execute on function public.create_invite() to authenticated;
+grant execute on function public.redeem_invite(text) to authenticated;
+grant execute on function public.sync_slots(timestamptz, jsonb) to authenticated;
+grant execute on function public.delete_my_data() to authenticated;
+grant execute on function public.set_alert_delay(uuid, integer) to authenticated;
+
+-- ─── Missed-dose alerts ──────────────────────────────────────────────────────
+
+create or replace function public.check_missed_doses() returns integer
+language plpgsql security definer set search_path = public as $$
+declare
+  msg record;
+  sent integer := 0;
+begin
+  for msg in
+    with due as (
+      -- Doses past each guardian's delay that this guardian hasn't been told
+      -- about. Doses from before the link existed, or long past, are skipped.
+      insert into slot_alerts (patient_id, slot_id, guardian_id)
+      select s.patient_id, s.id, l.guardian_id
+      from dose_slots s
+      join guardian_links l on l.patient_id = s.patient_id
+      where s.taken_at is null
+        and s.due_at <= now() - make_interval(mins => l.alert_delay_min)
+        and s.due_at > now() - make_interval(mins => l.alert_delay_min) - interval '6 hours'
+        and s.due_at > l.created_at
+      on conflict do nothing
+      returning patient_id, slot_id, guardian_id
+    )
+    select g.push_token, g.language,
+           coalesce(nullif(p.display_name, ''), case g.language
+             when 'ko' then '가족' when 'ja' then 'ご家族' when 'zh-Hans' then '家人' when 'zh-Hant' then '家人'
+             when 'es' then 'Tu familiar' when 'fr' then 'Votre proche' when 'de' then 'Dein Familienmitglied'
+             else 'Your family member' end) as who,
+           s.medicine_name,
+           to_char(s.due_at at time zone coalesce(p.timezone, 'Asia/Seoul'), 'HH24:MI') as at
+    from due d
+    join dose_slots s on s.patient_id = d.patient_id and s.id = d.slot_id
+    join profiles g on g.user_id = d.guardian_id and g.push_token is not null
+    left join profiles p on p.user_id = d.patient_id
+  loop
+    perform net.http_post(
+      url := 'https://exp.host/--/api/v2/push/send',
+      headers := '{"Content-Type": "application/json"}'::jsonb,
+      body := jsonb_build_object(
+        'to', msg.push_token,
+        'sound', 'default',
+        'title', case msg.language
+          when 'ko' then '💊 복용 확인이 필요해요'
+          when 'ja' then '💊 服薬の確認が必要です'
+          when 'zh-Hans' then '💊 需要确认服药'
+          when 'zh-Hant' then '💊 需要確認服藥'
+          when 'es' then '💊 Dosis sin tomar'
+          when 'fr' then '💊 Prise oubliée'
+          when 'de' then '💊 Einnahme verpasst'
+          else '💊 Missed dose' end,
+        'body', case msg.language
+          when 'ko' then format('%s님이 %s %s을(를) 아직 복용하지 않았어요.', msg.who, msg.at, msg.medicine_name)
+          when 'ja' then format('%sさんが%sの%sをまだ服用していません。', msg.who, msg.at, msg.medicine_name)
+          when 'zh-Hans' then format('%s还没有服用%s的%s。', msg.who, msg.at, msg.medicine_name)
+          when 'zh-Hant' then format('%s還沒有服用%s的%s。', msg.who, msg.at, msg.medicine_name)
+          when 'es' then format('%s aún no ha tomado %s (%s).', msg.who, msg.medicine_name, msg.at)
+          when 'fr' then format('%s n''a pas encore pris %s (%s).', msg.who, msg.medicine_name, msg.at)
+          when 'de' then format('%s hat %s (%s) noch nicht eingenommen.', msg.who, msg.medicine_name, msg.at)
+          else format('%s hasn''t taken %s (%s) yet.', msg.who, msg.medicine_name, msg.at) end,
+        'data', jsonb_build_object('type', 'guardian')
+      )
+    );
+    sent := sent + 1;
+  end loop;
+  return sent;
+end;
+$$;
+revoke all on function public.check_missed_doses() from public, anon, authenticated;
+
+-- Every 15 seconds, so an alert goes out within 15 s of the guardian's chosen
+-- time (pg_cron 1.5+ accepts '<n> seconds'; Supabase ships it).
+select cron.unschedule(jobname) from cron.job
+where jobname in ('mediremind-missed-doses', 'mediremind-cron-cleanup');
+select cron.schedule('mediremind-missed-doses', '15 seconds', 'select public.check_missed_doses()');
+
+-- A 15-second job logs ~5,800 runs a day; keep only the last day of history.
+select cron.schedule('mediremind-cron-cleanup', '17 3 * * *',
+  $$delete from cron.job_run_details where end_time < now() - interval '1 day'$$);
