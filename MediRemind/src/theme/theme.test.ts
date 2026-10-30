@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
-import { scaleText } from './theme';
+import { parseTextStep, scaleText } from './theme';
 
 describe('scaleText', () => {
   const styles = {
@@ -15,5 +15,14 @@ describe('scaleText', () => {
 
   it('returns the same object at normal size', () => {
     expect(scaleText(styles, 1)).toBe(styles);
+  });
+});
+
+describe('parseTextStep', () => {
+  it('reads steps and older named sizes', () => {
+    expect(parseTextStep('4')).toBe(4);
+    expect(parseTextStep('large')).toBe(3);
+    expect(parseTextStep(null)).toBe(1);
+    expect(parseTextStep('99')).toBe(1);
   });
 });

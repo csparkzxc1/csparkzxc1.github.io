@@ -3,10 +3,11 @@ import { Appearance } from 'react-native';
 import { kvGet, kvSet, KV_KEYS } from '../db/kv';
 import {
   scaleText,
-  TEXT_SCALE,
+  DEFAULT_TEXT_STEP,
+  parseTextStep,
+  TEXT_SCALES,
   THEMES,
   type Scheme,
-  type TextSize,
   type ThemeColors,
   type ThemeMode,
 } from './theme';
@@ -16,17 +17,18 @@ interface ThemeContextValue {
   scheme: Scheme;
   colors: ThemeColors;
   setMode: (mode: ThemeMode) => void;
-  textSize: TextSize;
+  /** Step on the text size slider (index into TEXT_SCALES). */
+  textStep: number;
   /** Multiplier applied to every font size (1 = normal). */
   textScale: number;
-  setTextSize: (size: TextSize) => void;
+  setTextStep: (step: number) => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [mode, setModeState] = useState<ThemeMode>('system');
-  const [textSize, setTextSizeState] = useState<TextSize>('normal');
+  const [textStep, setTextStepState] = useState(DEFAULT_TEXT_STEP);
   const [system, setSystem] = useState<Scheme>(
     Appearance.getColorScheme() === 'dark' ? 'dark' : 'light'
   );
@@ -40,7 +42,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       .catch((e) => console.warn('[theme] load failed', e));
     kvGet(KV_KEYS.textSize)
       .then((v) => {
-        if (active && (v === 'normal' || v === 'large' || v === 'xlarge')) setTextSizeState(v);
+        if (active) setTextStepState(parseTextStep(v));
       })
       .catch((e) => console.warn('[theme] text size load failed', e));
     return () => {
@@ -66,14 +68,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         setModeState(next);
         kvSet(KV_KEYS.themeMode, next).catch((e) => console.warn('[theme] save failed', e));
       },
-      textSize,
-      textScale: TEXT_SCALE[textSize],
-      setTextSize: (next) => {
-        setTextSizeState(next);
-        kvSet(KV_KEYS.textSize, next).catch((e) => console.warn('[theme] save failed', e));
+      textStep,
+      textScale: TEXT_SCALES[textStep],
+      setTextStep: (next) => {
+        setTextStepState(next);
+        kvSet(KV_KEYS.textSize, String(next)).catch((e) => console.warn('[theme] save failed', e));
       },
     }),
-    [mode, scheme, textSize]
+    [mode, scheme, textStep]
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

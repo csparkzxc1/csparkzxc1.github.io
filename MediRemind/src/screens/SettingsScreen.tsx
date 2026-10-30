@@ -40,7 +40,8 @@ import { checkAndApplyUpdate, getBuildInfo } from '../utils/updateUtils';
 import { useI18n } from '../i18n/I18nProvider';
 import { LANGUAGES, LANGUAGE_NAMES, type LanguagePref } from '../i18n/core';
 import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
-import { cardShadow, type Scheme, type TextSize, type ThemeColors, type ThemeMode } from '../theme/theme';
+import { cardShadow, type Scheme, type ThemeColors, type ThemeMode } from '../theme/theme';
+import TextSizeSlider from '../components/TextSizeSlider';
 import ScreenHeader from '../components/ScreenHeader';
 import { guardianAvailable } from '../guardian/config';
 
@@ -116,7 +117,7 @@ export default function SettingsScreen() {
   const { t, pref: langPref, setLanguage } = useI18n();
   const [langOpen, setLangOpen] = useState(false);
   const langName = (v: LanguagePref) => (v === 'system' ? t('settings.langSystem') : LANGUAGE_NAMES[v]);
-  const { colors, mode, setMode, textSize, setTextSize } = useTheme();
+  const { colors, mode, setMode } = useTheme();
   const styles = useThemedStyles(makeStyles);
   const { isPro, product, restore } = useEntitlement();
 
@@ -345,15 +346,8 @@ export default function SettingsScreen() {
             ]}
           />
           <Text style={[styles.inlineLabel, { marginTop: 16 }]}>{t('settings.textSize')}</Text>
-          <Segmented<TextSize>
-            value={textSize}
-            onChange={setTextSize}
-            options={[
-              { value: 'normal', label: t('settings.textNormal') },
-              { value: 'large', label: t('settings.textLarge') },
-              { value: 'xlarge', label: t('settings.textXLarge') },
-            ]}
-          />
+          <TextSizeSlider />
+          <Text style={styles.textPreview}>{t('settings.textPreview')}</Text>
           <TouchableOpacity
             style={styles.langRow}
             onPress={() => setLangOpen(true)}
@@ -496,6 +490,7 @@ const makeStyles = (c: ThemeColors, scheme: Scheme) =>
     rowSubtitle: { fontSize: 12, color: c.textMuted, marginTop: 2 },
     divider: { height: StyleSheet.hairlineWidth, backgroundColor: c.line, marginLeft: 66 },
     inlineLabel: { fontSize: 13, fontWeight: '600', color: c.textMuted, marginBottom: 8 },
+    textPreview: { fontSize: 15, color: c.text, marginTop: 6, lineHeight: 21 },
     langRow: { flexDirection: 'row', alignItems: 'center', marginTop: 18, gap: 6 },
     langLabel: { flex: 1, marginBottom: 0 },
     langValue: { fontSize: 15, fontWeight: '600', color: c.text },
