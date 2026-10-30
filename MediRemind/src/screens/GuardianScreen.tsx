@@ -2,7 +2,7 @@
  * Family alerts: share my doses with family (invite code), watch a family
  * member's doses (enter code), and see their doses for today.
  */
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -17,7 +17,8 @@ import {
   Animated,
 } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 
 import { useMedicineStore } from '../store/medicineStore';
@@ -47,12 +48,18 @@ import {
   type SlotState,
 } from '../guardian/slots';
 import { formatShortDate } from '../i18n/core';
+import { useEntitlement } from '../purchase/EntitlementProvider';
+import type { RootStackParamList } from '../types';
 import { dateKey } from '../lib/schedule';
 
 export default function GuardianScreen() {
   const { t } = useI18n();
   const styles = useThemedStyles(makeStyles);
   const medicines = useMedicineStore((s) => s.medicines);
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  // Sharing my doses is free; watching a family member is part of the full version.
+  const { isPro } = useEntitlement();
+  const resumeLink = useRef(false);
 
   const [links, setLinks] = useState<Links | null>(null);
   const [today, setToday] = useState<Record<string, DoseSlot[]>>({});
@@ -93,6 +100,12 @@ export default function GuardianScreen() {
     }, [load])
   );
 
+  // Back from the paywall with the full version: finish linking the entered code.
+  useEffect(() => {
+    if (isPro && resumeLink.current) onLink();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPro]);
+
   const onInvite = async () => {
     setBusy('invite');
     try {
@@ -110,6 +123,13 @@ export default function GuardianScreen() {
       Alert.alert(t('guardian.invalidCode'));
       return;
     }
+    if (!isPro) {
+      // Link right after a purchase, when the paywall closes.
+      resumeLink.current = true;
+      navigation.navigate('Paywall', { reason: 'guardian' });
+      return;
+    }
+    resumeLink.current = false;
     setBusy('link');
     try {
       const result = await redeemInvite(code);
@@ -260,6 +280,7 @@ export default function GuardianScreen() {
           />
           <SmallButton label={t('guardian.connect')} busy={busy === 'link'} onPress={onLink} />
         </View>
+        {!isPro && <Text style={styles.fine}>{t('guardian.proNote')}</Text>}
       </View>
 
       {links && (

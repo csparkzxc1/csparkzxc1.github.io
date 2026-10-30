@@ -39,7 +39,7 @@ MediRemind는 정해진 시간에 약 복용을 알려 주고, 오늘 먹은 약
 • 백업 파일로 폰을 바꿔도 기록 유지
 • 다크 모드, 글자 크기 조절, 8개 언어 지원
 
-부담 없이 무료로 시작해 보세요. 더 많은 약을 함께 관리하고 싶을 때 한 번만 결제하면 계속 쓸 수 있어요. 구독이 아니며, 같은 Apple ID라면 새 기기에서도 복원할 수 있습니다.
+부담 없이 무료로 시작해 보세요. 더 많은 약을 관리하거나 가족의 복용을 지켜보는 보호자 알림을 쓰고 싶을 때 한 번만 결제하면 계속 쓸 수 있어요. 내 복용을 가족에게 공유하는 초대 코드는 무료예요. 구독이 아니며, 같은 Apple ID라면 새 기기에서도 복원할 수 있습니다.
 
 ※ MediRemind는 의료 기기가 아니며 의사·약사의 지시를 대신하지 않습니다.
 ```
@@ -69,7 +69,7 @@ MediRemind reminds you when it's time to take your medicine and shows what you'v
 • Backup and restore when you switch phones
 • Dark mode, adjustable text size, 8 languages
 
-Free forever for up to 2 medicines, with every feature. Need more? Unlock unlimited medicines with a one-time purchase — not a subscription, and restorable on any device with the same Apple ID.
+Free forever for up to 2 medicines. A one-time purchase unlocks unlimited medicines and family alerts for watching a family member's doses (sharing your own doses with an invite code is free) — not a subscription, and restorable on any device with the same Apple ID.
 
 MediRemind is not a medical device and does not replace advice from your doctor or pharmacist.
 ```
@@ -214,7 +214,7 @@ MediRemindは、決まった時間にお薬の時間をお知らせし、今日�
 • バックアップで機種変更しても記録をそのまま
 • ダークモード、文字の大きさ調整、8言語対応
 
-お薬2つまでは、すべての機能をずっと無料でお使いいただけます。それ以上は1回の購入で無制限に。サブスクリプションではありません。
+お薬2つまではずっと無料。1回の購入で、お薬の無制限登録と家族を見守る通知が使えます（自分の服薬を共有する招待コードは無料）。サブスクリプションではありません。
 
 ※ MediRemindは医療機器ではなく、医師・薬剤師の指示に代わるものではありません。
 ```
@@ -258,7 +258,7 @@ MediRemind 会在设定的时间提醒你吃药，并让你一眼看到今天已
 • 换手机也能通过备份恢复记录
 • 深色模式、字体大小调整、支持 8 种语言
 
-2 种药以内所有功能永久免费。需要更多时，一次购买即可无限使用，不是订阅。
+2 种药以内永久免费。一次购买即可无限添加药品，并使用关注家人的提醒（分享自己服药情况的邀请码免费），不是订阅。
 
 ※ MediRemind 不是医疗器械，不能代替医生或药师的指导。
 ```
@@ -302,7 +302,7 @@ MediRemind 會在設定的時間提醒你吃藥，讓你一眼看到今天吃了
 • 換手機也能用備份還原紀錄
 • 深色模式、文字大小調整、支援 8 種語言
 
-2 種藥以內所有功能永久免費。需要更多時，一次購買即可無上限使用，不是訂閱。
+2 種藥以內永久免費。一次購買即可無上限新增藥品，並使用關注家人的提醒（分享自己服藥狀況的邀請碼免費），不是訂閱。
 
 ※ MediRemind 不是醫療器材，不能取代醫師或藥師的指示。
 ```
@@ -332,7 +332,7 @@ MediRemind te avisa cuando es hora de tomar tu medicación y te muestra de un vi
 • Copia de seguridad para cambiar de teléfono
 • Modo oscuro, tamaño de texto ajustable y 8 idiomas
 
-Gratis para siempre con hasta 2 medicamentos y todas las funciones. ¿Necesitas más? Desbloquea medicamentos ilimitados con un pago único, sin suscripción.
+Gratis para siempre con hasta 2 medicamentos. Un pago único desbloquea medicamentos ilimitados y los avisos para seguir a un familiar (compartir tus dosis con un código es gratis), sin suscripción.
 
 MediRemind no es un dispositivo médico y no sustituye las indicaciones de tu médico o farmacéutico.
 ```
@@ -362,7 +362,7 @@ MediRemind vous rappelle l'heure de vos médicaments et vous montre d'un coup d'
 • Sauvegarde pour changer de téléphone
 • Mode sombre, taille du texte réglable et 8 langues
 
-Gratuit pour toujours jusqu'à 2 médicaments, avec toutes les fonctions. Besoin de plus ? Débloquez les médicaments illimités en un seul achat, sans abonnement.
+Gratuit pour toujours jusqu'à 2 médicaments. Un seul achat débloque les médicaments illimités et les alertes pour suivre un proche (partager vos prises avec un code est gratuit), sans abonnement.
 
 MediRemind n'est pas un dispositif médical et ne remplace pas l'avis de votre médecin ou pharmacien.
 ```
@@ -392,7 +392,7 @@ MediRemind erinnert dich pünktlich an deine Medikamente und zeigt dir auf einen
 • Backup für den Handywechsel
 • Dunkelmodus, einstellbare Textgröße und 8 Sprachen
 
-Für bis zu 2 Medikamente mit allen Funktionen dauerhaft kostenlos. Mehr nötig? Unbegrenzte Medikamente mit einem einmaligen Kauf, kein Abo.
+Für bis zu 2 Medikamente dauerhaft kostenlos. Ein einmaliger Kauf schaltet unbegrenzte Medikamente und den Familien-Alarm zum Begleiten eines Angehörigen frei (deine Einnahmen per Code teilen ist kostenlos), kein Abo.
 
 MediRemind ist kein Medizinprodukt und ersetzt nicht den Rat deiner Ärztin, deines Arztes oder deiner Apotheke.
 ```

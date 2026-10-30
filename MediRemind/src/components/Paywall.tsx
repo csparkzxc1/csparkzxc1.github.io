@@ -22,11 +22,11 @@ import { useI18n } from '../i18n/I18nProvider';
 import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
 import type { ThemeColors } from '../theme/theme';
 
-const FEATURE_KEYS = ['paywall.f1', 'paywall.f2', 'paywall.f3', 'paywall.f4'];
+const FEATURE_KEYS = ['paywall.f1', 'paywall.fGuardian', 'paywall.f2', 'paywall.f3', 'paywall.f4'];
 
 interface Props {
-  /** Why the paywall opened; 'limit' explains the free medicine limit. */
-  reason?: 'limit';
+  /** Why the paywall opened: the free medicine limit, or linking to watch a family member. */
+  reason?: 'limit' | 'guardian';
   onDismiss: () => void;
 }
 
@@ -85,6 +85,8 @@ export default function Paywall({ reason, onDismiss }: Props) {
     ? t('paywall.active')
     : reason === 'limit'
       ? t('paywall.limitReached', { n: FREE_MEDICINE_LIMIT })
+      : reason === 'guardian'
+        ? t('paywall.guardianReason')
       : t('paywall.freeUsage', { n: count, max: FREE_MEDICINE_LIMIT });
 
   return (

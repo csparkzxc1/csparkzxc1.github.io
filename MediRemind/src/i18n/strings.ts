@@ -300,6 +300,9 @@ export const STRINGS: Record<string, Entry> = {
   // ── Paywall ───────────────────────────────────────────────────────────
   'paywall.title': { ko: 'MediRemind 정식 버전', en: 'MediRemind Full Version' },
   'paywall.active': { ko: '정식 버전 이용 중', en: 'Full version active' },
+  'paywall.guardianReason': { ko: '가족의 복용을 지켜보는 보호자 알림은 정식 버전 기능이에요', en: "Watching a family member's doses is part of the full version" },
+  'paywall.fGuardian': { ko: '가족이 약을 놓치면 알림 받기 · 2주 복용 기록', en: 'Get alerted when family miss a dose · 2-week history' },
+  'guardian.proNote': { ko: '가족을 돌보는 보호자 알림은 정식 버전에 포함돼요. 내 복용을 가족에게 공유하는 초대 코드는 무료예요.', en: 'Watching family is part of the full version. Sharing your own doses with an invite code is free.' },
   'paywall.f1': { ko: '약 무제한 등록 (무료 버전은 {n}개까지)', en: 'Unlimited medicines (free version: up to {n})' },
   'paywall.f2': { ko: '한 번 결제로 평생 사용 · 자동 결제 없음', en: 'Pay once, keep it forever — never billed again' },
   'paywall.f3': { ko: '같은 Apple ID라면 새 기기에서도 구매 복원', en: 'Restore on any device with the same Apple ID' },
