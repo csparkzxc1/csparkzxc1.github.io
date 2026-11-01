@@ -169,6 +169,18 @@
   .set-tt small { display:block; font-size:11px; color:#999; margin-top:1px; }
   .chev { color:#CCC; font-size:14px; }
 
+  .set-val { font-size:12px; color:#8A91A8; }
+  .set-badge { min-width:20px; height:20px; padding:0 6px; box-sizing:border-box; border-radius:10px; background:#EF4444; color:#FFF; font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; }
+  .set-up { display:flex; align-items:center; gap:12px; padding:14px; margin-top:10px; border-radius:18px; background:#4A6CF7; box-shadow:0 8px 18px rgba(74,108,247,.3); }
+  .set-up .set-tt { color:#FFF; font-weight:800; font-size:14px; } .set-up .set-tt small { color:rgba(255,255,255,.85); font-weight:500; }
+  .set-up .chev { color:#FFF; } .up-ic { background:rgba(255,255,255,.2); color:#FFF; }
+  .set-dim { position:absolute; inset:0; background:rgba(15,18,32,.45); }
+  .set-sheet { position:absolute; left:0; right:0; bottom:0; background:#FFF; border-radius:22px 22px 0 0; padding:10px 20px 34px; }
+  .set-sheet .grip { width:40px; height:5px; border-radius:3px; background:#E3E6EF; margin:0 auto 12px; }
+  .set-sheet .sh-tt { font-size:19px; font-weight:800; color:#1A1D2B; margin-bottom:10px; }
+  .set-sheet .bs-pv { margin:10px 0 0; }
+  .set-sheet .sh-done { margin-top:18px; padding:15px 0; border-radius:14px; background:#4A6CF7; color:#FFF; text-align:center; font-size:17px; font-weight:700; }
+  .big-set .set-val { font-size:15px; }
   /* ── Tab bar ── */
   .tabbar {
     display:flex; background:#FFF; padding:10px 8px 22px;
@@ -528,30 +540,7 @@
     <div class="status"><span>9:41</span><span>📶 🔋</span></div>
     <div class="screen-label">설정</div>
     <div class="header"><div><div class="title">설정</div></div></div>
-    <div class="body">
-      <div class="set-lbl">이용권</div>
-      <div class="set-card">
-        <div class="set-row"><div class="set-ic" style="background:rgba(74,108,247,.13);color:#4A6CF7"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M18.5 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg></div><div class="set-tt">무료 버전 · 약 2개까지<small>₩1,900 한 번이면 무제한 · 탭하여 보기</small></div><span class="chev">›</span></div>
-        <div class="set-row"><div class="set-ic" style="background:rgba(138,145,168,.13);color:#8A91A8"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></div><div class="set-tt">구매 복원</div><span class="chev">›</span></div>
-      </div>
-      <div class="set-lbl">가족</div>
-      <div class="set-card">
-        <div class="set-row"><div class="set-ic" style="background:rgba(16,185,129,.13);color:#10B981"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 19c.6-3.3 3-5 6-5s5.4 1.7 6 5"/><circle cx="17" cy="9" r="2.5"/><path d="M16.5 14c2.4.2 4 1.7 4.5 4.5"/></svg></div><div class="set-tt">보호자 연결<small>약을 놓치면 가족에게 알림</small></div><span class="chev">›</span></div>
-      </div>
-      <div class="set-lbl">알림</div>
-      <div class="set-card">
-        <div class="set-row"><div class="set-ic" style="background:rgba(74,108,247,.13);color:#4A6CF7"><svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg></div><div class="set-tt">알림 소리</div><div class="switch"></div></div>
-        <div class="set-row"><div class="set-ic" style="background:rgba(16,185,129,.13);color:#10B981"><svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg></div><div class="set-tt">알림 테스트<small>5초 뒤 테스트 알림을 보내요</small></div><span class="chev">›</span></div>
-      </div>
-      <div class="set-lbl">화면</div>
-      <div class="set-card" style="padding:12px 14px">
-        <div class="set-tt" style="font-size:11px;color:#8A91A8;font-weight:600;margin-bottom:6px">테마</div>
-        <div class="segm"><span class="on">시스템</span><span>라이트</span><span>다크</span></div>
-        <div class="set-tt" style="font-size:11px;color:#8A91A8;font-weight:600;margin:10px 0 6px">글자 크기</div>
-        <div class="tsl"><b class="a1">가</b><div class="tr"><div class="rl"></div><div class="fl" style="width:51.9px"></div><i style="left:7.0px;background:#fff"></i><i style="left:21.3px;background:#fff"></i><i style="left:35.6px;background:#fff"></i><i style="left:49.9px;background:#fff"></i><i style="left:64.1px;background:#A9B0C5"></i><i style="left:78.4px;background:#A9B0C5"></i><i style="left:92.7px;background:#A9B0C5"></i><i style="left:107.0px;background:#A9B0C5"></i><div class="th" style="left:42.9px"></div></div><b class="a2">가</b></div>
-        <div class="langrow"><span>언어</span><b>한국어</b><span class="chev">›</span></div>
-      </div>
-    </div>
+    <div class="body"><div class="set-up"><div class="set-ic up-ic"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M18.5 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg></div><div class="set-tt">정식 버전으로 업그레이드<small>약 무제한 등록 · 가족 보호자 알림 · ₩1,900 한 번</small></div><span class="chev">›</span></div><div class="set-lbl">가족</div><div class="set-card"><div class="set-row"><div class="set-ic" style="background:rgba(16,185,129,.13);color:#10B981"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 19c.6-3.3 3-5 6-5s5.4 1.7 6 5"/><circle cx="17" cy="9" r="2.5"/><path d="M16.5 14c2.4.2 4 1.7 4.5 4.5"/></svg></div><div class="set-tt">보호자 연결<small>엄마 · 오늘 안 먹은 약 1개</small></div><span class="set-badge">1</span><span class="chev">›</span></div></div><div class="set-lbl">알림</div><div class="set-card"><div class="set-row"><div class="set-ic" style="background:rgba(74,108,247,.13);color:#4A6CF7"><svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg></div><div class="set-tt">알림 소리</div><div class="switch"></div></div><div class="set-row"><div class="set-ic" style="background:rgba(16,185,129,.13);color:#10B981"><svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg></div><div class="set-tt">알림 테스트<small>5초 뒤 테스트 알림을 보내요</small></div><span class="chev">›</span></div></div><div class="set-lbl">화면</div><div class="set-card"><div class="set-row"><div class="set-ic" style="background:rgba(99,102,241,.13);color:#6366F1"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg></div><div class="set-tt">테마</div><span class="set-val">시스템</span><span class="chev">›</span></div><div class="set-row"><div class="set-ic" style="background:rgba(245,158,11,.13);color:#F59E0B"><svg viewBox="0 0 24 24"><path d="M4 19l5-13 5 13M6 14.5h6"/><path d="M15 19l3-7.5 3 7.5M16 16.8h4"/></svg></div><div class="set-tt">글자 크기</div><span class="set-val">100%</span><span class="chev">›</span></div><div class="set-row"><div class="set-ic" style="background:rgba(14,165,233,.13);color:#0EA5E9"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.6 3.5 5.4 3.5 8.5s-1 5.9-3.5 8.5c-2.5-2.6-3.5-5.4-3.5-8.5s1-5.9 3.5-8.5z"/></svg></div><div class="set-tt">언어</div><span class="set-val">한국어</span><span class="chev">›</span></div></div></div>
     <div class="tabbar">
       <div class="tab"><svg class="ic" viewBox="0 0 24 24"><path class="f" d="M3.5 10.6 12 3.8l8.5 6.8V19.5a1.5 1.5 0 0 1-1.5 1.5h-4.2v-6.2H9.2V21H5a1.5 1.5 0 0 1-1.5-1.5z"/></svg>홈</div>
       <div class="tab"><svg class="ic" viewBox="0 0 24 24"><g transform="rotate(-45 12 12)"><rect x="2.5" y="7.5" width="19" height="9" rx="4.5" fill="currentColor" opacity=".9"/><path d="M12 7.5h5a4.5 4.5 0 0 1 0 9h-5z" fill="#fff" opacity=".45"/></g></svg>내 약</div>
@@ -686,28 +675,9 @@
     <div class="status"><span>9:41</span><span>📶 🔋</span></div>
     <div class="screen-label">글자 크기</div>
     <div class="header"><div><div class="title">설정</div></div></div>
-    <div class="body">
-      <div class="set-lbl">화면</div>
-      <div class="set-card" style="padding:14px">
-        <div class="bs-lbl">테마</div>
-        <div class="segm"><span class="on">시스템</span><span>라이트</span><span>다크</span></div>
-        <div class="bs-lbl" style="margin-top:14px">글자 크기</div>
-        <div class="ts-row"><b class="s">가</b><div class="ts-tr"><div class="ts-rl"></div><div class="ts-fl" style="width:calc(55.7% + 11%)"></div><i style="left:11.0%;background:#fff"></i><i style="left:22.1%;background:#fff"></i><i style="left:33.3%;background:#fff"></i><i style="left:44.4%;background:#fff"></i><i style="left:55.6%;background:#fff"></i><i style="left:66.7%;background:#fff"></i><i style="left:77.9%;background:#A9B0C5"></i><i style="left:89.0%;background:#A9B0C5"></i><div class="ts-th" style="left:calc(55.7% + 11% - 13px)"></div></div><b class="l">가</b></div>
-        <div class="bs-pv">오늘 드실 약을 잊지 않게 알려 드려요.</div>
-        <div class="langrow bs-lang"><span>언어</span><b>한국어</b><span class="chev">›</span></div>
-      </div>
-      <div class="set-lbl">데이터</div>
-      <div class="set-card">
-        <div class="set-row"><div class="set-ic" style="background:rgba(20,184,166,.13);color:#14B8A6"><svg viewBox="0 0 24 24"><path d="M12 15V4M8 8l4-4 4 4"/><path d="M6 12v7a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-7"/></svg></div><div class="set-tt">백업 내보내기<small>파일로 저장 (iCloud·파일 앱)</small></div><span class="chev">›</span></div>
-        <div class="set-row"><div class="set-ic" style="background:rgba(74,108,247,.13);color:#4A6CF7"><svg viewBox="0 0 24 24"><path d="M12 4v11M8 11l4 4 4-4"/><path d="M6 12v7a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-7"/></svg></div><div class="set-tt">백업 불러오기<small>기기 변경 시 복원</small></div><span class="chev">›</span></div>
-      </div>
-    </div>
-    <div class="tabbar">
-      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><path class="f" d="M3.5 10.6 12 3.8l8.5 6.8V19.5a1.5 1.5 0 0 1-1.5 1.5h-4.2v-6.2H9.2V21H5a1.5 1.5 0 0 1-1.5-1.5z"/></svg>홈</div>
-      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><g transform="rotate(-45 12 12)"><rect x="2.5" y="7.5" width="19" height="9" rx="4.5" fill="currentColor" opacity=".9"/><path d="M12 7.5h5a4.5 4.5 0 0 1 0 9h-5z" fill="#fff" opacity=".45"/></g></svg>내 약</div>
-      <div class="tab"><svg class="ic" viewBox="0 0 24 24"><rect class="f" x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/><g class="dots"><circle cx="8" cy="13" r="1"/><circle cx="12" cy="13" r="1"/><circle cx="16" cy="13" r="1"/><circle cx="8" cy="16.6" r="1"/><circle cx="12" cy="16.6" r="1"/><circle cx="16" cy="16.6" r="1"/></g></svg>달력</div>
-      <div class="tab on"><svg class="ic" viewBox="0 0 24 24"><path class="f" d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/><circle class="hole" cx="12" cy="12" r="3"/></svg>설정</div>
-    </div>
+    <div class="body"><div class="set-lbl">알림</div><div class="set-card"><div class="set-row"><div class="set-ic" style="background:rgba(74,108,247,.13);color:#4A6CF7"><svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg></div><div class="set-tt">알림 소리</div><div class="switch"></div></div><div class="set-lbl">화면</div><div class="set-card"><div class="set-row"><div class="set-ic" style="background:rgba(99,102,241,.13);color:#6366F1"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg></div><div class="set-tt">테마</div><span class="set-val">시스템</span><span class="chev">›</span></div><div class="set-row"><div class="set-ic" style="background:rgba(245,158,11,.13);color:#F59E0B"><svg viewBox="0 0 24 24"><path d="M4 19l5-13 5 13M6 14.5h6"/><path d="M15 19l3-7.5 3 7.5M16 16.8h4"/></svg></div><div class="set-tt">글자 크기</div><span class="set-val">140%</span><span class="chev">›</span></div><div class="set-row"><div class="set-ic" style="background:rgba(14,165,233,.13);color:#0EA5E9"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.6 3.5 5.4 3.5 8.5s-1 5.9-3.5 8.5c-2.5-2.6-3.5-5.4-3.5-8.5s1-5.9 3.5-8.5z"/></svg></div><div class="set-tt">언어</div><span class="set-val">한국어</span><span class="chev">›</span></div></div></div>
+    <div class="set-dim"></div><div class="set-sheet"><div class="grip"></div><div class="sh-tt">글자 크기</div><div class="ts-row"><b class="s">가</b><div class="ts-tr"><div class="ts-rl"></div><div class="ts-fl" style="width:calc(55.7% + 11%)"></div><i style="left:11.0%;background:#fff"></i><i style="left:22.1%;background:#fff"></i><i style="left:33.3%;background:#fff"></i><i style="left:44.4%;background:#fff"></i><i style="left:55.6%;background:#fff"></i><i style="left:66.7%;background:#fff"></i><i style="left:77.9%;background:#A9B0C5"></i><i style="left:89.0%;background:#A9B0C5"></i><div class="ts-th" style="left:calc(55.7% + 11% - 13px)"></div></div><b class="l">가</b></div>
+        <div class="bs-pv">오늘 드실 약을 잊지 않게 알려 드려요.</div><div class="sh-done">완료</div></div>
   </div></div>
 
 </div>

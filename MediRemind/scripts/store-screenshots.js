@@ -335,6 +335,10 @@ const EN = {
   "=연결": "Link",
   "오늘 드실 약을 잊지 않게 알려 드려요.": "We'll remind you when it's time for your medicine.",
   "=한국어": "English",
+  "=완료": "Done",
+  "정식 버전으로 업그레이드": "Upgrade to the full version",
+  "약 무제한 등록 · 가족 보호자 알림 · ₩1,900 한 번": "Unlimited medicines · Family alerts · Pay once",
+  "엄마 · 오늘 안 먹은 약 1개": "Mom · 1 missed today",
   // Calendar weekday headers (single characters, matched last).
   '일': 'S', '월': 'M', '화': 'T', '수': 'W', '목': 'T', '금': 'F', '토': 'S',
 };
