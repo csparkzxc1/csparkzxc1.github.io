@@ -308,6 +308,19 @@ export async function readTakeResponse(
   };
 }
 
+/**
+ * A tap on a family member's missed-dose push (sent by the guardian server
+ * with data.type 'guardian'). Returns the key to mark handled, or null.
+ */
+export async function readGuardianResponse(response: Notifications.NotificationResponse): Promise<string | null> {
+  if (response.actionIdentifier !== Notifications.DEFAULT_ACTION_IDENTIFIER) return null;
+  const data = response.notification.request.content.data as { type?: string } | undefined;
+  if (data?.type !== 'guardian') return null;
+  const key = `${response.notification.request.identifier}@${notificationDateMs(response.notification.date)}`;
+  const handled: string[] = JSON.parse((await kvGet(KV_KEYS.handledResponses)) ?? '[]');
+  return handled.includes(key) ? null : key;
+}
+
 export async function markResponseHandled(key: string): Promise<void> {
   const handled: string[] = JSON.parse((await kvGet(KV_KEYS.handledResponses)) ?? '[]');
   if (!handled.includes(key)) {

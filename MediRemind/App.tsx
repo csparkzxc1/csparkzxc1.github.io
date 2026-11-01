@@ -14,6 +14,7 @@ import {
   setupNotificationCategories,
   syncNotifications,
   readTakeResponse,
+  readGuardianResponse,
   markResponseHandled,
 } from './src/notifications/notifications';
 import { dateKey } from './src/lib/schedule';
@@ -21,6 +22,7 @@ import { EntitlementProvider, useEntitlement } from './src/purchase/EntitlementP
 import { I18nProvider, useI18n } from './src/i18n/I18nProvider';
 import { ThemeProvider, useTheme } from './src/theme/ThemeProvider';
 import { scheduleSlotSync, setAlertsAllowed } from './src/guardian/guardian';
+import { openGuardian } from './src/navigation/navigationRef';
 
 export default function App() {
   return (
@@ -41,6 +43,13 @@ export default function App() {
 const medicinesNow = () => useMedicineStore.getState().medicines;
 
 async function handleResponse(response: Notifications.NotificationResponse) {
+  // A family member's missed-dose alert opens the guardian screen.
+  const guardianKey = await readGuardianResponse(response);
+  if (guardianKey) {
+    await markResponseHandled(guardianKey);
+    openGuardian();
+    return;
+  }
   const take = await readTakeResponse(response);
   if (!take) return;
   // Marking is idempotent, so a duplicate delivery racing this one is harmless.

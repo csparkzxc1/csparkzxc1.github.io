@@ -15,6 +15,7 @@ import SettingsScreen from '../screens/SettingsScreen';
 import MedicineFormScreen from '../screens/MedicineFormScreen';
 import PaywallScreen from '../screens/PaywallScreen';
 import GuardianScreen from '../screens/GuardianScreen';
+import { flushPendingNavigation, navigationRef } from './navigationRef';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<BottomTabParamList>();
@@ -93,7 +94,7 @@ export default function AppNavigator() {
   }, [scheme, colors]);
 
   return (
-    <NavigationContainer theme={navTheme}>
+    <NavigationContainer ref={navigationRef} theme={navTheme} onReady={flushPendingNavigation}>
       <Stack.Navigator
         screenOptions={{
           headerStyle: { backgroundColor: colors.bg },
