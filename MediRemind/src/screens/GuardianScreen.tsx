@@ -62,7 +62,7 @@ export default function GuardianScreen() {
   const medicines = useMedicineStore((s) => s.medicines);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   // Sharing my doses is free; watching a family member is part of the full version.
-  const { isPro } = useEntitlement();
+  const { hasFamily } = useEntitlement();
   const resumeLink = useRef(false);
 
   const [links, setLinks] = useState<Links | null>(null);
@@ -108,9 +108,9 @@ export default function GuardianScreen() {
 
   // Back from the paywall with the full version: finish linking the entered code.
   useEffect(() => {
-    if (isPro && resumeLink.current) onLink();
+    if (hasFamily && resumeLink.current) onLink();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPro]);
+  }, [hasFamily]);
 
   const onInvite = async () => {
     setBusy('invite');
@@ -129,8 +129,8 @@ export default function GuardianScreen() {
       Alert.alert(t('guardian.invalidCode'));
       return;
     }
-    if (!isPro) {
-      // Link right after a purchase, when the paywall closes.
+    if (!hasFamily) {
+      // Link right after subscribing, when the paywall closes.
       resumeLink.current = true;
       setSheet(null);
       navigation.navigate('Paywall', { reason: 'guardian' });
@@ -240,6 +240,19 @@ export default function GuardianScreen() {
         {!!links?.patients.length && (
           <>
             <Text style={styles.section}>{t('guardian.sectionWatching')}</Text>
+            {!hasFamily && (
+              <TouchableOpacity
+                style={styles.planEnded}
+                onPress={() => navigation.navigate('Paywall', { reason: 'guardian' })}
+                accessibilityRole="button"
+              >
+                <Ionicons name="notifications-off-outline" size={20} color={colors.warning} />
+                <View style={styles.flex}>
+                  <Text style={styles.planEndedText}>{t('guardian.planEnded')}</Text>
+                  <Text style={styles.planEndedCta}>{t('guardian.planRestart')}</Text>
+                </View>
+              </TouchableOpacity>
+            )}
             {links.patients.map((p) => (
               <PatientCard
                 key={p.id}
@@ -289,7 +302,7 @@ export default function GuardianScreen() {
                   tint={colors.brand}
                   title={t('guardian.watchTitle')}
                   sub={t('guardian.watchSub')}
-                  badge={isPro ? undefined : t('guardian.proBadge')}
+                  badge={hasFamily ? undefined : t('guardian.planBadge')}
                   onPress={() => setSheet('watch')}
                 />
                 <SheetOption
@@ -318,7 +331,7 @@ export default function GuardianScreen() {
                   />
                   <SmallButton label={t('guardian.connect')} busy={busy === 'link'} onPress={onLink} />
                 </View>
-                {!isPro && <Text style={styles.fine}>{t('guardian.proNote')}</Text>}
+                {!hasFamily && <Text style={styles.fine}>{t('guardian.planNote')}</Text>}
               </>
             )}
 
@@ -742,6 +755,17 @@ const makeStyles = (c: ThemeColors, scheme: Scheme) =>
     personRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
     personName: { flex: 1, fontSize: 16, fontWeight: '700', color: c.text },
     chip: { fontSize: 12, fontWeight: '800', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 4, overflow: 'hidden' },
+    planEnded: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      backgroundColor: c.warning + '1F',
+      borderRadius: 14,
+      padding: 14,
+      marginBottom: 12,
+    },
+    planEndedText: { fontSize: 13, color: c.text, lineHeight: 18 },
+    planEndedCta: { fontSize: 13, fontWeight: '800', color: c.brand, marginTop: 4 },
     addBtn: {
       flexDirection: 'row',
       alignItems: 'center',

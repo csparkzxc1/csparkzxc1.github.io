@@ -24,6 +24,8 @@ export const fetchProducts = notAvailable('fetchProducts');
 export const requestPurchase = notAvailable('requestPurchase');
 export const getAvailablePurchases = notAvailable('getAvailablePurchases');
 export const finishTransaction = notAvailable('finishTransaction');
+export const isEligibleForIntroOfferIOS = notAvailable('isEligibleForIntroOfferIOS');
+export const deepLinkToSubscriptions = notAvailable('deepLinkToSubscriptions');
 
 type Subscription = { remove: () => void };
 

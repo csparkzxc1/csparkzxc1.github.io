@@ -20,7 +20,7 @@ import { dateKey } from './src/lib/schedule';
 import { EntitlementProvider, useEntitlement } from './src/purchase/EntitlementProvider';
 import { I18nProvider, useI18n } from './src/i18n/I18nProvider';
 import { ThemeProvider, useTheme } from './src/theme/ThemeProvider';
-import { scheduleSlotSync } from './src/guardian/guardian';
+import { scheduleSlotSync, setAlertsAllowed } from './src/guardian/guardian';
 
 export default function App() {
   return (
@@ -51,7 +51,13 @@ async function handleResponse(response: Notifications.NotificationResponse) {
 function Root() {
   const { t, language } = useI18n();
   const { scheme, colors } = useTheme();
-  const { loading: entitlementLoading } = useEntitlement();
+  const { loading: entitlementLoading, hasFamily } = useEntitlement();
+
+  // Missed-dose alerts follow the family plan (see setAlertsAllowed).
+  useEffect(() => {
+    if (entitlementLoading) return;
+    setAlertsAllowed(hasFamily).catch((e) => console.warn('[guardian] alert state', e));
+  }, [entitlementLoading, hasFamily]);
   const [ready, setReady] = useState(false);
   const firstLanguage = useRef(language);
 

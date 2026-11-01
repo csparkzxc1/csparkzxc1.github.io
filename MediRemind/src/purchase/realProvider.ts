@@ -1,6 +1,7 @@
 /**
  * App Store / Play purchases through `react-native-iap` v15: one non-consumable
- * "full version" that lifts the free medicine limit.
+ * "full version" that lifts the free medicine limit, and the auto-renewing
+ * family plan for guardian alerts.
  *
  * No server: the store's purchase history is the source of truth and is
  * mirrored into the local kv table for offline reads.
@@ -19,12 +20,15 @@ import {
   finishTransaction,
   purchaseUpdatedListener,
   purchaseErrorListener,
+  isEligibleForIntroOfferIOS,
+  deepLinkToSubscriptions,
   type Purchase,
   type PurchaseError,
 } from 'react-native-iap';
 import { kvGet, kvSet } from '../db/kv';
-import { PURCHASE_CONFIG, PURCHASE_KEYS } from './purchase.config';
-import type { PurchaseProduct, PurchaseProvider } from './types';
+import { FAMILY_PLANS, FAMILY_PLAN_IDS, PURCHASE_CONFIG, PURCHASE_KEYS } from './purchase.config';
+import { originalDate, subscriptionFrom, type StoreTransaction } from './family';
+import type { FamilyOffer, FamilySubscription, PurchaseProduct, PurchaseProvider } from './types';
 
 const FULL = PURCHASE_CONFIG.productId;
 
@@ -54,10 +58,23 @@ async function markPurchased(): Promise<void> {
   changeListeners.forEach((l) => l());
 }
 
+async function saveFamily(sub: FamilySubscription | null): Promise<void> {
+  await kvSet(PURCHASE_KEYS.family, sub ? JSON.stringify(sub) : '');
+  changeListeners.forEach((l) => l());
+}
+
+/** Mirrors the store's history locally. True if anything is owned. */
 async function applyHistory(purchases: Purchase[]): Promise<boolean> {
+  const txs = purchases as unknown as StoreTransaction[];
   const full = purchases.some((p) => p.productId === FULL);
-  if (full) await markPurchased();
-  return full;
+  if (full) {
+    const date = originalDate(txs, FULL);
+    if (date) await kvSet(PURCHASE_KEYS.fullDate, String(date));
+    await markPurchased();
+  }
+  const sub = subscriptionFrom(txs, Date.now());
+  await saveFamily(sub);
+  return full || !!sub;
 }
 
 function take(sku: string): Pending | null {
@@ -108,10 +125,17 @@ function bindListeners(): void {
   listenersBound = true;
 
   purchaseUpdatedListener(async (purchase: Purchase) => {
-    if (purchase.productId !== FULL) return;
+    const family = FAMILY_PLAN_IDS.includes(purchase.productId);
+    if (purchase.productId !== FULL && !family) return;
     // Unlock first: the user has paid even if finishing the transaction fails
     // (StoreKit redelivers unfinished transactions on the next launch).
-    await markPurchased().catch((e) => console.warn('[iap] saving purchase failed', e));
+    const tx = purchase as unknown as StoreTransaction;
+    const save = family
+      ? saveFamily(subscriptionFrom([tx], Date.now()) ?? fallbackSubscription(tx))
+      : kvGet(PURCHASE_KEYS.fullDate)
+          .then((d) => (d ? undefined : kvSet(PURCHASE_KEYS.fullDate, String(tx.transactionDate || Date.now()))))
+          .then(markPurchased);
+    await save.catch((e) => console.warn('[iap] saving purchase failed', e));
     take(purchase.productId)?.resolve(true);
     try {
       // Non-consumable: finish without consuming so it stays owned.
@@ -131,7 +155,14 @@ function bindListeners(): void {
   });
 }
 
-async function buy(sku: string): Promise<boolean> {
+/** A fresh purchase event without an expiry yet: assume the plan's first period. */
+function fallbackSubscription(tx: StoreTransaction): FamilySubscription {
+  const plan = FAMILY_PLANS.find((p) => p.id === tx.productId);
+  const days = plan?.period === 'month' ? 31 : 366;
+  return { productId: tx.productId, expiresAt: Date.now() + days * 86400000, trial: false, willRenew: true };
+}
+
+async function buy(sku: string, type: 'in-app' | 'subs' = 'in-app'): Promise<boolean> {
   await ensureConnection();
   bindListeners();
   pending?.resolve(false);
@@ -149,8 +180,8 @@ async function buy(sku: string): Promise<boolean> {
   try {
     await requestPurchase({
       request: { apple: { sku }, google: { skus: [sku] } },
-      type: 'in-app',
-    });
+      type,
+    } as Parameters<typeof requestPurchase>[0]);
   } catch (e) {
     const p = take(sku);
     if (p) await settleError(p, e);
@@ -208,6 +239,76 @@ export const realPurchaseProvider: PurchaseProvider = {
   async restore() {
     await ensureConnection();
     return applyHistory(await getAvailablePurchases());
+  },
+
+  async getFamilyOffer(): Promise<FamilyOffer> {
+    const fallback = (): FamilyOffer => ({
+      plans: FAMILY_PLANS.map((p) => ({
+        id: p.id,
+        period: p.period,
+        priceLabel: p.fallbackPriceLabel,
+        price: p.fallbackPrice,
+        available: false,
+      })),
+      trialEligible: true,
+    });
+    try {
+      await ensureConnection();
+      const products = ((await fetchProducts({ skus: FAMILY_PLAN_IDS, type: 'subs' })) ?? []) as {
+        id: string;
+        displayPrice: string;
+        price?: number | null;
+        subscriptionInfoIOS?: { subscriptionGroupId: string } | null;
+      }[];
+      const group = products.find((p) => p.subscriptionInfoIOS?.subscriptionGroupId)?.subscriptionInfoIOS
+        ?.subscriptionGroupId;
+      let trialEligible = true;
+      if (group) {
+        try {
+          trialEligible = await isEligibleForIntroOfferIOS(group);
+        } catch (e) {
+          console.warn('[iap] intro offer check failed', e);
+        }
+      }
+      return {
+        plans: FAMILY_PLANS.map((p) => {
+          const store = products.find((x) => x.id === p.id);
+          return {
+            id: p.id,
+            period: p.period,
+            priceLabel: store?.displayPrice ?? p.fallbackPriceLabel,
+            price: store?.price ?? p.fallbackPrice,
+            available: !!store,
+          };
+        }),
+        trialEligible,
+      };
+    } catch (e) {
+      console.warn('[iap] fetching family plans failed', e);
+      return fallback();
+    }
+  },
+
+  async getFamilyState() {
+    const [raw, date] = await Promise.all([kvGet(PURCHASE_KEYS.family), kvGet(PURCHASE_KEYS.fullDate)]);
+    let subscription: FamilySubscription | null = null;
+    try {
+      subscription = raw ? (JSON.parse(raw) as FamilySubscription) : null;
+    } catch {
+      subscription = null;
+    }
+    return { subscription, fullDate: date ? Number(date) : null };
+  },
+
+  async refreshFamily() {
+    await ensureConnection();
+    await applyHistory(await getAvailablePurchases());
+  },
+
+  purchaseFamily: (productId: string) => buy(productId, 'subs'),
+
+  async manageSubscriptions() {
+    await deepLinkToSubscriptions();
   },
 };
 

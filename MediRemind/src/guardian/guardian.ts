@@ -27,6 +27,8 @@ const KEYS = {
   /** Set while this user shares their doses (has created an invite). */
   sharing: 'guardian.sharing',
   authPrefix: 'guardian.auth.',
+  /** Last alert state sent to the server ('1' token registered, '0' cleared). */
+  alerts: 'guardian.alerts',
 } as const;
 
 export interface Person {
@@ -95,7 +97,7 @@ function timezone(): string {
   }
 }
 
-async function upsertProfile(fields: { display_name?: string; push_token?: string } = {}) {
+async function upsertProfile(fields: { display_name?: string; push_token?: string | null } = {}) {
   const me = await ensureSession();
   const { error } = await getClient()
     .from('profiles')
@@ -120,8 +122,30 @@ export async function setDisplayName(name: string): Promise<void> {
   await upsertProfile({ display_name: name.trim() });
 }
 
+/**
+ * Whether this user may receive missed-dose alerts (family plan or an early
+ * full-version purchase). Off until the entitlement has loaded.
+ */
+let alertsAllowed = false;
+
+/**
+ * Keeps the server in step with the family plan: without it the push token
+ * is removed, so the server stops alerting this device; it comes back when
+ * the plan does. Only talks to the server when the state changes.
+ */
+export async function setAlertsAllowed(on: boolean): Promise<void> {
+  alertsAllowed = on;
+  if (!(await isActive())) return;
+  const want = on ? '1' : '0';
+  if ((await kvGet(KEYS.alerts)) === want) return;
+  if (on) await registerPush();
+  else await upsertProfile({ push_token: null });
+  await kvSet(KEYS.alerts, want);
+}
+
 /** Registers this device for missed-dose pushes. False if notifications are off. */
 async function registerPush(): Promise<boolean> {
+  if (!alertsAllowed) return false;
   if (!(await ensurePermission())) return false;
   const projectId = Constants.expoConfig?.extra?.eas?.projectId as string | undefined;
   const { data: token } = await Notifications.getExpoPushTokenAsync({ projectId });
@@ -268,4 +292,5 @@ export async function deleteAllData(): Promise<void> {
   }
   await kvDelete(KEYS.active);
   await kvDelete(KEYS.sharing);
+  await kvDelete(KEYS.alerts);
 }
