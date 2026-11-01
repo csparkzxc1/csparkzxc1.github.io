@@ -336,6 +336,8 @@ export const STRINGS: Record<string, Entry> = {
   'paywall.freeUsage': { ko: '무료 버전 · 약 {n}/{max}개 사용 중', en: 'Free version · {n}/{max} medicines used' },
   'settings.planFree': { ko: '무료 버전 · 약 {n}개까지', en: 'Free version · up to {n} medicines' },
   'settings.planFreeSub': { ko: '{price} 한 번이면 무제한 · 탭하여 보기', en: 'Unlimited for {price}, once · Tap to see' },
+  'settings.upgradeTitle': { ko: '정식 버전으로 업그레이드', en: 'Upgrade to the full version' },
+  'settings.upgradeSub': { ko: '약 무제한 등록 · 가족 보호자 알림 · {price} 한 번', en: 'Unlimited medicines · Family alerts · {price} once' },
   'paywall.oneTime': { ko: '1회 결제 · 구독 아님', en: 'One-time purchase, not a subscription' },
   'paywall.buy': { ko: '{price}에 정식 버전 구매', en: 'Unlock for {price}' },
   'paywall.later': { ko: '나중에', en: 'Not now' },

@@ -237,6 +237,8 @@ const ja: Record<string, string> = {
   'paywall.freeUsage': '無料版・お薬 {n}/{max}件を使用中',
   'settings.planFree': '無料版・お薬{n}件まで',
   'settings.planFreeSub': '{price}の1回払いで無制限・タップして詳細を見る',
+  'settings.upgradeTitle': '正式版にアップグレード',
+  'settings.upgradeSub': '薬の登録無制限・家族への通知・{price}の1回払い',
   'paywall.oneTime': '1回払い・サブスクリプションではありません',
   'paywall.buy': '{price}で正式版を購入',
   'paywall.later': 'あとで',

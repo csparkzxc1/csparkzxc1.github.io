@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -12,20 +12,21 @@ import {
   ActivityIndicator,
   Modal,
   Pressable,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Ionicons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
-import Constants from 'expo-constants';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
+import Constants from "expo-constants";
 
-import type { RootStackParamList } from '../types';
-import { PRIVACY_POLICY_URL } from '../config';
-import { useDoseStore } from '../store/doseStore';
-import { useMedicineStore } from '../store/medicineStore';
-import { useEntitlement } from '../purchase/EntitlementProvider';
-import { FREE_MEDICINE_LIMIT, PURCHASE_CONFIG } from '../purchase/purchase.config';
+import type { RootStackParamList } from "../types";
+import { PRIVACY_POLICY_URL } from "../config";
+import { useDoseStore } from "../store/doseStore";
+import { useMedicineStore } from "../store/medicineStore";
+import { useEntitlement } from "../purchase/EntitlementProvider";
+import { PURCHASE_CONFIG } from "../purchase/purchase.config";
 import {
   loadReminderSettings,
   openSystemSettings,
@@ -33,18 +34,23 @@ import {
   sendTestNotification,
   syncNotifications,
   type ReminderSettings,
-} from '../notifications/notifications';
-import { exportBackup, importBackup } from '../lib/backup';
-import { dateKey } from '../lib/schedule';
-import { checkAndApplyUpdate, getBuildInfo } from '../utils/updateUtils';
-import { useI18n } from '../i18n/I18nProvider';
-import { LANGUAGES, LANGUAGE_NAMES, type LanguagePref } from '../i18n/core';
-import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
-import { cardShadow, type Scheme, type ThemeColors, type ThemeMode } from '../theme/theme';
-import TextSizeSlider from '../components/TextSizeSlider';
-import ScreenHeader from '../components/ScreenHeader';
-import { guardianAvailable } from '../guardian/config';
-import { useFamilySummary } from '../guardian/useFamilySummary';
+} from "../notifications/notifications";
+import { exportBackup, importBackup } from "../lib/backup";
+import { dateKey } from "../lib/schedule";
+import { checkAndApplyUpdate, getBuildInfo } from "../utils/updateUtils";
+import { useI18n } from "../i18n/I18nProvider";
+import { LANGUAGES, LANGUAGE_NAMES, type LanguagePref } from "../i18n/core";
+import { useTheme, useThemedStyles } from "../theme/ThemeProvider";
+import {
+  cardShadow,
+  type Scheme,
+  type ThemeColors,
+  type ThemeMode,
+} from "../theme/theme";
+import TextSizeSlider from "../components/TextSizeSlider";
+import ScreenHeader from "../components/ScreenHeader";
+import { guardianAvailable } from "../guardian/config";
+import { useFamilySummary } from "../guardian/useFamilySummary";
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
@@ -56,14 +62,20 @@ function SettingRow({
   right,
   onPress,
   danger,
+  value,
+  badge,
 }: {
-  icon: React.ComponentProps<typeof Ionicons>['name'];
+  icon: React.ComponentProps<typeof Ionicons>["name"];
   iconColor: string;
   title: string;
   subtitle?: string;
   right?: React.ReactNode;
   onPress?: () => void;
   danger?: boolean;
+  /** Current setting, shown before the chevron. */
+  value?: string;
+  /** Red count, e.g. doses family missed today. */
+  badge?: number;
 }) {
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
@@ -74,73 +86,105 @@ function SettingRow({
       disabled={!onPress}
       activeOpacity={onPress ? 0.7 : 1}
     >
-      <View style={[styles.rowIcon, { backgroundColor: iconColor + '22' }]}>
+      <View style={[styles.rowIcon, { backgroundColor: iconColor + "22" }]}>
         <Ionicons name={icon} size={20} color={iconColor} />
       </View>
       <View style={styles.rowBody}>
-        <Text style={[styles.rowTitle, danger && { color: colors.danger }]}>{title}</Text>
+        <Text style={[styles.rowTitle, danger && { color: colors.danger }]}>
+          {title}
+        </Text>
         {subtitle ? <Text style={styles.rowSubtitle}>{subtitle}</Text> : null}
       </View>
-      {right ?? (onPress ? <Ionicons name="chevron-forward" size={18} color={colors.textFaint} /> : null)}
+      {value ? (
+        <Text style={styles.rowValue} numberOfLines={1}>
+          {value}
+        </Text>
+      ) : null}
+      {badge ? (
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>{badge}</Text>
+        </View>
+      ) : null}
+      {right ??
+        (onPress ? (
+          <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
+        ) : null)}
     </TouchableOpacity>
   );
 }
 
-function Segmented<T extends string>({
-  options,
-  value,
-  onChange,
+function SheetChoice({
+  label,
+  active,
+  onPress,
 }: {
-  options: { value: T; label: string }[];
-  value: T;
-  onChange: (v: T) => void;
+  label: string;
+  active: boolean;
+  onPress: () => void;
 }) {
+  const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
   return (
-    <View style={styles.segment}>
-      {options.map((o) => (
-        <TouchableOpacity
-          key={o.value}
-          style={[styles.segmentItem, value === o.value && styles.segmentItemActive]}
-          onPress={() => onChange(o.value)}
-        >
-          <Text style={[styles.segmentText, value === o.value && styles.segmentTextActive]}>
-            {o.label}
-          </Text>
-        </TouchableOpacity>
-      ))}
-    </View>
+    <TouchableOpacity
+      style={styles.sheetRow}
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityState={{ selected: active }}
+    >
+      <Text style={[styles.sheetText, active && styles.sheetTextOn]}>
+        {label}
+      </Text>
+      {active && <Ionicons name="checkmark" size={20} color={colors.brand} />}
+    </TouchableOpacity>
   );
 }
 
 export default function SettingsScreen() {
   const navigation = useNavigation<Nav>();
   const { t, pref: langPref, setLanguage } = useI18n();
-  const [langOpen, setLangOpen] = useState(false);
+  const [sheet, setSheet] = useState<null | "theme" | "text" | "lang">(null);
   // Once linked, the row reads like a status line instead of an ad for the feature.
   const family = useFamilySummary();
   const missedCount = family?.reduce((n, m) => n + m.missed.length, 0) ?? 0;
-  const familyNames = family?.map((m) => m.patient.name || t('guardian.unnamed')).join(', ');
+  const familyNames = family
+    ?.map((m) => m.patient.name || t("guardian.unnamed"))
+    .join(", ");
   const familyLine = !family?.length
     ? null
     : missedCount
-      ? `🔴 ${t('settings.familyMissed', { names: familyNames!, n: missedCount })}`
-      : t('settings.familyOk', { names: familyNames! });
-  const langName = (v: LanguagePref) => (v === 'system' ? t('settings.langSystem') : LANGUAGE_NAMES[v]);
-  const { colors, mode, setMode } = useTheme();
+      ? t("settings.familyMissed", { names: familyNames!, n: missedCount })
+      : t("settings.familyOk", { names: familyNames! });
+  const langName = (v: LanguagePref) =>
+    v === "system" ? t("settings.langSystem") : LANGUAGE_NAMES[v];
+  const { colors, mode, setMode, textScale } = useTheme();
+  const themeName = (m: ThemeMode) =>
+    t(
+      m === "system"
+        ? "settings.themeSystem"
+        : m === "light"
+          ? "settings.themeLight"
+          : "settings.themeDark",
+    );
   const styles = useThemedStyles(makeStyles);
   const { isPro, product, restore } = useEntitlement();
 
-  const [settings, setSettings] = useState<ReminderSettings>({ sound: true, vibration: true });
-  const [busy, setBusy] = useState<null | 'update' | 'export' | 'import' | 'restore'>(null);
+  const [settings, setSettings] = useState<ReminderSettings>({
+    sound: true,
+    vibration: true,
+  });
+  const [busy, setBusy] = useState<
+    null | "update" | "export" | "import" | "restore"
+  >(null);
   const buildInfo = getBuildInfo();
-  const version = Constants.expoConfig?.version ?? '1.0.0';
+  const version = Constants.expoConfig?.version ?? "1.0.0";
 
   const { clearAllRecords, syncDoses } = useDoseStore();
   const { medicines, loadMedicines } = useMedicineStore();
 
   useEffect(() => {
-    loadReminderSettings().then(setSettings).catch(() => {});
+    loadReminderSettings()
+      .then(setSettings)
+      .catch(() => {});
   }, []);
 
   const updateSettings = async (next: ReminderSettings) => {
@@ -152,84 +196,100 @@ export default function SettingsScreen() {
 
   const handleTestNotification = async () => {
     const result = await sendTestNotification();
-    if (result.status === 'denied') {
-      Alert.alert(t('notif.permTitle'), t('notif.permBody'), [
-        { text: t('common.cancel'), style: 'cancel' },
-        { text: t('notif.openSettings'), onPress: openSystemSettings },
+    if (result.status === "denied") {
+      Alert.alert(t("notif.permTitle"), t("notif.permBody"), [
+        { text: t("common.cancel"), style: "cancel" },
+        { text: t("notif.openSettings"), onPress: openSystemSettings },
       ]);
       return;
     }
     // Make sure the real schedule is in place too.
     await syncNotifications(useMedicineStore.getState().medicines);
-    Alert.alert(t('settings.testSentTitle'), t('settings.testSentBody', { n: result.scheduledDoses }));
+    Alert.alert(
+      t("settings.testSentTitle"),
+      t("settings.testSentBody", { n: result.scheduledDoses }),
+    );
   };
 
   const handleRestore = async () => {
-    setBusy('restore');
+    setBusy("restore");
     try {
       const ok = await restore();
       Alert.alert(
-        ok ? t('settings.restoreDoneTitle') : t('settings.restoreNoneTitle'),
-        ok ? t('settings.restoreDoneBody') : t('settings.restoreNoneBody')
+        ok ? t("settings.restoreDoneTitle") : t("settings.restoreNoneTitle"),
+        ok ? t("settings.restoreDoneBody") : t("settings.restoreNoneBody"),
       );
     } catch {
-      Alert.alert(t('common.error'), t('settings.restoreFail'));
+      Alert.alert(t("common.error"), t("settings.restoreFail"));
     } finally {
       setBusy(null);
     }
   };
 
   const handleExport = async () => {
-    setBusy('export');
+    setBusy("export");
     try {
       await exportBackup();
     } catch (e) {
-      console.warn('[settings] export failed', e);
-      Alert.alert(t('common.error'), t('backup.exportFail'));
+      console.warn("[settings] export failed", e);
+      Alert.alert(t("common.error"), t("backup.exportFail"));
     } finally {
       setBusy(null);
     }
   };
 
   const handleImport = () => {
-    Alert.alert(t('settings.importConfirmTitle'), t('settings.importConfirmBody'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('common.ok'),
-        onPress: async () => {
-          setBusy('import');
-          try {
-            const result = await importBackup();
-            if (result.cancelled) return;
-            await loadMedicines();
-            const meds = useMedicineStore.getState().medicines;
-            await syncDoses(meds, dateKey(new Date()));
-            await syncNotifications(meds);
-            Alert.alert(
-              t('common.done'),
-              t('settings.importDone', { m: result.medicines, r: result.doseRecords })
-            );
-          } catch (e) {
-            Alert.alert(t('common.error'), e instanceof Error ? e.message : t('backup.readError'));
-          } finally {
-            setBusy(null);
-          }
+    Alert.alert(
+      t("settings.importConfirmTitle"),
+      t("settings.importConfirmBody"),
+      [
+        { text: t("common.cancel"), style: "cancel" },
+        {
+          text: t("common.ok"),
+          onPress: async () => {
+            setBusy("import");
+            try {
+              const result = await importBackup();
+              if (result.cancelled) return;
+              await loadMedicines();
+              const meds = useMedicineStore.getState().medicines;
+              await syncDoses(meds, dateKey(new Date()));
+              await syncNotifications(meds);
+              Alert.alert(
+                t("common.done"),
+                t("settings.importDone", {
+                  m: result.medicines,
+                  r: result.doseRecords,
+                }),
+              );
+            } catch (e) {
+              Alert.alert(
+                t("common.error"),
+                e instanceof Error ? e.message : t("backup.readError"),
+              );
+            } finally {
+              setBusy(null);
+            }
+          },
         },
-      },
-    ]);
+      ],
+    );
   };
 
   const handleReset = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
-    Alert.alert(t('settings.resetTitle'), t('settings.resetBody'), [
-      { text: t('common.cancel'), style: 'cancel' },
+    Alert.alert(t("settings.resetTitle"), t("settings.resetBody"), [
+      { text: t("common.cancel"), style: "cancel" },
       {
-        text: t('settings.resetConfirm'),
-        style: 'destructive',
+        text: t("settings.resetConfirm"),
+        style: "destructive",
         onPress: async () => {
           await clearAllRecords();
-          await syncDoses(useMedicineStore.getState().medicines, dateKey(new Date()));
-          Alert.alert(t('common.done'), t('settings.resetDone'));
+          await syncDoses(
+            useMedicineStore.getState().medicines,
+            dateKey(new Date()),
+          );
+          Alert.alert(t("common.done"), t("settings.resetDone"));
         },
       },
     ]);
@@ -237,73 +297,82 @@ export default function SettingsScreen() {
 
   const handleCheckUpdate = async () => {
     if (__DEV__) {
-      Alert.alert(t('settings.sectionUpdate'), t('settings.updateDev'));
+      Alert.alert(t("settings.sectionUpdate"), t("settings.updateDev"));
       return;
     }
-    setBusy('update');
+    setBusy("update");
     const result = await checkAndApplyUpdate();
     setBusy(null);
-    if (result.isError) Alert.alert(t('common.error'), t('settings.updateFail'));
-    else if (!result.isAvailable) Alert.alert(t('settings.sectionUpdate'), t('settings.updateLatest'));
+    if (result.isError)
+      Alert.alert(t("common.error"), t("settings.updateFail"));
+    else if (!result.isAvailable)
+      Alert.alert(t("settings.sectionUpdate"), t("settings.updateLatest"));
   };
 
   const spinner = (key: typeof busy) =>
     busy === key ? <ActivityIndicator color={colors.brand} /> : undefined;
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
-      <ScreenHeader title={t('settings.title')} />
+    <SafeAreaView style={styles.safe} edges={["top"]}>
+      <ScreenHeader title={t("settings.title")} />
 
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {/* ─ Plan ─ */}
-        <Text style={styles.sectionLabel}>{t('settings.sectionPlan')}</Text>
-        <View style={styles.card}>
-          {isPro ? (
-            <SettingRow icon="checkmark-done-circle" iconColor={colors.success} title={t('settings.planPro')} />
-          ) : (
-            <SettingRow
-              icon="sparkles"
-              iconColor={colors.brand}
-              title={t('settings.planFree', { n: FREE_MEDICINE_LIMIT })}
-              subtitle={t('settings.planFreeSub', {
-                price: product?.priceLabel ?? PURCHASE_CONFIG.fallbackPriceLabel,
-              })}
-              onPress={() => navigation.navigate('Paywall')}
-            />
-          )}
-          <View style={styles.divider} />
-          <SettingRow
-            icon="refresh"
-            iconColor={colors.textMuted}
-            title={t('settings.restore')}
-            onPress={busy ? undefined : handleRestore}
-            right={spinner('restore')}
-          />
-        </View>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Free users: one clear upgrade card on top. Pro status lives under About. */}
+        {!isPro && (
+          <TouchableOpacity
+            style={styles.upgrade}
+            activeOpacity={0.85}
+            onPress={() => navigation.navigate("Paywall")}
+            accessibilityRole="button"
+          >
+            <View style={styles.upgradeIcon}>
+              <Ionicons name="sparkles" size={20} color={colors.onBrand} />
+            </View>
+            <View style={styles.rowBody}>
+              <Text style={styles.upgradeTitle}>
+                {t("settings.upgradeTitle")}
+              </Text>
+              <Text style={styles.upgradeSub}>
+                {t("settings.upgradeSub", {
+                  price:
+                    product?.priceLabel ?? PURCHASE_CONFIG.fallbackPriceLabel,
+                })}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.onBrand} />
+          </TouchableOpacity>
+        )}
 
         {/* ─ Family ─ */}
         {guardianAvailable() && (
           <>
-            <Text style={styles.sectionLabel}>{t('settings.sectionFamily')}</Text>
+            <Text style={styles.sectionLabel}>
+              {t("settings.sectionFamily")}
+            </Text>
             <View style={styles.card}>
               <SettingRow
                 icon="people"
                 iconColor={colors.success}
-                title={t('settings.guardian')}
-                subtitle={familyLine ?? t('settings.guardianSub')}
-                onPress={() => navigation.navigate('Guardian')}
+                title={t("settings.guardian")}
+                subtitle={familyLine ?? t("settings.guardianSub")}
+                badge={missedCount}
+                onPress={() => navigation.navigate("Guardian")}
               />
             </View>
           </>
         )}
 
         {/* ─ Notifications ─ */}
-        <Text style={styles.sectionLabel}>{t('settings.sectionNotif')}</Text>
+        <Text style={styles.sectionLabel}>{t("settings.sectionNotif")}</Text>
         <View style={styles.card}>
           <SettingRow
             icon="volume-high"
             iconColor={colors.brand}
-            title={t('settings.sound')}
+            title={t("settings.sound")}
             right={
               <Switch
                 value={settings.sound}
@@ -317,23 +386,25 @@ export default function SettingsScreen() {
           <SettingRow
             icon="notifications-outline"
             iconColor={colors.success}
-            title={t('settings.testNotif')}
-            subtitle={t('settings.testNotifSub')}
+            title={t("settings.testNotif")}
+            subtitle={t("settings.testNotifSub")}
             onPress={handleTestNotification}
           />
           {/* iOS decides notification vibration itself; the toggle only works on Android. */}
-          {Platform.OS === 'android' && (
+          {Platform.OS === "android" && (
             <>
               <View style={styles.divider} />
               <SettingRow
                 icon="phone-portrait"
                 iconColor="#8B5CF6"
-                title={t('settings.vibration')}
+                title={t("settings.vibration")}
                 right={
                   <Switch
                     value={settings.vibration}
-                    onValueChange={(v) => updateSettings({ ...settings, vibration: v })}
-                    trackColor={{ false: colors.surfaceMuted, true: '#8B5CF6' }}
+                    onValueChange={(v) =>
+                      updateSettings({ ...settings, vibration: v })
+                    }
+                    trackColor={{ false: colors.surfaceMuted, true: "#8B5CF6" }}
                     thumbColor="#FFF"
                   />
                 }
@@ -342,124 +413,181 @@ export default function SettingsScreen() {
           )}
         </View>
 
-        {/* ─ Display ─ */}
-        <Text style={styles.sectionLabel}>{t('settings.sectionDisplay')}</Text>
-        <View style={[styles.card, styles.cardPadded]}>
-          <Text style={styles.inlineLabel}>{t('settings.theme')}</Text>
-          <Segmented<ThemeMode>
-            value={mode}
-            onChange={setMode}
-            options={[
-              { value: 'system', label: t('settings.themeSystem') },
-              { value: 'light', label: t('settings.themeLight') },
-              { value: 'dark', label: t('settings.themeDark') },
-            ]}
+        {/* ─ Display: one line each, details in a sheet ─ */}
+        <Text style={styles.sectionLabel}>{t("settings.sectionDisplay")}</Text>
+        <View style={styles.card}>
+          <SettingRow
+            icon="contrast"
+            iconColor="#6366F1"
+            title={t("settings.theme")}
+            value={themeName(mode)}
+            onPress={() => setSheet("theme")}
           />
-          <Text style={[styles.inlineLabel, { marginTop: 16 }]}>{t('settings.textSize')}</Text>
-          <TextSizeSlider />
-          <Text style={styles.textPreview}>{t('settings.textPreview')}</Text>
-          <TouchableOpacity
-            style={styles.langRow}
-            onPress={() => setLangOpen(true)}
-            accessibilityRole="button"
-            accessibilityLabel={`${t('settings.language')}: ${langName(langPref)}`}
-          >
-            <Text style={[styles.inlineLabel, styles.langLabel]}>{t('settings.language')}</Text>
-            <Text style={styles.langValue}>{langName(langPref)}</Text>
-            <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
-          </TouchableOpacity>
+          <View style={styles.divider} />
+          <SettingRow
+            icon="text"
+            iconColor="#F59E0B"
+            title={t("settings.textSize")}
+            value={`${Math.round(textScale * 100)}%`}
+            onPress={() => setSheet("text")}
+          />
+          <View style={styles.divider} />
+          <SettingRow
+            icon="globe-outline"
+            iconColor="#0EA5E9"
+            title={t("settings.language")}
+            value={langName(langPref)}
+            onPress={() => setSheet("lang")}
+          />
         </View>
 
         {/* ─ Data ─ */}
-        <Text style={styles.sectionLabel}>{t('settings.sectionData')}</Text>
+        <Text style={styles.sectionLabel}>{t("settings.sectionData")}</Text>
         <View style={styles.card}>
           <SettingRow
             icon="share-outline"
             iconColor="#14B8A6"
-            title={t('settings.export')}
-            subtitle={t('settings.exportSub')}
+            title={t("settings.export")}
+            subtitle={t("settings.exportSub")}
             onPress={busy ? undefined : handleExport}
-            right={spinner('export')}
+            right={spinner("export")}
           />
           <View style={styles.divider} />
           <SettingRow
             icon="download-outline"
             iconColor={colors.brand}
-            title={t('settings.import')}
-            subtitle={t('settings.importSub')}
+            title={t("settings.import")}
+            subtitle={t("settings.importSub")}
             onPress={busy ? undefined : handleImport}
-            right={spinner('import')}
+            right={spinner("import")}
           />
           <View style={styles.divider} />
           <SettingRow
             icon="trash-outline"
             iconColor={colors.danger}
-            title={t('settings.reset')}
-            subtitle={t('settings.resetSub', { n: medicines.length })}
+            title={t("settings.reset")}
+            subtitle={t("settings.resetSub", { n: medicines.length })}
             onPress={handleReset}
             danger
           />
         </View>
 
-        {/* ─ Updates ─ */}
-        <Text style={styles.sectionLabel}>{t('settings.sectionUpdate')}</Text>
+        {/* ─ About: plan, restore, updates, legal, version ─ */}
+        <Text style={styles.sectionLabel}>{t("settings.sectionInfo")}</Text>
         <View style={styles.card}>
+          {isPro && (
+            <>
+              <SettingRow
+                icon="checkmark-done-circle"
+                iconColor={colors.success}
+                title={t("settings.planPro")}
+              />
+              <View style={styles.divider} />
+            </>
+          )}
+          <SettingRow
+            icon="refresh"
+            iconColor={colors.textMuted}
+            title={t("settings.restore")}
+            onPress={busy ? undefined : handleRestore}
+            right={spinner("restore")}
+          />
+          <View style={styles.divider} />
           <SettingRow
             icon="cloud-download-outline"
             iconColor={colors.brand}
-            title={busy === 'update' ? t('settings.checking') : t('settings.checkUpdate')}
+            title={
+              busy === "update"
+                ? t("settings.checking")
+                : t("settings.checkUpdate")
+            }
             subtitle={
-              buildInfo.channel ? t('settings.channel', { c: buildInfo.channel }) : t('settings.updateSub')
+              buildInfo.channel
+                ? t("settings.channel", { c: buildInfo.channel })
+                : t("settings.updateSub")
             }
             onPress={busy ? undefined : handleCheckUpdate}
           />
-        </View>
-
-        {/* ─ About ─ */}
-        <Text style={styles.sectionLabel}>{t('settings.sectionInfo')}</Text>
-        <View style={styles.card}>
+          <View style={styles.divider} />
           <SettingRow
             icon="shield-checkmark"
             iconColor="#14B8A6"
-            title={t('settings.privacy')}
+            title={t("settings.privacy")}
             onPress={() => Linking.openURL(PRIVACY_POLICY_URL).catch(() => {})}
           />
           <View style={styles.divider} />
           <SettingRow
             icon="information-circle"
             iconColor={colors.textMuted}
-            title={t('settings.version')}
-            subtitle={`v${version}${buildInfo.updateId ? ` · ${buildInfo.updateId.slice(0, 8)}` : ''}`}
+            title={t("settings.version")}
+            subtitle={`v${version}${buildInfo.updateId ? ` · ${buildInfo.updateId.slice(0, 8)}` : ""}`}
           />
         </View>
 
-        <Text style={styles.footer}>{t('settings.footer')}</Text>
+        <Text style={styles.footer}>{t("settings.footer")}</Text>
       </ScrollView>
 
-      <Modal visible={langOpen} transparent animationType="slide" onRequestClose={() => setLangOpen(false)}>
-        <Pressable style={styles.sheetDim} onPress={() => setLangOpen(false)} />
-        <View style={styles.sheet}>
-          <View style={styles.sheetGrip} />
-          <Text style={styles.sheetTitle}>{t('settings.language')}</Text>
-          {(['system', ...LANGUAGES] as LanguagePref[]).map((value) => {
-            const active = langPref === value;
-            return (
-              <TouchableOpacity
-                key={value}
-                style={styles.sheetRow}
-                onPress={() => {
-                  setLanguage(value);
-                  setLangOpen(false);
-                }}
-                accessibilityRole="button"
-                accessibilityState={{ selected: active }}
-              >
-                <Text style={[styles.sheetText, active && styles.sheetTextOn]}>{langName(value)}</Text>
-                {active && <Ionicons name="checkmark" size={20} color={colors.brand} />}
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+      <Modal
+        visible={sheet !== null}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setSheet(null)}
+      >
+        {/* The slider's gestures need their own root inside a Modal. */}
+        <GestureHandlerRootView style={styles.sheetRoot}>
+          <Pressable style={styles.sheetDim} onPress={() => setSheet(null)} />
+          <View style={styles.sheet}>
+            <View style={styles.sheetGrip} />
+            {sheet === "text" ? (
+              <>
+                <Text style={styles.sheetTitle}>{t("settings.textSize")}</Text>
+                <View style={styles.sheetBody}>
+                  <TextSizeSlider />
+                  <Text style={styles.textPreview}>
+                    {t("settings.textPreview")}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.sheetDone}
+                  onPress={() => setSheet(null)}
+                  accessibilityRole="button"
+                >
+                  <Text style={styles.sheetDoneText}>{t("common.done")}</Text>
+                </TouchableOpacity>
+              </>
+            ) : sheet === "theme" ? (
+              <>
+                <Text style={styles.sheetTitle}>{t("settings.theme")}</Text>
+                {(["system", "light", "dark"] as ThemeMode[]).map((value) => (
+                  <SheetChoice
+                    key={value}
+                    label={themeName(value)}
+                    active={mode === value}
+                    onPress={() => {
+                      setMode(value);
+                      setSheet(null);
+                    }}
+                  />
+                ))}
+              </>
+            ) : (
+              <>
+                <Text style={styles.sheetTitle}>{t("settings.language")}</Text>
+                {(["system", ...LANGUAGES] as LanguagePref[]).map((value) => (
+                  <SheetChoice
+                    key={value}
+                    label={langName(value)}
+                    active={langPref === value}
+                    onPress={() => {
+                      setLanguage(value);
+                      setSheet(null);
+                    }}
+                  />
+                ))}
+              </>
+            )}
+          </View>
+        </GestureHandlerRootView>
       </Modal>
     </SafeAreaView>
   );
@@ -472,7 +600,7 @@ const makeStyles = (c: ThemeColors, scheme: Scheme) =>
     content: { paddingHorizontal: 16, paddingBottom: 40 },
     sectionLabel: {
       fontSize: 12,
-      fontWeight: '700',
+      fontWeight: "700",
       color: c.textMuted,
       letterSpacing: 0.6,
       marginTop: 22,
@@ -482,28 +610,82 @@ const makeStyles = (c: ThemeColors, scheme: Scheme) =>
     card: {
       backgroundColor: c.surface,
       borderRadius: 18,
-      overflow: 'hidden',
+      overflow: "hidden",
       ...cardShadow(c, scheme),
     },
-    cardPadded: { padding: 16 },
-    row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, minHeight: 58 },
+    row: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      minHeight: 58,
+    },
     rowIcon: {
       width: 36,
       height: 36,
       borderRadius: 10,
-      alignItems: 'center',
-      justifyContent: 'center',
+      alignItems: "center",
+      justifyContent: "center",
       marginRight: 14,
     },
     rowBody: { flex: 1 },
-    rowTitle: { fontSize: 15, fontWeight: '500', color: c.text },
+    rowTitle: { fontSize: 15, fontWeight: "500", color: c.text },
     rowSubtitle: { fontSize: 12, color: c.textMuted, marginTop: 2 },
-    divider: { height: StyleSheet.hairlineWidth, backgroundColor: c.line, marginLeft: 66 },
-    inlineLabel: { fontSize: 13, fontWeight: '600', color: c.textMuted, marginBottom: 8 },
-    textPreview: { fontSize: 15, color: c.text, marginTop: 6, lineHeight: 21 },
-    langRow: { flexDirection: 'row', alignItems: 'center', marginTop: 18, gap: 6 },
-    langLabel: { flex: 1, marginBottom: 0 },
-    langValue: { fontSize: 15, fontWeight: '600', color: c.text },
+    divider: {
+      height: StyleSheet.hairlineWidth,
+      backgroundColor: c.line,
+      marginLeft: 66,
+    },
+    rowValue: {
+      fontSize: 14,
+      color: c.textMuted,
+      marginLeft: 8,
+      marginRight: 4,
+      maxWidth: "40%",
+    },
+    badge: {
+      minWidth: 22,
+      height: 22,
+      paddingHorizontal: 6,
+      borderRadius: 11,
+      backgroundColor: c.danger,
+      alignItems: "center",
+      justifyContent: "center",
+      marginLeft: 8,
+      marginRight: 4,
+    },
+    badgeText: { fontSize: 12, fontWeight: "800", color: "#FFF" },
+    upgrade: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginTop: 12,
+      padding: 16,
+      borderRadius: 18,
+      backgroundColor: c.brand,
+      ...cardShadow(c, scheme),
+    },
+    upgradeIcon: {
+      width: 36,
+      height: 36,
+      borderRadius: 10,
+      alignItems: "center",
+      justifyContent: "center",
+      marginRight: 14,
+      backgroundColor: "rgba(255,255,255,0.2)",
+    },
+    upgradeTitle: { fontSize: 16, fontWeight: "800", color: c.onBrand },
+    upgradeSub: { fontSize: 12, color: c.onBrand, opacity: 0.85, marginTop: 3 },
+    textPreview: { fontSize: 15, color: c.text, marginTop: 10, lineHeight: 21 },
+    sheetBody: { paddingVertical: 8 },
+    sheetDone: {
+      marginTop: 16,
+      paddingVertical: 14,
+      borderRadius: 14,
+      backgroundColor: c.brand,
+      alignItems: "center",
+    },
+    sheetDoneText: { fontSize: 16, fontWeight: "700", color: c.onBrand },
+    sheetRoot: { flex: 1 },
     sheetDim: { flex: 1, backgroundColor: c.overlay },
     sheet: {
       backgroundColor: c.surface,
@@ -513,28 +695,35 @@ const makeStyles = (c: ThemeColors, scheme: Scheme) =>
       paddingTop: 10,
       paddingBottom: 36,
     },
-    sheetGrip: { alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: c.line, marginBottom: 12 },
-    sheetTitle: { fontSize: 17, fontWeight: '800', color: c.text, marginBottom: 6 },
+    sheetGrip: {
+      alignSelf: "center",
+      width: 40,
+      height: 5,
+      borderRadius: 3,
+      backgroundColor: c.line,
+      marginBottom: 12,
+    },
+    sheetTitle: {
+      fontSize: 17,
+      fontWeight: "800",
+      color: c.text,
+      marginBottom: 6,
+    },
     sheetRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
       paddingVertical: 13,
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderBottomColor: c.line,
     },
     sheetText: { fontSize: 16, color: c.text },
-    sheetTextOn: { color: c.brand, fontWeight: '700' },
-    segment: { flexDirection: 'row', backgroundColor: c.surfaceMuted, borderRadius: 12, padding: 3 },
-    segmentItem: { flex: 1, paddingVertical: 9, alignItems: 'center', borderRadius: 10 },
-    segmentItemActive: { backgroundColor: c.surface },
-    segmentText: { fontSize: 13, fontWeight: '600', color: c.textMuted },
-    segmentTextActive: { color: c.text },
+    sheetTextOn: { color: c.brand, fontWeight: "700" },
     footer: {
       marginTop: 32,
       fontSize: 12,
       color: c.textFaint,
-      textAlign: 'center',
+      textAlign: "center",
       lineHeight: 20,
     },
   });

@@ -237,6 +237,8 @@ const zhHant: Record<string, string> = {
   'paywall.freeUsage': '免費版・已使用 {n}/{max} 個藥品',
   'settings.planFree': '免費版・最多 {n} 個藥品',
   'settings.planFreeSub': '只要 {price} 一次付清即無上限・點一下查看',
+  'settings.upgradeTitle': '升級為正式版',
+  'settings.upgradeSub': '藥品數量無上限・家人提醒・一次 {price}',
   'paywall.oneTime': '一次性購買・非訂閱制',
   'paywall.buy': '以 {price} 購買完整版',
   'paywall.later': '以後再說',

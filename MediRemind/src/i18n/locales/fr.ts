@@ -237,6 +237,8 @@ const fr: Record<string, string> = {
   'paywall.freeUsage': 'Version gratuite · {n}/{max} médicaments utilisés',
   'settings.planFree': "Version gratuite · jusqu'à {n} médicaments",
   'settings.planFreeSub': 'Illimité pour {price}, une seule fois · Touchez pour voir',
+  'settings.upgradeTitle': 'Passer à la version complète',
+  'settings.upgradeSub': 'Médicaments illimités · Alertes famille · {price} une fois',
   'paywall.oneTime': 'Achat unique, sans abonnement',
   'paywall.buy': 'Débloquer pour {price}',
   'paywall.later': 'Plus tard',

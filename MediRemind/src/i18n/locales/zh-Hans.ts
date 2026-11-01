@@ -237,6 +237,8 @@ const zhHans: Record<string, string> = {
   'paywall.freeUsage': '免费版 · 已用{n}/{max}种药品',
   'settings.planFree': '免费版 · 最多{n}种药品',
   'settings.planFreeSub': '只需{price}一次即可不限数量 · 点按查看',
+  'settings.upgradeTitle': '升级到正式版',
+  'settings.upgradeSub': '不限药品数量 · 家人提醒 · 一次 {price}',
   'paywall.oneTime': '一次性购买，非订阅',
   'paywall.buy': '以{price}购买完整版',
   'paywall.later': '以后再说',
