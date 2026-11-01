@@ -44,6 +44,7 @@ import { cardShadow, type Scheme, type ThemeColors, type ThemeMode } from '../th
 import TextSizeSlider from '../components/TextSizeSlider';
 import ScreenHeader from '../components/ScreenHeader';
 import { guardianAvailable } from '../guardian/config';
+import { useFamilySummary } from '../guardian/useFamilySummary';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
@@ -116,6 +117,15 @@ export default function SettingsScreen() {
   const navigation = useNavigation<Nav>();
   const { t, pref: langPref, setLanguage } = useI18n();
   const [langOpen, setLangOpen] = useState(false);
+  // Once linked, the row reads like a status line instead of an ad for the feature.
+  const family = useFamilySummary();
+  const missedCount = family?.reduce((n, m) => n + m.missed.length, 0) ?? 0;
+  const familyNames = family?.map((m) => m.patient.name || t('guardian.unnamed')).join(', ');
+  const familyLine = !family?.length
+    ? null
+    : missedCount
+      ? `🔴 ${t('settings.familyMissed', { names: familyNames!, n: missedCount })}`
+      : t('settings.familyOk', { names: familyNames! });
   const langName = (v: LanguagePref) => (v === 'system' ? t('settings.langSystem') : LANGUAGE_NAMES[v]);
   const { colors, mode, setMode } = useTheme();
   const styles = useThemedStyles(makeStyles);
@@ -280,7 +290,7 @@ export default function SettingsScreen() {
                 icon="people"
                 iconColor={colors.success}
                 title={t('settings.guardian')}
-                subtitle={t('settings.guardianSub')}
+                subtitle={familyLine ?? t('settings.guardianSub')}
                 onPress={() => navigation.navigate('Guardian')}
               />
             </View>

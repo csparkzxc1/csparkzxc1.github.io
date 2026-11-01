@@ -9,6 +9,7 @@ import type { DoseRecord, RootStackParamList } from '../types';
 import { useDoseStore } from '../store/doseStore';
 import { useMedicineStore } from '../store/medicineStore';
 import { useAddMedicine } from '../hooks/useAddMedicine';
+import { useFamilySummary } from '../guardian/useFamilySummary';
 import { useToday } from '../hooks/useToday';
 import { useI18n } from '../i18n/I18nProvider';
 import { formatLongDate } from '../i18n/core';
@@ -40,6 +41,21 @@ export default function HomeScreen() {
   const medicines = useMedicineStore((s) => s.medicines);
   const { doseRecords, isLoading, streak, markDose, unmarkDose, syncDoses } = useDoseStore();
   const addMedicine = useAddMedicine();
+
+  // A family member I watch missed a dose today: say so right at the top.
+  const family = useFamilySummary();
+  const missed = useMemo(() => {
+    const who = family?.filter((m) => m.missed.length) ?? [];
+    if (!who.length) return null;
+    const first = who[0];
+    const d = new Date(first.missed[0].due_at);
+    return {
+      name: first.patient.name || t('guardian.unnamed'),
+      time: `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`,
+      med: first.missed[0].medicine_name,
+      others: who.length - 1,
+    };
+  }, [family, t]);
 
   const [permission, setPermission] = React.useState<ReminderPermission>('granted');
   React.useEffect(() => {
@@ -115,6 +131,23 @@ export default function HomeScreen() {
         }
         showsVerticalScrollIndicator={false}
       >
+        {missed && (
+          <TouchableOpacity
+            style={styles.familyBanner}
+            onPress={() => navigation.navigate('Guardian')}
+            activeOpacity={0.85}
+            accessibilityRole="button"
+          >
+            <Ionicons name="people" size={20} color={colors.danger} />
+            <Text style={styles.familyText} numberOfLines={2}>
+              {missed.others
+                ? t('home.familyMissedMore', { name: missed.name, n: missed.others })
+                : t('home.familyMissed', { name: missed.name, time: missed.time, med: missed.med })}
+            </Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.danger} />
+          </TouchableOpacity>
+        )}
+
         {permission !== 'granted' && medicines.length > 0 && (
           <TouchableOpacity style={styles.permBanner} onPress={enableReminders} activeOpacity={0.85}>
             <Ionicons name="notifications-off" size={22} color={colors.danger} />
@@ -200,6 +233,16 @@ const makeStyles = (c: ThemeColors, scheme: Scheme) =>
       marginBottom: 12,
       ...cardShadow(c, scheme),
     },
+    familyBanner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      backgroundColor: c.dangerSoft,
+      borderRadius: 16,
+      padding: 14,
+      marginBottom: 12,
+    },
+    familyText: { flex: 1, fontSize: 14, fontWeight: '700', color: c.danger, lineHeight: 20 },
     permBanner: {
       flexDirection: 'row',
       alignItems: 'center',

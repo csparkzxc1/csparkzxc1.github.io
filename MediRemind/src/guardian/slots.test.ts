@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
-import { adherenceRate, buildSlots, dailyTally, dueAt, slotState } from './slots';
+import { adherenceRate, buildSlots, dailyTally, dueAt, slotState, todaySummary } from './slots';
 import { dose, medicine } from '../test/factories';
 
 describe('buildSlots', () => {
@@ -85,5 +85,31 @@ describe('dailyTally', () => {
 
   it('has no rate before anything is due', () => {
     expect(adherenceRate(dailyTally([], '2026-11-04', now))).toBeNull();
+  });
+});
+
+describe('todaySummary', () => {
+  it('counts today and lists missed doses in order', () => {
+    const now = dueAt('2026-11-04', '21:00');
+    const slot = (id: string, date: string, time: string, taken = false) => ({
+      id,
+      medicine_name: id,
+      due_at: dueAt(date, time).toISOString(),
+      taken_at: taken ? dueAt(date, time).toISOString() : null,
+    });
+    const sum = todaySummary(
+      [
+        slot('b', '2026-11-04', '13:00'),
+        slot('a', '2026-11-04', '08:00'),
+        slot('c', '2026-11-04', '12:00', true),
+        slot('d', '2026-11-04', '20:50'), // within the 30-minute delay
+        slot('e', '2026-11-03', '08:00'), // yesterday
+      ],
+      '2026-11-04',
+      now
+    );
+    expect(sum.total).toBe(4);
+    expect(sum.taken).toBe(1);
+    expect(sum.missed.map((s) => s.id)).toEqual(['a', 'b']);
   });
 });

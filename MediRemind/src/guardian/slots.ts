@@ -109,3 +109,27 @@ export function adherenceRate(tally: DayTally[]): number | null {
   if (!due) return null;
   return Math.round((tally.reduce((n, d) => n + d.taken, 0) / due) * 100);
 }
+
+export interface TodaySummary {
+  total: number;
+  taken: number;
+  /** Doses past the guardian's delay and still unchecked, earliest first. */
+  missed: DoseSlot[];
+}
+
+/** One family member's day at a glance, for status chips and the home banner. */
+export function todaySummary(
+  slots: DoseSlot[],
+  today: string,
+  now: Date,
+  delayMin: number = DEFAULT_ALERT_DELAY
+): TodaySummary {
+  const todays = slots.filter((s) => dateKey(new Date(s.due_at)) === today);
+  return {
+    total: todays.length,
+    taken: todays.filter((s) => s.taken_at).length,
+    missed: todays
+      .filter((s) => slotState(s, now, delayMin) === 'missed')
+      .sort((a, b) => a.due_at.localeCompare(b.due_at)),
+  };
+}

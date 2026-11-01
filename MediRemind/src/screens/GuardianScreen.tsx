@@ -2,7 +2,7 @@
  * Family alerts: share my doses with family (invite code), watch a family
  * member's doses (enter code), and see their doses for today.
  */
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -14,7 +14,10 @@ import {
   Alert,
   Share,
   RefreshControl,
-  Animated,
+  Modal,
+  Pressable,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
@@ -44,6 +47,7 @@ import {
   ALERT_DELAYS,
   dailyTally,
   slotState,
+  todaySummary,
   type DoseSlot,
   type SlotState,
 } from '../guardian/slots';
@@ -67,6 +71,8 @@ export default function GuardianScreen() {
   const [code, setCode] = useState('');
   const [invite, setInvite] = useState<string | null>(null);
   const [busy, setBusy] = useState<null | 'load' | 'invite' | 'link' | 'name'>(null);
+  const [sheet, setSheet] = useState<null | 'choose' | 'watch' | 'share'>(null);
+  const { colors } = useTheme();
 
   const fail = useCallback(
     (e: unknown) => {
@@ -126,6 +132,7 @@ export default function GuardianScreen() {
     if (!isPro) {
       // Link right after a purchase, when the paywall closes.
       resumeLink.current = true;
+      setSheet(null);
       navigation.navigate('Paywall', { reason: 'guardian' });
       return;
     }
@@ -137,6 +144,7 @@ export default function GuardianScreen() {
       else if (result === 'own_code') Alert.alert(t('guardian.ownCode'));
       else {
         setCode('');
+        setSheet(null);
         Alert.alert(t(result === 'linked' ? 'guardian.linked' : 'guardian.linkedNoPush'));
         await load();
       }
@@ -200,95 +208,192 @@ export default function GuardianScreen() {
     ]);
   };
 
+  // Destructive and rarely used, so it lives behind the header's menu.
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: links
+        ? () => (
+            <TouchableOpacity onPress={confirmDeleteAll} hitSlop={10} accessibilityLabel={t('guardian.more')}>
+              <Ionicons name="ellipsis-horizontal" size={22} color={colors.textMuted} />
+            </TouchableOpacity>
+          )
+        : undefined,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [links, colors]);
+
+  const closeSheet = () => {
+    setSheet(null);
+    setInvite(null);
+  };
+  const empty = !links?.patients.length && !links?.guardians.length;
+
   return (
-    <ScrollView
-      style={styles.screen}
-      contentContainerStyle={styles.content}
-      keyboardShouldPersistTaps="handled"
-      refreshControl={<RefreshControl refreshing={busy === 'load'} onRefresh={load} />}
-    >
-      <Text style={styles.intro}>{t('guardian.intro')}</Text>
+    <>
+      <ScrollView
+        style={styles.screen}
+        contentContainerStyle={styles.content}
+        refreshControl={<RefreshControl refreshing={busy === 'load'} onRefresh={load} />}
+      >
+        {empty && <Text style={styles.intro}>{t('guardian.intro')}</Text>}
 
-      {links && (
-        <View style={styles.card}>
-          <Text style={styles.label}>{t('guardian.myName')}</Text>
-          <View style={styles.inline}>
-            <TextInput
-              style={[styles.input, styles.flex]}
-              value={name}
-              onChangeText={setName}
-              placeholder={t('guardian.myNamePlaceholder')}
-              maxLength={20}
-              returnKeyType="done"
-              onSubmitEditing={onSaveName}
-            />
-            <SmallButton label={t('guardian.save')} busy={busy === 'name'} onPress={onSaveName} />
-          </View>
-        </View>
-      )}
-
-      <Text style={styles.section}>{t('guardian.sectionMine')}</Text>
-      <View style={styles.card}>
-        {links?.guardians.length ? (
+        {!!links?.patients.length && (
           <>
-            {links.guardians.map((g) => (
-              <SwipeToUnlink key={g.id} person={g} onUnlink={() => confirmUnlink(g, links.me, g.id)} />
+            <Text style={styles.section}>{t('guardian.sectionWatching')}</Text>
+            {links.patients.map((p) => (
+              <PatientCard
+                key={p.id}
+                patient={p}
+                slots={today[p.id] ?? []}
+                onDelay={(m) => onDelay(p.id, m)}
+                onUnlink={() => confirmUnlink(p, p.id, links.me)}
+              />
             ))}
-            <Text style={styles.swipeHint}>{t('guardian.swipeHint')}</Text>
           </>
-        ) : (
-          <Text style={styles.muted}>{t('guardian.noGuardians')}</Text>
         )}
-        {invite ? (
-          <View style={styles.inviteBox}>
-            <Text style={styles.inviteLabel}>{t('guardian.inviteTitle')}</Text>
-            <Text style={styles.inviteCode} selectable>
-              {invite.slice(0, 3)} {invite.slice(3)}
-            </Text>
-            <Text style={styles.muted}>{t('guardian.inviteBody')}</Text>
-            <PrimaryButton
-              label={t('guardian.share')}
-              onPress={() => Share.share({ message: t('guardian.shareMessage', { code: invite }) })}
-            />
-          </View>
-        ) : (
-          <PrimaryButton label={t('guardian.invite')} busy={busy === 'invite'} onPress={onInvite} />
-        )}
-        <Text style={styles.fine}>{t('guardian.privacy')}</Text>
-      </View>
 
-      <Text style={styles.section}>{t('guardian.sectionWatching')}</Text>
-      {links?.patients.map((p) => (
-        <PatientCard
-          key={p.id}
-          patient={p}
-          slots={today[p.id] ?? []}
-          onDelay={(m) => onDelay(p.id, m)}
-          onUnlink={() => confirmUnlink(p, p.id, links.me)}
-        />
-      ))}
-      <View style={styles.card}>
-        {!links?.patients.length && <Text style={styles.muted}>{t('guardian.noPatients')}</Text>}
-        <View style={styles.inline}>
-          <TextInput
-            style={[styles.input, styles.flex, code !== '' && styles.codeInput]}
-            value={code}
-            onChangeText={setCode}
-            placeholder={t('guardian.codePlaceholder')}
-            keyboardType="number-pad"
-            maxLength={7}
-          />
-          <SmallButton label={t('guardian.connect')} busy={busy === 'link'} onPress={onLink} />
-        </View>
-        {!isPro && <Text style={styles.fine}>{t('guardian.proNote')}</Text>}
-      </View>
-
-      {links && (
-        <TouchableOpacity style={styles.deleteBtn} onPress={confirmDeleteAll}>
-          <Text style={styles.deleteText}>{t('guardian.deleteAll')}</Text>
+        <TouchableOpacity style={styles.addBtn} onPress={() => setSheet('choose')} accessibilityRole="button">
+          <Ionicons name="add" size={20} color={colors.brand} />
+          <Text style={styles.addText}>{t('guardian.addFamily')}</Text>
         </TouchableOpacity>
-      )}
-    </ScrollView>
+
+        <Text style={styles.section}>{t('guardian.sectionMine')}</Text>
+        <View style={styles.card}>
+          {links?.guardians.length ? (
+            <>
+              {links.guardians.map((g) => (
+                <SwipeToUnlink key={g.id} person={g} onUnlink={() => confirmUnlink(g, links.me, g.id)} />
+              ))}
+              <Text style={styles.swipeHint}>{t('guardian.swipeHint')}</Text>
+            </>
+          ) : (
+            <Text style={styles.muted}>{t('guardian.none')}</Text>
+          )}
+          <TouchableOpacity style={styles.linkRow} onPress={() => setSheet('share')}>
+            <Text style={styles.linkText}>{t('guardian.shareTitle')}</Text>
+            <Ionicons name="chevron-forward" size={16} color={colors.brand} />
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+
+      <Modal visible={sheet !== null} transparent animationType="slide" onRequestClose={closeSheet}>
+        <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <Pressable style={styles.sheetDim} onPress={closeSheet} />
+          <View style={styles.sheet}>
+            <View style={styles.sheetGrip} />
+            {sheet === 'choose' && (
+              <>
+                <Text style={styles.sheetTitle}>{t('guardian.addFamily')}</Text>
+                <SheetOption
+                  icon="eye-outline"
+                  tint={colors.brand}
+                  title={t('guardian.watchTitle')}
+                  sub={t('guardian.watchSub')}
+                  badge={isPro ? undefined : t('guardian.proBadge')}
+                  onPress={() => setSheet('watch')}
+                />
+                <SheetOption
+                  icon="share-outline"
+                  tint={colors.success}
+                  title={t('guardian.shareTitle')}
+                  sub={t('guardian.shareSub')}
+                  onPress={() => setSheet('share')}
+                />
+              </>
+            )}
+
+            {sheet === 'watch' && (
+              <>
+                <Text style={styles.sheetTitle}>{t('guardian.watchTitle')}</Text>
+                <Text style={styles.muted}>{t('guardian.noPatients')}</Text>
+                <View style={styles.inline}>
+                  <TextInput
+                    style={[styles.input, styles.flex, code !== '' && styles.codeInput]}
+                    value={code}
+                    onChangeText={setCode}
+                    placeholder={t('guardian.codePlaceholder')}
+                    keyboardType="number-pad"
+                    maxLength={7}
+                    autoFocus
+                  />
+                  <SmallButton label={t('guardian.connect')} busy={busy === 'link'} onPress={onLink} />
+                </View>
+                {!isPro && <Text style={styles.fine}>{t('guardian.proNote')}</Text>}
+              </>
+            )}
+
+            {sheet === 'share' && (
+              <>
+                <Text style={styles.sheetTitle}>{t('guardian.shareTitle')}</Text>
+                <Text style={styles.label}>{t('guardian.myName')}</Text>
+                <View style={styles.inline}>
+                  <TextInput
+                    style={[styles.input, styles.flex]}
+                    value={name}
+                    onChangeText={setName}
+                    placeholder={t('guardian.myNamePlaceholder')}
+                    maxLength={20}
+                    returnKeyType="done"
+                    onSubmitEditing={onSaveName}
+                  />
+                  <SmallButton label={t('guardian.save')} busy={busy === 'name'} onPress={onSaveName} />
+                </View>
+                {invite ? (
+                  <View style={styles.inviteBox}>
+                    <Text style={styles.inviteLabel}>{t('guardian.inviteTitle')}</Text>
+                    <Text style={styles.inviteCode} selectable>
+                      {invite.slice(0, 3)} {invite.slice(3)}
+                    </Text>
+                    <Text style={styles.muted}>{t('guardian.inviteBody')}</Text>
+                    <PrimaryButton
+                      label={t('guardian.share')}
+                      onPress={() => Share.share({ message: t('guardian.shareMessage', { code: invite }) })}
+                    />
+                  </View>
+                ) : (
+                  <PrimaryButton label={t('guardian.invite')} busy={busy === 'invite'} onPress={onInvite} />
+                )}
+                <Text style={styles.fine}>{t('guardian.privacy')}</Text>
+              </>
+            )}
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+    </>
+  );
+}
+
+function SheetOption({
+  icon,
+  tint,
+  title,
+  sub,
+  badge,
+  onPress,
+}: {
+  icon: React.ComponentProps<typeof Ionicons>['name'];
+  tint: string;
+  title: string;
+  sub: string;
+  badge?: string;
+  onPress: () => void;
+}) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+  return (
+    <TouchableOpacity style={styles.option} onPress={onPress} accessibilityRole="button">
+      <View style={[styles.optionIcon, { backgroundColor: tint + '1F' }]}>
+        <Ionicons name={icon} size={22} color={tint} />
+      </View>
+      <View style={styles.flex}>
+        <View style={styles.optionHead}>
+          <Text style={styles.optionTitle}>{title}</Text>
+          {badge && <Text style={styles.badge}>{badge}</Text>}
+        </View>
+        <Text style={styles.optionSub}>{sub}</Text>
+      </View>
+      <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
+    </TouchableOpacity>
   );
 }
 
@@ -330,8 +435,8 @@ function SwipeToUnlink({ person, onUnlink }: { person: Person; onUnlink: () => v
 }
 
 /**
- * A family member I watch. The front shows today's doses; the menu button
- * flips the card to its back, which holds the alert timing, the link date and
+ * A family member I watch. Collapsed: name and today's status, plus the doses
+ * missed today. Tapping opens the day list, two-week chart, alert timing and
  * the unlink button.
  */
 function PatientCard({
@@ -348,81 +453,66 @@ function PatientCard({
   const { t } = useI18n();
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
-  const flip = useRef(new Animated.Value(0)).current;
-  const [showBack, setShowBack] = useState(false);
-  const [heights, setHeights] = useState({ front: 0, back: 0 });
-  const height = Math.max(heights.front, heights.back);
-
-  const turn = (toBack: boolean) => {
-    setShowBack(toBack);
-    Animated.spring(flip, { toValue: toBack ? 1 : 0, friction: 8, tension: 40, useNativeDriver: true }).start();
-  };
-  const front = flip.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] });
-  const back = flip.interpolate({ inputRange: [0, 1], outputRange: ['180deg', '360deg'] });
+  const [open, setOpen] = useState(false);
   const name = patient.name || t('guardian.unnamed');
-  const todayKey = dateKey(new Date());
+  const now = new Date();
+  const todayKey = dateKey(now);
+  const sum = todaySummary(slots, todayKey, now, patient.alertDelay);
   // The list shows today, or the day picked on the chart.
   const [day, setDay] = useState(todayKey);
   const daySlots = slots.filter((s) => dateKey(new Date(s.due_at)) === day);
-  const faceHeight = height ? { minHeight: height } : null;
+  const chip = sum.missed.length
+    ? { text: t('guardian.chipMissed', { n: sum.missed.length }), color: colors.danger }
+    : sum.total
+      ? { text: t('guardian.chipToday', { taken: sum.taken, total: sum.total }), color: colors.success }
+      : { text: t('guardian.chipNone'), color: colors.textMuted };
 
   return (
-    <View style={[styles.flipWrap, height ? { height } : null]}>
-      <Animated.View
-        pointerEvents={showBack ? 'none' : 'auto'}
-        onLayout={(e) => {
-          const h = e.nativeEvent.layout.height;
-          setHeights((x) => (x.front === h ? x : { ...x, front: h }));
-        }}
-        style={[styles.card, styles.face, faceHeight, { transform: [{ perspective: 1200 }, { rotateY: front }] }]}
+    <View style={styles.card}>
+      <TouchableOpacity
+        style={styles.personRow}
+        onPress={() => setOpen((o) => !o)}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: open }}
       >
-        <View style={styles.personRow}>
-          <Avatar color={colors.brand} />
-          <Text style={styles.personName}>{name}</Text>
-          <TouchableOpacity onPress={() => turn(true)} hitSlop={10} accessibilityLabel={t('guardian.details')}>
-            <Ionicons name="menu" size={24} color={colors.textMuted} />
-          </TouchableOpacity>
-        </View>
-        <TodayList
-          slots={daySlots}
-          delay={patient.alertDelay}
-          title={day === todayKey ? undefined : t('guardian.dayDoses', { date: formatShortDate(day) })}
-          onBackToToday={day === todayKey ? undefined : () => setDay(todayKey)}
-        />
-        <HistoryChart
-          slots={slots}
-          delay={patient.alertDelay}
-          selected={day}
-          onSelect={(d) => setDay(d === day ? todayKey : d)}
-        />
-      </Animated.View>
+        <Avatar color={colors.brand} />
+        <Text style={styles.personName} numberOfLines={1}>
+          {name}
+        </Text>
+        <Text style={[styles.chip, { color: chip.color, backgroundColor: chip.color + '1A' }]}>{chip.text}</Text>
+        <Ionicons name={open ? 'chevron-up' : 'chevron-down'} size={18} color={colors.textFaint} />
+      </TouchableOpacity>
 
-      <Animated.View
-        pointerEvents={showBack ? 'auto' : 'none'}
-        onLayout={(e) => {
-          const h = e.nativeEvent.layout.height;
-          setHeights((x) => (x.back === h ? x : { ...x, back: h }));
-        }}
-        style={[styles.card, styles.face, faceHeight, { transform: [{ perspective: 1200 }, { rotateY: back }] }]}
-      >
-        <View style={styles.personRow}>
-          <Avatar color={colors.brand} />
-          <View style={styles.flex}>
-            <Text style={styles.personName}>{name}</Text>
-            <Text style={styles.linkedSince}>
-              {t('guardian.linkedSince', { date: formatShortDate(dateKey(new Date(patient.linkedAt))) })}
-            </Text>
+      {!open && sum.missed.length > 0 && (
+        <TodayList slots={sum.missed} delay={patient.alertDelay} title={t('guardian.missedToday')} />
+      )}
+
+      {open && (
+        <>
+          <TodayList
+            slots={daySlots}
+            delay={patient.alertDelay}
+            title={day === todayKey ? undefined : t('guardian.dayDoses', { date: formatShortDate(day) })}
+            onBackToToday={day === todayKey ? undefined : () => setDay(todayKey)}
+          />
+          <HistoryChart
+            slots={slots}
+            delay={patient.alertDelay}
+            selected={day}
+            onSelect={(d) => setDay(d === day ? todayKey : d)}
+          />
+          <View style={styles.history}>
+            <DelayPicker value={patient.alertDelay} onChange={onDelay} />
           </View>
-          <TouchableOpacity onPress={() => turn(false)} hitSlop={10} accessibilityLabel={t('guardian.close')}>
-            <Ionicons name="close" size={24} color={colors.textMuted} />
+          <Text style={styles.linkedSince}>
+            {t('guardian.linkedSince', { date: formatShortDate(dateKey(new Date(patient.linkedAt))) })}
+          </Text>
+          <TouchableOpacity style={styles.unlinkBtn} onPress={onUnlink}>
+            <Ionicons name="link-outline" size={17} color={colors.danger} />
+            <Text style={styles.unlinkBtnText}>{t('guardian.unlinkNamed', { name })}</Text>
           </TouchableOpacity>
-        </View>
-        <DelayPicker value={patient.alertDelay} onChange={onDelay} />
-        <TouchableOpacity style={styles.unlinkBtn} onPress={onUnlink}>
-          <Ionicons name="link-outline" size={17} color={colors.danger} />
-          <Text style={styles.unlinkBtnText}>{t('guardian.unlinkNamed', { name })}</Text>
-        </TouchableOpacity>
-      </Animated.View>
+        </>
+      )}
     </View>
   );
 }
@@ -651,7 +741,48 @@ const makeStyles = (c: ThemeColors, scheme: Scheme) =>
     inviteCode: { fontSize: 40, fontWeight: '800', letterSpacing: 6, color: c.text, textAlign: 'center' },
     personRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
     personName: { flex: 1, fontSize: 16, fontWeight: '700', color: c.text },
-    flipWrap: { marginBottom: 16 },
+    chip: { fontSize: 12, fontWeight: '800', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 4, overflow: 'hidden' },
+    addBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+      paddingVertical: 14,
+      borderRadius: 16,
+      borderWidth: 1.5,
+      borderStyle: 'dashed',
+      borderColor: c.brandBorder,
+      marginBottom: 20,
+    },
+    addText: { fontSize: 15, fontWeight: '800', color: c.brand },
+    linkRow: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', gap: 2 },
+    linkText: { fontSize: 14, fontWeight: '700', color: c.brand },
+    sheetDim: { flex: 1, backgroundColor: c.overlay },
+    sheet: {
+      backgroundColor: c.surface,
+      borderTopLeftRadius: 22,
+      borderTopRightRadius: 22,
+      paddingHorizontal: 20,
+      paddingTop: 10,
+      paddingBottom: 36,
+      gap: 12,
+    },
+    sheetGrip: { alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: c.line },
+    sheetTitle: { fontSize: 18, fontWeight: '800', color: c.text },
+    option: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      padding: 14,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: c.line,
+    },
+    optionIcon: { width: 42, height: 42, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+    optionHead: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    optionTitle: { fontSize: 15, fontWeight: '800', color: c.text },
+    optionSub: { fontSize: 12.5, color: c.textMuted, marginTop: 2 },
+    badge: { fontSize: 10.5, fontWeight: '800', color: c.brand, backgroundColor: c.brandSoft, borderRadius: 8, paddingHorizontal: 6, paddingVertical: 2, overflow: 'hidden' },
     history: { marginTop: 4, paddingTop: 12, borderTopWidth: 1, borderTopColor: c.line },
     historyHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
     historyRate: { fontSize: 13, fontWeight: '800' },
@@ -668,7 +799,6 @@ const makeStyles = (c: ThemeColors, scheme: Scheme) =>
     legend: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 8 },
     legendDot: { width: 8, height: 8, borderRadius: 4, marginLeft: 6 },
     legendText: { fontSize: 11, color: c.textMuted },
-    face: { position: 'absolute', top: 0, left: 0, right: 0, marginBottom: 0, backfaceVisibility: 'hidden' },
     linkedSince: { fontSize: 12, color: c.textMuted, marginTop: 2 },
     unlinkBtn: {
       flexDirection: 'row',
