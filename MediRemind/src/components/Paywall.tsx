@@ -1,7 +1,6 @@
 /**
  * Full-version purchase screen, opened from Settings or when a free user tries
- * to add more medicines than the free limit. Watching family is the separate
- * family plan subscription (FamilyPaywall), linked from here.
+ * to add more medicines than the free limit.
  */
 import React, { useEffect, useState } from 'react';
 import {
@@ -15,7 +14,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import FamilyPaywall from './FamilyPaywall';
 import { useEntitlement } from '../purchase/EntitlementProvider';
 import { PurchaseFailure } from '../purchase/realProvider';
 import { FREE_MEDICINE_LIMIT, PURCHASE_CONFIG } from '../purchase/purchase.config';
@@ -24,7 +22,7 @@ import { useI18n } from '../i18n/I18nProvider';
 import { useTheme, useThemedStyles } from '../theme/ThemeProvider';
 import type { ThemeColors } from '../theme/theme';
 
-const FEATURE_KEYS = ['paywall.f1', 'paywall.f2', 'paywall.f3'];
+const FEATURE_KEYS = ['paywall.f1', 'paywall.fGuardian', 'paywall.f2', 'paywall.f3', 'paywall.f4'];
 
 interface Props {
   /** Why the paywall opened: the free medicine limit, or linking to watch a family member. */
@@ -33,16 +31,7 @@ interface Props {
 }
 
 export default function Paywall({ reason, onDismiss }: Props) {
-  const [family, setFamily] = useState(reason === 'guardian');
-  return family ? (
-    <FamilyPaywall onDismiss={onDismiss} />
-  ) : (
-    <FullPaywall reason={reason} onDismiss={onDismiss} onFamily={() => setFamily(true)} />
-  );
-}
-
-function FullPaywall({ reason, onDismiss, onFamily }: Props & { onFamily: () => void }) {
-  const { isPro, hasFamily, product, purchase, restore, refreshProduct } = useEntitlement();
+  const { isPro, product, purchase, restore, refreshProduct } = useEntitlement();
   const count = useMedicineStore((s) => s.medicines.length);
   const { t } = useI18n();
   const { colors } = useTheme();
@@ -96,6 +85,8 @@ function FullPaywall({ reason, onDismiss, onFamily }: Props & { onFamily: () => 
     ? t('paywall.active')
     : reason === 'limit'
       ? t('paywall.limitReached', { n: FREE_MEDICINE_LIMIT })
+      : reason === 'guardian'
+        ? t('paywall.guardianReason')
       : t('paywall.freeUsage', { n: count, max: FREE_MEDICINE_LIMIT });
 
   return (
@@ -128,16 +119,6 @@ function FullPaywall({ reason, onDismiss, onFamily }: Props & { onFamily: () => 
               <Text style={styles.price}>{price}</Text>
               <Text style={styles.priceSub}>{t('paywall.oneTime')}</Text>
             </View>
-
-            {!hasFamily && (
-              <TouchableOpacity style={styles.cross} onPress={onFamily} activeOpacity={0.8}>
-                <Ionicons name="people" size={22} color={colors.success} />
-                <View style={styles.crossBody}>
-                  <Text style={styles.crossTitle}>{t('family.crossTitle')}</Text>
-                  <Text style={styles.crossCta}>{t('family.crossCta')}</Text>
-                </View>
-              </TouchableOpacity>
-            )}
 
             {product && product.available === false && (
               <Text style={styles.unavailable}>{t('paywall.unavailable')}</Text>
@@ -194,18 +175,6 @@ const makeStyles = (c: ThemeColors) =>
     priceBox: { marginTop: 28, alignItems: 'center' },
     price: { fontSize: 34, fontWeight: '800', color: c.text },
     priceSub: { marginTop: 4, fontSize: 13, color: c.textMuted },
-    cross: {
-      marginTop: 20,
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 12,
-      backgroundColor: c.success + '1A',
-      borderRadius: 14,
-      padding: 14,
-    },
-    crossBody: { flex: 1 },
-    crossTitle: { fontSize: 13, color: c.text },
-    crossCta: { fontSize: 14, fontWeight: '800', color: c.success, marginTop: 2 },
     unavailable: { marginTop: 14, textAlign: 'center', fontSize: 13, color: c.danger },
     buyBtn: { marginTop: 24, backgroundColor: c.brand, borderRadius: 16, paddingVertical: 17, alignItems: 'center' },
     buyText: { color: c.onBrand, fontSize: 17, fontWeight: '700' },
