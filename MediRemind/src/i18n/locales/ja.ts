@@ -8,6 +8,7 @@ const ja: Record<string, string> = {
   'nav.editMedicine': 'お薬の編集',
   'nav.paywall': '正式版',
   'nav.back': '戻る',
+  'common.close': '閉じる',
   'common.cancel': 'キャンセル',
   'common.ok': 'OK',
   'common.delete': '削除',

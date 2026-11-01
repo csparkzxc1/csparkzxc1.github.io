@@ -8,6 +8,7 @@ const zhHant: Record<string, string> = {
   'nav.editMedicine': '編輯藥品',
   'nav.paywall': '完整版',
   'nav.back': '返回',
+  'common.close': '關閉',
   'common.cancel': '取消',
   'common.ok': '確定',
   'common.delete': '刪除',

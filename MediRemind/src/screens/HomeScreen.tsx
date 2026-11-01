@@ -10,6 +10,7 @@ import { useDoseStore } from '../store/doseStore';
 import { useMedicineStore } from '../store/medicineStore';
 import { useAddMedicine } from '../hooks/useAddMedicine';
 import { useFamilySummary } from '../guardian/useFamilySummary';
+import { kvGet, kvSet, KV_KEYS } from '../db/kv';
 import { useToday } from '../hooks/useToday';
 import { useI18n } from '../i18n/I18nProvider';
 import { formatLongDate } from '../i18n/core';
@@ -44,7 +45,23 @@ export default function HomeScreen() {
 
   // A family member I watch missed a dose today: say so right at the top.
   const family = useFamilySummary();
+  // Doses the user already dismissed; a dose missed later brings the banner back.
+  const [dismissed, setDismissed] = React.useState<string[] | null>(null);
+  React.useEffect(() => {
+    kvGet(KV_KEYS.familyBannerDismissed)
+      .then((v) => setDismissed(v ? v.split(',') : []))
+      .catch(() => setDismissed([]));
+  }, []);
+  const missedKeys = useMemo(
+    () => (family ?? []).flatMap((m) => m.missed.map((s) => `${m.patient.id}:${s.id}`)),
+    [family]
+  );
+  const dismissBanner = () => {
+    setDismissed(missedKeys);
+    kvSet(KV_KEYS.familyBannerDismissed, missedKeys.join(',')).catch(() => {});
+  };
   const missed = useMemo(() => {
+    if (!dismissed || missedKeys.every((k) => dismissed.includes(k))) return null;
     const who = family?.filter((m) => m.missed.length) ?? [];
     if (!who.length) return null;
     const first = who[0];
@@ -55,7 +72,7 @@ export default function HomeScreen() {
       med: first.missed[0].medicine_name,
       others: who.length - 1,
     };
-  }, [family, t]);
+  }, [family, t, dismissed, missedKeys]);
 
   const [permission, setPermission] = React.useState<ReminderPermission>('granted');
   React.useEffect(() => {
@@ -144,7 +161,14 @@ export default function HomeScreen() {
                 ? t('home.familyMissedMore', { name: missed.name, n: missed.others })
                 : t('home.familyMissed', { name: missed.name, time: missed.time, med: missed.med })}
             </Text>
-            <Ionicons name="chevron-forward" size={18} color={colors.danger} />
+            <TouchableOpacity
+              onPress={dismissBanner}
+              hitSlop={12}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.close')}
+            >
+              <Ionicons name="close" size={20} color={colors.danger} />
+            </TouchableOpacity>
           </TouchableOpacity>
         )}
 

@@ -8,6 +8,7 @@ const es: Record<string, string> = {
   'nav.editMedicine': 'Editar medicamento',
   'nav.paywall': 'Versión completa',
   'nav.back': 'Atrás',
+  'common.close': 'Cerrar',
   'common.cancel': 'Cancelar',
   'common.ok': 'Aceptar',
   'common.delete': 'Eliminar',

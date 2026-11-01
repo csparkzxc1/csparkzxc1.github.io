@@ -33,6 +33,7 @@ export const STRINGS: Record<string, Entry> = {
   'nav.back': { ko: '뒤로', en: 'Back' },
 
   // ── Common ────────────────────────────────────────────────────────────
+  'common.close': { ko: '닫기', en: 'Close' },
   'common.cancel': { ko: '취소', en: 'Cancel' },
   'common.ok': { ko: '확인', en: 'OK' },
   'common.delete': { ko: '삭제', en: 'Delete' },
