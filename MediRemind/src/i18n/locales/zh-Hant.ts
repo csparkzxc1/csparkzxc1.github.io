@@ -179,6 +179,8 @@ const zhHant: Record<string, string> = {
   'guardian.today': '今日服藥',
   'guardian.noDosesToday': '今天沒有預定要吃的藥。',
   'guardian.state.taken': '已服用',
+  'guardian.state.takenAt': "已服用 {time}",
+  'guardian.state.takenLate': "補服 {time}",
   'guardian.state.upcoming': '預定',
   'guardian.state.late': '待確認',
   'guardian.state.missed': '未服用',

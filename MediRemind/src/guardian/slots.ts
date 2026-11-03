@@ -69,6 +69,15 @@ export function slotState(
   return overdueMin < delayMin ? 'late' : 'missed';
 }
 
+/**
+ * Taken, but only after the guardian's alert time had passed (so they were
+ * probably told it was missed). Shown apart from on-time doses.
+ */
+export function takenLate(slot: Pick<DoseSlot, 'due_at' | 'taken_at'>, delayMin: number = DEFAULT_ALERT_DELAY): boolean {
+  if (!slot.taken_at) return false;
+  return new Date(slot.taken_at).getTime() - new Date(slot.due_at).getTime() >= delayMin * 60000;
+}
+
 /** Days of history a guardian sees (the server keeps 14). */
 export const HISTORY_DAYS = 14;
 

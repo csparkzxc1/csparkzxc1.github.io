@@ -179,6 +179,8 @@ const ja: Record<string, string> = {
   'guardian.today': '今日の服薬',
   'guardian.noDosesToday': '今日予定されているお薬はありません。',
   'guardian.state.taken': '服薬済み',
+  'guardian.state.takenAt': "服薬済み {time}",
+  'guardian.state.takenLate': "遅れて服薬 {time}",
   'guardian.state.upcoming': '予定',
   'guardian.state.late': '確認中',
   'guardian.state.missed': '飲み忘れ',

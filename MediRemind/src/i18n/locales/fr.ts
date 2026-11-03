@@ -179,6 +179,8 @@ const fr: Record<string, string> = {
   'guardian.today': "Aujourd'hui",
   'guardian.noDosesToday': "Aucune prise prévue aujourd'hui.",
   'guardian.state.taken': 'Pris',
+  'guardian.state.takenAt': "Pris {time}",
+  'guardian.state.takenLate': "Pris en retard {time}",
   'guardian.state.upcoming': 'À venir',
   'guardian.state.late': 'En attente',
   'guardian.state.missed': 'Oublié',

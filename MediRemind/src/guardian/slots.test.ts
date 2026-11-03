@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
-import { adherenceRate, buildSlots, dailyTally, dueAt, slotState, todaySummary } from './slots';
+import { adherenceRate, buildSlots, dailyTally, dueAt, slotState, takenLate, todaySummary } from './slots';
 import { dose, medicine } from '../test/factories';
 
 describe('buildSlots', () => {
@@ -51,6 +51,19 @@ describe('slotState', () => {
 
   it('is taken once taken_at is set', () => {
     expect(slotState({ ...slot, taken_at: due.toISOString() }, at(90))).toBe('taken');
+  });
+});
+
+describe('takenLate', () => {
+  const due = dueAt('2026-11-02', '08:00');
+  const at = (min: number) => new Date(due.getTime() + min * 60000).toISOString();
+  const slot = (min: number | null) => ({ due_at: due.toISOString(), taken_at: min === null ? null : at(min) });
+
+  it('marks doses taken after the guardian\'s alert time', () => {
+    expect(takenLate(slot(5))).toBe(false);
+    expect(takenLate(slot(50))).toBe(true);
+    expect(takenLate(slot(50), 60)).toBe(false);
+    expect(takenLate(slot(null))).toBe(false);
   });
 });
 

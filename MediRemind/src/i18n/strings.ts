@@ -265,6 +265,8 @@ export const STRINGS: Record<string, Entry> = {
   'guardian.today': { ko: '오늘 복용', en: 'Today' },
   'guardian.noDosesToday': { ko: '오늘 예정된 약이 없어요.', en: 'No doses scheduled today.' },
   'guardian.state.taken': { ko: '복용', en: 'Taken' },
+  'guardian.state.takenAt': { ko: "복용 {time}", en: "Taken {time}" },
+  'guardian.state.takenLate': { ko: "늦게 복용 {time}", en: "Taken late {time}" },
   'guardian.state.upcoming': { ko: '예정', en: 'Upcoming' },
   'guardian.state.late': { ko: '확인 중', en: 'Pending' },
   'guardian.state.missed': { ko: '안 먹음', en: 'Missed' },

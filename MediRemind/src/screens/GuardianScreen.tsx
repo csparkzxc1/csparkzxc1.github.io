@@ -47,6 +47,7 @@ import {
   ALERT_DELAYS,
   dailyTally,
   slotState,
+  takenLate,
   todaySummary,
   type DoseSlot,
   type SlotState,
@@ -670,20 +671,30 @@ function TodayList({
       {head}
       {slots.map((s) => {
         const state = slotState(s, now, delay);
-        const d = new Date(s.due_at);
-        const time = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+        const late = state === 'taken' && takenLate(s, delay);
+        const time = clock(s.due_at);
         return (
           <View key={s.id} style={styles.slot}>
             <Text style={styles.slotTime}>{time}</Text>
             <Text style={styles.slotName} numberOfLines={1}>
               {s.medicine_name}
             </Text>
-            <Text style={[styles.slotState, { color: tone[state] }]}>{t(`guardian.state.${state}`)}</Text>
+            <Text style={[styles.slotState, { color: late ? colors.warning : tone[state] }]}>
+              {state === 'taken' && s.taken_at
+                ? t(late ? 'guardian.state.takenLate' : 'guardian.state.takenAt', { time: clock(s.taken_at) })
+                : t(`guardian.state.${state}`)}
+            </Text>
           </View>
         );
       })}
     </View>
   );
+}
+
+/** 'HH:MM' in local time. */
+function clock(iso: string): string {
+  const d = new Date(iso);
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
 
 function PrimaryButton({ label, onPress, busy }: { label: string; onPress: () => void; busy?: boolean }) {
