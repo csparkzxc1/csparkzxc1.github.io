@@ -39,7 +39,7 @@ import { exportBackup, importBackup } from "../lib/backup";
 import { dateKey } from "../lib/schedule";
 import { checkAndApplyUpdate, getBuildInfo } from "../utils/updateUtils";
 import { useI18n } from "../i18n/I18nProvider";
-import { formatShortDate, LANGUAGES, LANGUAGE_NAMES, type LanguagePref } from "../i18n/core";
+import { LANGUAGES, LANGUAGE_NAMES, type LanguagePref } from "../i18n/core";
 import { useTheme, useThemedStyles } from "../theme/ThemeProvider";
 import {
   cardShadow,
@@ -166,16 +166,7 @@ export default function SettingsScreen() {
           : "settings.themeDark",
     );
   const styles = useThemedStyles(makeStyles);
-  const { isPro, product, restore, family: familyPlan, manageSubscriptions } = useEntitlement();
-  const planDate = (ms: number) => formatShortDate(dateKey(new Date(ms)));
-  const familyPlanLine =
-    familyPlan.kind !== "subscribed"
-      ? null
-      : familyPlan.subscription.trial
-        ? t("settings.familyTrial", { date: planDate(familyPlan.subscription.expiresAt) })
-        : t(familyPlan.subscription.willRenew ? "settings.familyRenews" : "settings.familyEnds", {
-            date: planDate(familyPlan.subscription.expiresAt),
-          });
+  const { isPro, product, restore } = useEntitlement();
 
   const [settings, setSettings] = useState<ReminderSettings>({
     sound: true,
@@ -494,48 +485,6 @@ export default function SettingsScreen() {
               <View style={styles.divider} />
             </>
           )}
-          {guardianAvailable() && (
-            <>
-              {familyPlan.kind === "legacy" ? (
-                <SettingRow
-                  icon="people"
-                  iconColor={colors.success}
-                  title={t("settings.familyPlan")}
-                  subtitle={t("settings.familyLegacy")}
-                  right={
-                    <View style={styles.pill}>
-                      <Text style={styles.pillText}>{t("settings.lifetime")}</Text>
-                    </View>
-                  }
-                />
-              ) : familyPlan.kind === "subscribed" ? (
-                <>
-                  <SettingRow
-                    icon="people"
-                    iconColor={colors.success}
-                    title={t("settings.familyPlan")}
-                    subtitle={familyPlanLine ?? undefined}
-                  />
-                  <View style={styles.divider} />
-                  <SettingRow
-                    icon="settings-outline"
-                    iconColor={colors.textMuted}
-                    title={t("settings.manageSub")}
-                    onPress={() => manageSubscriptions().catch(() => {})}
-                  />
-                </>
-              ) : (
-                <SettingRow
-                  icon="people"
-                  iconColor={colors.success}
-                  title={t("settings.familyPlan")}
-                  subtitle={t("settings.familyOffer")}
-                  onPress={() => navigation.navigate("Paywall", { reason: "guardian" })}
-                />
-              )}
-              <View style={styles.divider} />
-            </>
-          )}
           <SettingRow
             icon="refresh"
             iconColor={colors.textMuted}
@@ -705,13 +654,6 @@ const makeStyles = (c: ThemeColors, scheme: Scheme) =>
       marginLeft: 8,
       marginRight: 4,
     },
-    pill: {
-      backgroundColor: c.success + "22",
-      borderRadius: 8,
-      paddingHorizontal: 8,
-      paddingVertical: 3,
-    },
-    pillText: { fontSize: 11, fontWeight: "800", color: c.success },
     badgeText: { fontSize: 12, fontWeight: "800", color: "#FFF" },
     upgrade: {
       flexDirection: "row",
